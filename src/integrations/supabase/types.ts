@@ -14,16 +14,290 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      colaboradores: {
+        Row: {
+          agencia: string | null
+          ativo: boolean
+          banco: string | null
+          chave_pix: string | null
+          conta: string | null
+          cpf: string
+          created_at: string
+          funcao: string
+          id: string
+          nome: string
+          telefone: string | null
+          updated_at: string
+          valor_diaria_padrao: number
+        }
+        Insert: {
+          agencia?: string | null
+          ativo?: boolean
+          banco?: string | null
+          chave_pix?: string | null
+          conta?: string | null
+          cpf: string
+          created_at?: string
+          funcao?: string
+          id?: string
+          nome: string
+          telefone?: string | null
+          updated_at?: string
+          valor_diaria_padrao?: number
+        }
+        Update: {
+          agencia?: string | null
+          ativo?: boolean
+          banco?: string | null
+          chave_pix?: string | null
+          conta?: string | null
+          cpf?: string
+          created_at?: string
+          funcao?: string
+          id?: string
+          nome?: string
+          telefone?: string | null
+          updated_at?: string
+          valor_diaria_padrao?: number
+        }
+        Relationships: []
+      }
+      diarias: {
+        Row: {
+          colaborador_id: string
+          created_at: string
+          data: string
+          hora_entrada: string | null
+          hora_saida: string | null
+          id: string
+          observacoes: string | null
+          valor: number
+        }
+        Insert: {
+          colaborador_id: string
+          created_at?: string
+          data: string
+          hora_entrada?: string | null
+          hora_saida?: string | null
+          id?: string
+          observacoes?: string | null
+          valor?: number
+        }
+        Update: {
+          colaborador_id?: string
+          created_at?: string
+          data?: string
+          hora_entrada?: string | null
+          hora_saida?: string | null
+          id?: string
+          observacoes?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diarias_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fechamentos: {
+        Row: {
+          colaborador_id: string
+          created_at: string
+          id: string
+          periodo_fim: string
+          periodo_inicio: string
+          status: string
+          total_diarias: number
+          total_reembolsos: number
+          total_vales: number
+          updated_at: string
+          valor_final: number
+        }
+        Insert: {
+          colaborador_id: string
+          created_at?: string
+          id?: string
+          periodo_fim: string
+          periodo_inicio: string
+          status?: string
+          total_diarias?: number
+          total_reembolsos?: number
+          total_vales?: number
+          updated_at?: string
+          valor_final?: number
+        }
+        Update: {
+          colaborador_id?: string
+          created_at?: string
+          id?: string
+          periodo_fim?: string
+          periodo_inicio?: string
+          status?: string
+          total_diarias?: number
+          total_reembolsos?: number
+          total_vales?: number
+          updated_at?: string
+          valor_final?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fechamentos_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reembolsos: {
+        Row: {
+          colaborador_id: string
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+          valor: number
+        }
+        Insert: {
+          colaborador_id: string
+          created_at?: string
+          data: string
+          descricao?: string | null
+          id?: string
+          valor?: number
+        }
+        Update: {
+          colaborador_id?: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reembolsos_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transacoes_log: {
+        Row: {
+          created_at: string
+          fechamento_id: string
+          id: string
+          resposta_api: Json | null
+          status: string
+          tipo: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          fechamento_id: string
+          id?: string
+          resposta_api?: Json | null
+          status?: string
+          tipo?: string
+          valor?: number
+        }
+        Update: {
+          created_at?: string
+          fechamento_id?: string
+          id?: string
+          resposta_api?: Json | null
+          status?: string
+          tipo?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transacoes_log_fechamento_id_fkey"
+            columns: ["fechamento_id"]
+            isOneToOne: false
+            referencedRelation: "fechamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vales: {
+        Row: {
+          colaborador_id: string
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+          valor: number
+        }
+        Insert: {
+          colaborador_id: string
+          created_at?: string
+          data: string
+          descricao?: string | null
+          id?: string
+          valor?: number
+        }
+        Update: {
+          colaborador_id?: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vales_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin_or_gerente: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "gerente" | "visualizador"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +424,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "gerente", "visualizador"],
+    },
   },
 } as const

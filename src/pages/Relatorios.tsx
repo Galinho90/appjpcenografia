@@ -4,13 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { mockColaboradores, mockFechamentos } from "@/data/mock";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useColaboradores, useFechamentos } from "@/hooks/useSupabaseData";
 
 export default function Relatorios() {
-  const enriched = mockFechamentos.map((f) => ({
-    ...f,
-    colaborador: mockColaboradores.find((c) => c.id === f.colaborador_id),
-  }));
+  const { data: colaboradores = [] } = useColaboradores();
+  const { data: fechamentos = [], isLoading } = useFechamentos();
 
   return (
     <div className="space-y-6">
@@ -34,7 +33,7 @@ export default function Relatorios() {
                 <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  {mockColaboradores.map((c) => (
+                  {colaboradores.map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                   ))}
                 </SelectContent>
@@ -45,9 +44,11 @@ export default function Relatorios() {
               <Select>
                 <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1q-abr-2026">1ª Quinzena Abr/2026</SelectItem>
-                  <SelectItem value="2q-mar-2026">2ª Quinzena Mar/2026</SelectItem>
-                  <SelectItem value="1q-mar-2026">1ª Quinzena Mar/2026</SelectItem>
+                  {fechamentos.map((f) => (
+                    <SelectItem key={f.id} value={f.id}>
+                      {new Date(f.periodo_inicio).toLocaleDateString("pt-BR")} — {new Date(f.periodo_fim).toLocaleDateString("pt-BR")}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -61,35 +62,37 @@ export default function Relatorios() {
 
       <Card className="shadow-md">
         <CardHeader>
-          <CardTitle>Resumo por Colaborador — 1ª Quinzena Abr/2026</CardTitle>
+          <CardTitle>Resumo por Colaborador</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Colaborador</TableHead>
-                <TableHead>Função</TableHead>
-                <TableHead>Diárias</TableHead>
-                <TableHead>Vales</TableHead>
-                <TableHead>Reembolsos</TableHead>
-                <TableHead>Valor Final</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {enriched.map((f) => (
-                <TableRow key={f.id}>
-                  <TableCell className="font-medium">{f.colaborador?.nome}</TableCell>
-                  <TableCell>{f.colaborador?.funcao}</TableCell>
-                  <TableCell>R$ {f.total_diarias.toLocaleString("pt-BR")}</TableCell>
-                  <TableCell>R$ {f.total_vales.toLocaleString("pt-BR")}</TableCell>
-                  <TableCell>R$ {f.total_reembolsos.toLocaleString("pt-BR")}</TableCell>
-                  <TableCell className="font-bold">R$ {f.valor_final.toLocaleString("pt-BR")}</TableCell>
-                  <TableCell className="capitalize">{f.status}</TableCell>
+          {isLoading ? (
+            <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Colaborador</TableHead>
+                  <TableHead>Diárias</TableHead>
+                  <TableHead>Vales</TableHead>
+                  <TableHead>Reembolsos</TableHead>
+                  <TableHead>Valor Final</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {fechamentos.map((f) => (
+                  <TableRow key={f.id}>
+                    <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
+                    <TableCell>R$ {f.total_diarias.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell>R$ {f.total_vales.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell>R$ {f.total_reembolsos.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell className="font-bold">R$ {f.valor_final.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell className="capitalize">{f.status}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

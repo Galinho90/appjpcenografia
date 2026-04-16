@@ -11,6 +11,7 @@ import Vales from "./pages/Vales";
 import Reembolsos from "./pages/Reembolsos";
 import Fechamentos from "./pages/Fechamentos";
 import Relatorios from "./pages/Relatorios";
+import ExtratoDiarista from "./pages/ExtratoDiarista";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 

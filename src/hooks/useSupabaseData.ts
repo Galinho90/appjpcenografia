@@ -93,6 +93,17 @@ export function useCreateDiaria() {
   });
 }
 
+export function useUpdateDiaria() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string; colaborador_id: string; data: string; hora_entrada?: string; hora_saida?: string; valor: number; observacoes?: string }) => {
+      const { error } = await supabase.from("diarias").update(data).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["diarias"] }),
+  });
+}
+
 export function useDeleteDiaria() {
   const qc = useQueryClient();
   return useMutation({
@@ -131,6 +142,17 @@ export function useCreateVale() {
   return useMutation({
     mutationFn: async (data: { colaborador_id: string; data: string; valor: number; descricao?: string }) => {
       const { error } = await supabase.from("vales").insert(data);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["vales"] }),
+  });
+}
+
+export function useUpdateVale() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string; colaborador_id: string; data: string; valor: number; descricao?: string }) => {
+      const { error } = await supabase.from("vales").update(data).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["vales"] }),

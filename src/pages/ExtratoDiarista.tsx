@@ -11,6 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   useColaboradores, useDiarias, useVales, useReembolsos, useFechamentos,
   useCreateDiaria, useCreateVale, useCreateReembolso,
@@ -178,6 +180,72 @@ export default function ExtratoDiarista() {
 
   const salvando = createDiaria.isPending || createVale.isPending || createReemb.isPending;
 
+  const gerarPDF = (q: { inicio: Date; fim: Date }, labelPeriodo: string) => {
+    if (!colaboradorId) {
+      toast({ title: "Selecione um diarista", variant: "destructive" });
+      return;
+    }
+    const ini = toISO(q.inicio);
+    const fim = toISO(q.fim);
+    const inRange = (d: string) => d >= ini && d <= fim;
+
+    const ds = diarias.filter((d: any) => d.colaborador_id === colaboradorId && inRange(d.data));
+    const vs = vales.filter((v: any) => v.colaborador_id === colaboradorId && inRange(v.data));
+    const rs = reembolsos.filter((r: any) => r.colaborador_id === colaboradorId && inRange(r.data));
+
+    const linhas: [string, string, string, string][] = [
+      ...ds.map((d: any) => [
+        new Date(d.data).toLocaleDateString("pt-BR"),
+        "Diária",
+        `${d.horario_entrada || "—"} / ${d.horario_saida || "—"}`,
+        fmtBRL(Number(d.valor)),
+      ] as [string, string, string, string]),
+      ...vs.map((v: any) => [
+        new Date(v.data).toLocaleDateString("pt-BR"),
+        "Vale",
+        v.descricao || "",
+        `- ${fmtBRL(Math.abs(Number(v.valor)))}`,
+      ] as [string, string, string, string]),
+      ...rs.map((r: any) => [
+        new Date(r.data).toLocaleDateString("pt-BR"),
+        "Reembolso",
+        r.descricao || "",
+        fmtBRL(Number(r.valor)),
+      ] as [string, string, string, string]),
+    ].sort((a, b) => a[0].split("/").reverse().join("").localeCompare(b[0].split("/").reverse().join("")));
+
+    const totalDiarias = ds.reduce((s: number, d: any) => s + Number(d.valor), 0);
+    const totalVales = vs.reduce((s: number, v: any) => s + Number(v.valor), 0);
+    const totalReemb = rs.reduce((s: number, r: any) => s + Number(r.valor), 0);
+    const total = totalDiarias - totalVales + totalReemb;
+
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Extrato do Diarista", 14, 18);
+    doc.setFontSize(11);
+    doc.text(`Diarista: ${colaboradorNome ?? "—"}`, 14, 28);
+    doc.text(`${labelPeriodo}: ${fmtDate(q.inicio)} a ${fmtDate(q.fim)}`, 14, 35);
+
+    autoTable(doc, {
+      head: [["Data", "Tipo", "Detalhe", "Valor"]],
+      body: linhas.length ? linhas : [["—", "—", "Sem lançamentos", "—"]],
+      startY: 42,
+      headStyles: { fillColor: [124, 58, 237] },
+      styles: { fontSize: 10 },
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY + 8;
+    doc.setFontSize(11);
+    doc.text(`Total Diárias: ${fmtBRL(totalDiarias)}`, 14, finalY);
+    doc.text(`Total Vales: -${fmtBRL(totalVales)}`, 14, finalY + 6);
+    doc.text(`Total Reembolsos: ${fmtBRL(totalReemb)}`, 14, finalY + 12);
+    doc.setFontSize(13);
+    doc.text(`TOTAL A PAGAR: ${fmtBRL(total)}`, 14, finalY + 22);
+
+    const slug = (colaboradorNome ?? "diarista").toLowerCase().replace(/\s+/g, "-");
+    doc.save(`extrato-${slug}-${ini}-${fim}.pdf`);
+  };
+
   return (
     <div className="space-y-6">
       <Card className="shadow-md">
@@ -284,7 +352,12 @@ export default function ExtratoDiarista() {
                     <span className={cn("inline-flex h-9 w-9 items-center justify-center rounded-md", active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
                       <CheckCircle2 className="h-4 w-4" />
                     </span>
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                    <span
+                      role="button"
+                      title="Baixar PDF do extrato"
+                      onClick={(e) => { e.stopPropagation(); gerarPDF(opt.q, opt.label); }}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground hover:bg-muted/70 cursor-pointer"
+                    >
                       <FileSpreadsheet className="h-4 w-4" />
                     </span>
                   </div>

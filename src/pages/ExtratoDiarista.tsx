@@ -53,12 +53,19 @@ export default function ExtratoDiarista() {
 
   const [colaboradorId, setColaboradorId] = useState<string>("");
 
-  const quinzenaAtual = useMemo(() => getQuinzena(new Date()), []);
-  const quinzenaAnterior = useMemo(() => shiftQuinzena(quinzenaAtual, -1), [quinzenaAtual]);
-  const [periodo, setPeriodo] = useState<"anterior" | "atual">("atual");
-  const selecionada = periodo === "atual" ? quinzenaAtual : quinzenaAnterior;
+  const [refDate, setRefDate] = useState<Date>(new Date());
+  const selecionada = useMemo(() => getQuinzena(refDate), [refDate]);
+  const hojeQuinzena = useMemo(() => getQuinzena(new Date()), []);
+  const isQuinzenaAtual =
+    selecionada.inicio.getTime() === hojeQuinzena.inicio.getTime() &&
+    selecionada.fim.getTime() === hojeQuinzena.fim.getTime();
   const inicioISO = toISO(selecionada.inicio);
   const fimISO = toISO(selecionada.fim);
+
+  const shiftRef = (dir: -1 | 1) => {
+    const next = shiftQuinzena(selecionada, dir);
+    setRefDate(next.inicio);
+  };
 
   // Filtra lançamentos do diarista no período
   const lancamentosFiltrados = useMemo(() => {

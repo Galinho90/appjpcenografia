@@ -17,7 +17,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <span className="text-sm font-medium text-foreground hidden sm:block">Admin</span>
             </div>
           </header>
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="flex-1 p-3 sm:p-6 overflow-auto overflow-x-hidden">
             {children}
           </main>
         </div>

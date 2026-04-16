@@ -122,12 +122,19 @@ export default function Colaboradores() {
 
   const handleSave = async () => {
     try {
+      const { senha, ...rest } = form;
+      const payload: any = { ...rest };
+      if (senha && senha.trim()) {
+        // hash leve no client (placeholder). Para produção, usar edge function com bcrypt.
+        payload.senha_hash = btoa(unescape(encodeURIComponent(senha)));
+      }
+      if (!payload.data_nascimento) payload.data_nascimento = null;
       if (mode === "edit" && editingId) {
-        await updateMutation.mutateAsync({ id: editingId, ...form });
-        toast({ title: "Colaborador atualizado!" });
+        await updateMutation.mutateAsync({ id: editingId, ...payload });
+        toast({ title: "Diarista atualizado!" });
       } else {
-        await createMutation.mutateAsync(form);
-        toast({ title: "Colaborador cadastrado com sucesso!" });
+        await createMutation.mutateAsync(payload);
+        toast({ title: "Diarista cadastrado com sucesso!" });
       }
       setDialogOpen(false);
       setForm(emptyForm);

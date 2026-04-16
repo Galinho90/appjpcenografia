@@ -7,6 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -318,6 +321,12 @@ export default function ExtratoDiarista() {
             <Label>Diarista</Label>
             {loadingCol ? (
               <Skeleton className="h-10 w-full" />
+            ) : colaboradores.length > 5 ? (
+              <ColaboradorCombobox
+                colaboradores={colaboradores}
+                value={colaboradorId}
+                onChange={setColaboradorId}
+              />
             ) : (
               <Select value={colaboradorId} onValueChange={setColaboradorId}>
                 <SelectTrigger>
@@ -459,3 +468,55 @@ export default function ExtratoDiarista() {
     </div>
   );
 }
+
+function ColaboradorCombobox({
+  colaboradores,
+  value,
+  onChange,
+}: {
+  colaboradores: { id: string; nome: string }[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selecionado = colaboradores.find((c) => c.id === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between font-normal"
+        >
+          {selecionado ? selecionado.nome : "Selecione um diarista..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Buscar diarista..." />
+          <CommandList>
+            <CommandEmpty>Nenhum diarista encontrado.</CommandEmpty>
+            <CommandGroup>
+              {colaboradores.map((c) => (
+                <CommandItem
+                  key={c.id}
+                  value={c.nome}
+                  onSelect={() => {
+                    onChange(c.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", value === c.id ? "opacity-100" : "opacity-0")} />
+                  {c.nome}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+

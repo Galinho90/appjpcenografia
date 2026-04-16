@@ -309,41 +309,6 @@ export type Database = {
           },
         ]
       }
-      reembolsos: {
-        Row: {
-          colaborador_id: string
-          created_at: string
-          data: string
-          descricao: string | null
-          id: string
-          valor: number
-        }
-        Insert: {
-          colaborador_id: string
-          created_at?: string
-          data: string
-          descricao?: string | null
-          id?: string
-          valor?: number
-        }
-        Update: {
-          colaborador_id?: string
-          created_at?: string
-          data?: string
-          descricao?: string | null
-          id?: string
-          valor?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reembolsos_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "colaboradores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       transacoes_log: {
         Row: {
           created_at: string
@@ -402,41 +367,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      vales: {
-        Row: {
-          colaborador_id: string
-          created_at: string
-          data: string
-          descricao: string | null
-          id: string
-          valor: number
-        }
-        Insert: {
-          colaborador_id: string
-          created_at?: string
-          data: string
-          descricao?: string | null
-          id?: string
-          valor?: number
-        }
-        Update: {
-          colaborador_id?: string
-          created_at?: string
-          data?: string
-          descricao?: string | null
-          id?: string
-          valor?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vales_colaborador_id_fkey"
-            columns: ["colaborador_id"]
-            isOneToOne: false
-            referencedRelation: "colaboradores"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {

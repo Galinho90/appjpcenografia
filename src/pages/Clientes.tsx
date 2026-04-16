@@ -144,29 +144,29 @@ export default function Clientes() {
   return (
     <div className="space-y-6">
       <Card className="shadow-sm">
-        <CardContent className="p-6 flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Building2 className="h-6 w-6 text-primary" /> Lista de Clientes
+        <CardContent className="p-4 sm:p-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+              <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary shrink-0" /> Lista de Clientes
             </h1>
             <p className="text-sm text-muted-foreground">Home › Lista de Clientes</p>
           </div>
-          <Button onClick={openCreate} className="bg-primary hover:bg-primary/90">
+          <Button onClick={openCreate} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" /> Novo Cliente
           </Button>
         </CardContent>
       </Card>
 
-      <Card className="shadow-md">
-        <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
+      <Card className="shadow-md overflow-hidden">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Clientes</CardTitle>
-          <div className="relative">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Pesquisar"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 w-64"
+              className="pl-8 w-full"
             />
           </div>
         </CardHeader>
@@ -175,62 +175,103 @@ export default function Clientes() {
             <div className="space-y-2">
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10" />)}
             </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">Nenhum cliente encontrado.</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>CNPJ</TableHead>
-                  <TableHead>Cidade/UF</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile: cards */}
+              <div className="space-y-3 md:hidden">
                 {filtered.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell className="font-medium uppercase">
-                      {c.razao_social}
-                      {c.nome_fantasia && (
-                        <p className="text-xs text-muted-foreground normal-case">{c.nome_fantasia}</p>
-                      )}
-                    </TableCell>
-                    <TableCell>{c.cnpj}</TableCell>
-                    <TableCell>{c.cidade ? `${c.cidade}/${c.uf}` : "—"}</TableCell>
-                    <TableCell>
-                      <Button
-                        size="sm"
-                        onClick={() => handleToggleAtivo(c)}
-                        className={
-                          c.ativo
-                            ? "bg-success text-success-foreground hover:bg-success/90 h-7 px-3"
-                            : "bg-destructive text-destructive-foreground hover:bg-destructive/90 h-7 px-3"
-                        }
-                      >
-                        {c.ativo ? "ATIVO" : "INATIVO"}
-                      </Button>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1.5">
-                        <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                  <Card key={c.id} className="border shadow-sm">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium uppercase break-words">{c.razao_social}</p>
+                          {c.nome_fantasia && (
+                            <p className="text-xs text-muted-foreground break-words">{c.nome_fantasia}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">{c.cnpj}</p>
+                          <p className="text-xs text-muted-foreground">{c.cidade ? `${c.cidade}/${c.uf}` : "—"}</p>
+                        </div>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                        <Button
+                          size="sm"
+                          onClick={() => handleToggleAtivo(c)}
+                          className={
+                            c.ativo
+                              ? "bg-success text-success-foreground hover:bg-success/90 h-7 px-3"
+                              : "bg-destructive text-destructive-foreground hover:bg-destructive/90 h-7 px-3"
+                          }
+                        >
+                          {c.ativo ? "ATIVO" : "INATIVO"}
+                        </Button>
+                        <div className="flex gap-1.5">
+                          <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-                {filtered.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      Nenhum cliente encontrado.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop: table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>CNPJ</TableHead>
+                      <TableHead>Cidade/UF</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ação</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((c) => (
+                      <TableRow key={c.id}>
+                        <TableCell className="font-medium uppercase">
+                          {c.razao_social}
+                          {c.nome_fantasia && (
+                            <p className="text-xs text-muted-foreground normal-case">{c.nome_fantasia}</p>
+                          )}
+                        </TableCell>
+                        <TableCell>{c.cnpj}</TableCell>
+                        <TableCell>{c.cidade ? `${c.cidade}/${c.uf}` : "—"}</TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            onClick={() => handleToggleAtivo(c)}
+                            className={
+                              c.ativo
+                                ? "bg-success text-success-foreground hover:bg-success/90 h-7 px-3"
+                                : "bg-destructive text-destructive-foreground hover:bg-destructive/90 h-7 px-3"
+                            }
+                          >
+                            {c.ativo ? "ATIVO" : "INATIVO"}
+                          </Button>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1.5">
+                            <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

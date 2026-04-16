@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, CalendarDays, FileBarChart, FileText,
-  Settings, Building2, Tags,
+  Settings, Building2, Tags, Wallet, Receipt,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -16,6 +16,8 @@ const menuItems = [
   { title: "Diárias", url: "/diarias", icon: CalendarDays },
   { title: "Extrato do Diarista", url: "/extrato", icon: FileText },
   { title: "Diaristas", url: "/colaboradores", icon: Users },
+  { title: "Vales", url: "/vales", icon: Wallet },
+  { title: "Reembolsos", url: "/reembolsos", icon: Receipt },
   { title: "Clientes", url: "/clientes", icon: Building2 },
   { title: "Categorias", url: "/categorias", icon: Tags },
   { title: "Relatórios", url: "/relatorios", icon: FileBarChart },

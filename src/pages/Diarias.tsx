@@ -131,10 +131,35 @@ export default function Diarias() {
       </div>
 
       <Card className="shadow-md">
-        <CardHeader>
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+        <CardHeader className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input placeholder="Buscar nome, data, obs..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+            </div>
+            <Select value={filtroColaborador} onValueChange={setFiltroColaborador}>
+              <SelectTrigger><SelectValue placeholder="Colaborador" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos colaboradores</SelectItem>
+                {colaboradores.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">De</Label>
+              <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Até</Label>
+              <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {filtered.length} {filtered.length === 1 ? "lançamento encontrado" : "lançamentos encontrados"}
+            </p>
+            <Button variant="ghost" size="sm" onClick={limparFiltros}>Limpar filtros</Button>
           </div>
         </CardHeader>
         <CardContent>

@@ -2,6 +2,121 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Colaborador, Diaria, Vale, Reembolso, Fechamento, Cliente } from "@/types";
 
+export type Categoria = {
+  id: string;
+  descricao: string;
+  tipo: "C" | "D";
+  ativo: boolean;
+  created_at?: string;
+};
+
+export type Lancamento = {
+  id: string;
+  colaborador_id: string;
+  categoria_id: string;
+  data: string;
+  valor: number;
+  hora_entrada?: string | null;
+  hora_saida?: string | null;
+  descricao?: string | null;
+  categoria?: Categoria;
+  colaborador?: { id: string; nome: string };
+};
+
+// ── Categorias ──
+export function useCategorias() {
+  return useQuery({
+    queryKey: ["categorias"],
+    queryFn: async (): Promise<Categoria[]> => {
+      const { data, error } = await supabase.from("categorias").select("*").order("descricao");
+      if (error) throw error;
+      return (data ?? []) as Categoria[];
+    },
+  });
+}
+
+export function useCreateCategoria() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { descricao: string; tipo: "C" | "D"; ativo?: boolean }) => {
+      const { error } = await supabase.from("categorias").insert(data);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["categorias"] }),
+  });
+}
+
+export function useUpdateCategoria() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: Partial<Categoria> & { id: string }) => {
+      const { error } = await supabase.from("categorias").update(data).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["categorias"] }),
+  });
+}
+
+export function useDeleteCategoria() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("categorias").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["categorias"] }),
+  });
+}
+
+// ── Lançamentos ──
+export function useLancamentos() {
+  return useQuery({
+    queryKey: ["lancamentos"],
+    queryFn: async (): Promise<Lancamento[]> => {
+      const { data, error } = await supabase
+        .from("lancamentos")
+        .select("*, categoria:categorias(*), colaborador:colaboradores(id, nome)")
+        .order("data", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map((l: any) => ({ ...l, valor: Number(l.valor) })) as Lancamento[];
+    },
+  });
+}
+
+export function useCreateLancamento() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<Lancamento, "id" | "categoria" | "colaborador">) => {
+      const { error } = await supabase.from("lancamentos").insert(data);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lancamentos"] }),
+  });
+}
+
+export function useUpdateLancamento() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: Partial<Lancamento> & { id: string }) => {
+      const { error } = await supabase.from("lancamentos").update(data as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lancamentos"] }),
+  });
+}
+
+export function useDeleteLancamento() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("lancamentos").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lancamentos"] }),
+  });
+}
+
+
 // ── Colaboradores ──
 export function useColaboradores() {
   return useQuery({

@@ -13,7 +13,7 @@ import logoJpEventos from "@/assets/logo-jp-eventos.png";
 
 const menuItems = [
   { title: "Home", url: "/", icon: LayoutDashboard },
-  { title: "Diárias", url: "/diarias", icon: CalendarDays },
+  { title: "Lançamentos", url: "/diarias", icon: CalendarDays },
   { title: "Vales", url: "/vales", icon: Wallet },
   { title: "Reembolsos", url: "/reembolsos", icon: Receipt },
   { title: "Extrato do Diarista", url: "/extrato", icon: FileText },

@@ -203,6 +203,17 @@ export function useCreateReembolso() {
   });
 }
 
+export function useUpdateReembolso() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string; colaborador_id: string; data: string; valor: number; descricao?: string }) => {
+      const { error } = await supabase.from("reembolsos").update(data).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["reembolsos"] }),
+  });
+}
+
 export function useDeleteReembolso() {
   const qc = useQueryClient();
   return useMutation({

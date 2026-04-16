@@ -23,9 +23,15 @@ export type Database = {
           conta: string | null
           cpf: string
           created_at: string
+          data_nascimento: string | null
+          email: string | null
+          foto_url: string | null
           funcao: string
           id: string
           nome: string
+          pix: string | null
+          rg: string | null
+          senha_hash: string | null
           telefone: string | null
           updated_at: string
           valor_diaria_padrao: number
@@ -38,9 +44,15 @@ export type Database = {
           conta?: string | null
           cpf: string
           created_at?: string
+          data_nascimento?: string | null
+          email?: string | null
+          foto_url?: string | null
           funcao?: string
           id?: string
           nome: string
+          pix?: string | null
+          rg?: string | null
+          senha_hash?: string | null
           telefone?: string | null
           updated_at?: string
           valor_diaria_padrao?: number
@@ -53,9 +65,15 @@ export type Database = {
           conta?: string | null
           cpf?: string
           created_at?: string
+          data_nascimento?: string | null
+          email?: string | null
+          foto_url?: string | null
           funcao?: string
           id?: string
           nome?: string
+          pix?: string | null
+          rg?: string | null
+          senha_hash?: string | null
           telefone?: string | null
           updated_at?: string
           valor_diaria_padrao?: number

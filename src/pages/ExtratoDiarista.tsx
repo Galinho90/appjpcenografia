@@ -468,3 +468,55 @@ export default function ExtratoDiarista() {
     </div>
   );
 }
+
+function ColaboradorCombobox({
+  colaboradores,
+  value,
+  onChange,
+}: {
+  colaboradores: { id: string; nome: string }[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selecionado = colaboradores.find((c) => c.id === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between font-normal"
+        >
+          {selecionado ? selecionado.nome : "Selecione um diarista..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Buscar diarista..." />
+          <CommandList>
+            <CommandEmpty>Nenhum diarista encontrado.</CommandEmpty>
+            <CommandGroup>
+              {colaboradores.map((c) => (
+                <CommandItem
+                  key={c.id}
+                  value={c.nome}
+                  onSelect={() => {
+                    onChange(c.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", value === c.id ? "opacity-100" : "opacity-0")} />
+                  {c.nome}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+

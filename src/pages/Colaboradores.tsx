@@ -43,11 +43,32 @@ export default function Colaboradores() {
 
   const [form, setForm] = useState(emptyForm);
 
-  const filtered = colaboradores.filter(
-    (c) =>
-      c.nome.toLowerCase().includes(search.toLowerCase()) ||
-      c.funcao.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = colaboradores.filter((c) => {
+    if (statusFilter === "ativos" && !c.ativo) return false;
+    if (statusFilter === "inativos" && c.ativo) return false;
+    const q = search.toLowerCase();
+    return (
+      c.nome.toLowerCase().includes(q) ||
+      c.funcao.toLowerCase().includes(q) ||
+      c.cpf.toLowerCase().includes(q) ||
+      (c.telefone ?? "").toLowerCase().includes(q)
+    );
+  });
+
+  const handleExportExcel = () => {
+    const rows = filtered.map((c) => ({
+      Nome: c.nome,
+      Celular: c.telefone ?? "",
+      CPF: c.cpf,
+      Função: c.funcao,
+      "Valor Diária": Number(c.valor_diaria_padrao),
+      Status: c.ativo ? "Ativo" : "Inativo",
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Diaristas");
+    XLSX.writeFile(wb, `diaristas-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
 
   const openCreate = () => {
     setMode("create");

@@ -50,7 +50,27 @@ export default function Colaboradores() {
   const updateMutation = useUpdateColaborador();
   const deleteMutation = useDeleteColaborador();
 
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<any>(emptyForm);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFotoUpload = async (file: File) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("diaristas-fotos").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("diaristas-fotos").getPublicUrl(path);
+      setForm({ ...form, foto_url: data.publicUrl });
+      toast({ title: "Foto enviada!" });
+    } catch (e: any) {
+      toast({ title: "Erro ao enviar foto", description: e.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const filtered = colaboradores.filter((c) => {
     if (statusFilter === "ativos" && !c.ativo) return false;

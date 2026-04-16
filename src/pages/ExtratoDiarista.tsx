@@ -2,11 +2,19 @@ import { useMemo, useState } from "react";
 import { FileText, CheckCircle2, FileSpreadsheet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useColaboradores, useDiarias, useVales, useReembolsos, useFechamentos } from "@/hooks/useSupabaseData";
+import { useToast } from "@/hooks/use-toast";
+import {
+  useColaboradores, useDiarias, useVales, useReembolsos, useFechamentos,
+  useCreateDiaria, useCreateVale, useCreateReembolso,
+} from "@/hooks/useSupabaseData";
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();
@@ -100,6 +108,7 @@ export default function ExtratoDiarista() {
   const aPagar = Math.max(totalLancamentos - totalPago, 0);
 
   const colaboradorNome = colaboradores.find((c) => c.id === colaboradorId)?.nome;
+  const colaboradorSel = colaboradores.find((c) => c.id === colaboradorId);
 
   const tipoLabel: Record<Lancamento["tipo"], string> = {
     diaria: "DIÁRIA",
@@ -107,16 +116,122 @@ export default function ExtratoDiarista() {
     reembolso: "REEMBOLSO",
   };
 
+  // ── Modal "Novo Lançamento" ──
+  const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [tab, setTab] = useState<"diaria" | "vale" | "reembolso">("diaria");
+  const hoje = toISO(new Date());
+  const [diariaForm, setDiariaForm] = useState({ data: hoje, hora_entrada: "", hora_saida: "", valor: 0, observacoes: "" });
+  const [valeForm, setValeForm] = useState({ data: hoje, valor: 0, descricao: "" });
+  const [reembForm, setReembForm] = useState({ data: hoje, valor: 0, descricao: "" });
+
+  const createDiaria = useCreateDiaria();
+  const createVale = useCreateVale();
+  const createReemb = useCreateReembolso();
+
+  const abrirModal = () => {
+    if (!colaboradorId) {
+      toast({ title: "Selecione um diarista", description: "Escolha um diarista antes de lançar.", variant: "destructive" });
+      return;
+    }
+    setDiariaForm({ data: hoje, hora_entrada: "", hora_saida: "", valor: colaboradorSel?.valor_diaria_padrao ?? 0, observacoes: "" });
+    setValeForm({ data: hoje, valor: 0, descricao: "" });
+    setReembForm({ data: hoje, valor: 0, descricao: "" });
+    setTab("diaria");
+    setDialogOpen(true);
+  };
+
+  const handleSalvar = async () => {
+    try {
+      if (tab === "diaria") {
+        await createDiaria.mutateAsync({
+          colaborador_id: colaboradorId,
+          data: diariaForm.data,
+          hora_entrada: diariaForm.hora_entrada || undefined,
+          hora_saida: diariaForm.hora_saida || undefined,
+          valor: Number(diariaForm.valor),
+          observacoes: diariaForm.observacoes || undefined,
+        });
+        toast({ title: "Diária registrada!" });
+      } else if (tab === "vale") {
+        await createVale.mutateAsync({
+          colaborador_id: colaboradorId,
+          data: valeForm.data,
+          valor: Number(valeForm.valor),
+          descricao: valeForm.descricao || undefined,
+        });
+        toast({ title: "Vale registrado!" });
+      } else {
+        await createReemb.mutateAsync({
+          colaborador_id: colaboradorId,
+          data: reembForm.data,
+          valor: Number(reembForm.valor),
+          descricao: reembForm.descricao || undefined,
+        });
+        toast({ title: "Reembolso registrado!" });
+      }
+      setDialogOpen(false);
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const salvando = createDiaria.isPending || createVale.isPending || createReemb.isPending;
+
   return (
     <div className="space-y-6">
       <Card className="shadow-md">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl">Extrato do Diarista</CardTitle>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={abrirModal}>
             <FileText className="h-4 w-4" /> Novo Lançamento
           </Button>
         </CardHeader>
       </Card>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Novo Lançamento {colaboradorNome ? `— ${colaboradorNome}` : ""}</DialogTitle>
+          </DialogHeader>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="mt-2">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="diaria">Diária</TabsTrigger>
+              <TabsTrigger value="vale">Vale</TabsTrigger>
+              <TabsTrigger value="reembolso">Reembolso</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="diaria" className="space-y-4 pt-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-2"><Label>Data</Label><Input type="date" value={diariaForm.data} onChange={(e) => setDiariaForm({ ...diariaForm, data: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Entrada</Label><Input type="time" value={diariaForm.hora_entrada} onChange={(e) => setDiariaForm({ ...diariaForm, hora_entrada: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Saída</Label><Input type="time" value={diariaForm.hora_saida} onChange={(e) => setDiariaForm({ ...diariaForm, hora_saida: e.target.value })} /></div>
+              </div>
+              <div className="space-y-2"><Label>Valor (R$)</Label><Input type="number" value={diariaForm.valor || ""} onChange={(e) => setDiariaForm({ ...diariaForm, valor: Number(e.target.value) })} /></div>
+              <div className="space-y-2"><Label>Observações</Label><Textarea value={diariaForm.observacoes} onChange={(e) => setDiariaForm({ ...diariaForm, observacoes: e.target.value })} placeholder="Opcional..." /></div>
+            </TabsContent>
+
+            <TabsContent value="vale" className="space-y-4 pt-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2"><Label>Data</Label><Input type="date" value={valeForm.data} onChange={(e) => setValeForm({ ...valeForm, data: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Valor (R$)</Label><Input type="number" value={valeForm.valor || ""} onChange={(e) => setValeForm({ ...valeForm, valor: Number(e.target.value) })} /></div>
+              </div>
+              <div className="space-y-2"><Label>Descrição</Label><Input value={valeForm.descricao} onChange={(e) => setValeForm({ ...valeForm, descricao: e.target.value })} placeholder="Motivo do vale..." /></div>
+            </TabsContent>
+
+            <TabsContent value="reembolso" className="space-y-4 pt-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2"><Label>Data</Label><Input type="date" value={reembForm.data} onChange={(e) => setReembForm({ ...reembForm, data: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Valor (R$)</Label><Input type="number" value={reembForm.valor || ""} onChange={(e) => setReembForm({ ...reembForm, valor: Number(e.target.value) })} /></div>
+              </div>
+              <div className="space-y-2"><Label>Descrição</Label><Input value={reembForm.descricao} onChange={(e) => setReembForm({ ...reembForm, descricao: e.target.value })} placeholder="Descrição do reembolso..." /></div>
+            </TabsContent>
+          </Tabs>
+          <Button className="w-full mt-2" onClick={handleSalvar} disabled={salvando}>
+            {salvando ? "Salvando..." : "Salvar Lançamento"}
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       <Card className="shadow-md">
         <CardHeader>

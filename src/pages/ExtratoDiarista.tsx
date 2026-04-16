@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FileText, CheckCircle2, FileSpreadsheet } from "lucide-react";
+import { FileText, FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,12 +53,19 @@ export default function ExtratoDiarista() {
 
   const [colaboradorId, setColaboradorId] = useState<string>("");
 
-  const quinzenaAtual = useMemo(() => getQuinzena(new Date()), []);
-  const quinzenaAnterior = useMemo(() => shiftQuinzena(quinzenaAtual, -1), [quinzenaAtual]);
-  const [periodo, setPeriodo] = useState<"anterior" | "atual">("atual");
-  const selecionada = periodo === "atual" ? quinzenaAtual : quinzenaAnterior;
+  const [refDate, setRefDate] = useState<Date>(new Date());
+  const selecionada = useMemo(() => getQuinzena(refDate), [refDate]);
+  const hojeQuinzena = useMemo(() => getQuinzena(new Date()), []);
+  const isQuinzenaAtual =
+    selecionada.inicio.getTime() === hojeQuinzena.inicio.getTime() &&
+    selecionada.fim.getTime() === hojeQuinzena.fim.getTime();
   const inicioISO = toISO(selecionada.inicio);
   const fimISO = toISO(selecionada.fim);
+
+  const shiftRef = (dir: -1 | 1) => {
+    const next = shiftQuinzena(selecionada, dir);
+    setRefDate(next.inicio);
+  };
 
   // Filtra lançamentos do diarista no período
   const lancamentosFiltrados = useMemo(() => {
@@ -290,42 +297,35 @@ export default function ExtratoDiarista() {
             )}
           </div>
 
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
-            {[
-              { key: "anterior" as const, label: "Quinzena Anterior", q: quinzenaAnterior },
-              { key: "atual" as const, label: "Quinzena Atual", q: quinzenaAtual },
-            ].map(opt => {
-              const active = periodo === opt.key;
-              return (
-                <button
-                  key={opt.key}
-                  type="button"
-                  onClick={() => setPeriodo(opt.key)}
-                  className={cn(
-                    "rounded-lg border-2 p-5 text-center transition-all",
-                    active ? "border-primary bg-primary/5 ring-2 ring-primary/30" : "border-border bg-card hover:border-primary/40",
-                  )}
-                >
-                  <p className="font-semibold text-foreground">{opt.label}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {fmtDate(opt.q.inicio)} a {fmtDate(opt.q.fim)}
+          <div className="rounded-lg border-2 border-border bg-card p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" onClick={() => shiftRef(-1)} aria-label="Quinzena anterior">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="px-2 text-center flex-1 sm:min-w-[200px]">
+                  <p className="text-xs text-muted-foreground">Quinzena</p>
+                  <p className="text-sm font-semibold whitespace-nowrap">
+                    {fmtDate(selecionada.inicio)} — {fmtDate(selecionada.fim)}
                   </p>
-                  <div className="mt-3 flex items-center justify-center gap-2">
-                    <span className={cn("inline-flex h-9 w-9 items-center justify-center rounded-md", active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
-                      <CheckCircle2 className="h-4 w-4" />
-                    </span>
-                    <span
-                      role="button"
-                      title="Baixar PDF do extrato"
-                      onClick={(e) => { e.stopPropagation(); gerarPDF(opt.q, opt.label); }}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground hover:bg-muted/70 cursor-pointer"
-                    >
-                      <FileSpreadsheet className="h-4 w-4" />
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => shiftRef(1)} aria-label="Próxima quinzena">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                {!isQuinzenaAtual && (
+                  <Button variant="outline" size="sm" onClick={() => setRefDate(new Date())}>Hoje</Button>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => gerarPDF(selecionada, "Período")}
+              >
+                <FileSpreadsheet className="h-4 w-4" />
+                Baixar PDF
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

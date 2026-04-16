@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, Trash2, Pencil, Check, ChevronsUpDown } from "lucide-react";
+import { Plus, Search, Trash2, Pencil, Check, ChevronsUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,10 +34,33 @@ const emptyForm = {
   descricao: "",
 };
 
+function getQuinzena(ref: Date) {
+  const year = ref.getFullYear();
+  const month = ref.getMonth();
+  const isFirst = ref.getDate() <= 15;
+  const inicio = new Date(year, month, isFirst ? 1 : 16);
+  const fim = isFirst ? new Date(year, month, 15) : new Date(year, month + 1, 0);
+  return { inicio, fim, isFirst };
+}
+function shiftQuinzena(ref: Date, delta: number) {
+  const { inicio, isFirst } = getQuinzena(ref);
+  if (delta > 0) {
+    return isFirst
+      ? new Date(inicio.getFullYear(), inicio.getMonth(), 16)
+      : new Date(inicio.getFullYear(), inicio.getMonth() + 1, 1);
+  }
+  return isFirst
+    ? new Date(inicio.getFullYear(), inicio.getMonth() - 1, 16)
+    : new Date(inicio.getFullYear(), inicio.getMonth(), 1);
+}
+const fmtDate = (d: Date) => d.toLocaleDateString("pt-BR");
+const toISO = (d: Date) => d.toISOString().slice(0, 10);
+
 export default function Diarias() {
   const [search, setSearch] = useState("");
   const [filtroColaborador, setFiltroColaborador] = useState<string>("all");
   const [filtroCategoria, setFiltroCategoria] = useState<string>("all");
+  const [quinzenaRef, setQuinzenaRef] = useState<Date>(new Date());
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -46,6 +69,11 @@ export default function Diarias() {
   const [colabPopoverOpen, setColabPopoverOpen] = useState(false);
   const [catPopoverOpen, setCatPopoverOpen] = useState(false);
   const { toast } = useToast();
+
+  const { inicio: qInicio, fim: qFim } = useMemo(() => getQuinzena(quinzenaRef), [quinzenaRef]);
+  const qInicioISO = toISO(qInicio);
+  const qFimISO = toISO(qFim);
+  const isCurrentQuinzena = useMemo(() => toISO(getQuinzena(new Date()).inicio) === qInicioISO, [qInicioISO]);
 
   const { data: lancamentos = [], isLoading } = useLancamentos();
   const { data: colaboradores = [] } = useColaboradores();
@@ -101,8 +129,10 @@ export default function Diarias() {
     const matchesSearch = !term || nome.includes(term) || cat.includes(term) || l.data.includes(term) || desc.includes(term);
     const matchesColab = filtroColaborador === "all" || l.colaborador_id === filtroColaborador;
     const matchesCat = filtroCategoria === "all" || l.categoria_id === filtroCategoria;
-    const matchesInicio = !dataInicio || l.data >= dataInicio;
-    const matchesFim = !dataFim || l.data <= dataFim;
+    const inicioEfetivo = dataInicio || qInicioISO;
+    const fimEfetivo = dataFim || qFimISO;
+    const matchesInicio = l.data >= inicioEfetivo;
+    const matchesFim = l.data <= fimEfetivo;
     return matchesSearch && matchesColab && matchesCat && matchesInicio && matchesFim;
   });
 
@@ -112,6 +142,7 @@ export default function Diarias() {
     setFiltroCategoria("all");
     setDataInicio("");
     setDataFim("");
+    setQuinzenaRef(new Date());
   };
 
   const totalCreditos = filtered.filter((l) => l.categoria?.tipo === "C").reduce((s, l) => s + l.valor, 0);
@@ -158,7 +189,26 @@ export default function Diarias() {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Lançamentos</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Controle de lançamentos por categoria</p>
         </div>
-        <Button className="gap-2 w-full sm:w-auto" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Lançamento</Button>
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <Card className="shadow-md w-full sm:w-auto">
+            <CardContent className="flex items-center gap-2 p-2">
+              <Button variant="ghost" size="icon" onClick={() => setQuinzenaRef(shiftQuinzena(quinzenaRef, -1))} aria-label="Quinzena anterior">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="px-2 text-center flex-1 sm:min-w-[180px]">
+                <p className="text-xs text-muted-foreground">Quinzena</p>
+                <p className="text-sm font-semibold whitespace-nowrap">{fmtDate(qInicio)} — {fmtDate(qFim)}</p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setQuinzenaRef(shiftQuinzena(quinzenaRef, 1))} aria-label="Próxima quinzena">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              {!isCurrentQuinzena && (
+                <Button variant="outline" size="sm" onClick={() => setQuinzenaRef(new Date())}>Hoje</Button>
+              )}
+            </CardContent>
+          </Card>
+          <Button className="gap-2 w-full sm:w-auto" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Lançamento</Button>
+        </div>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setForm(emptyForm); } }}>

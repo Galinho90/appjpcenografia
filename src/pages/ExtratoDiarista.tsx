@@ -195,8 +195,8 @@ export default function ExtratoDiarista() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button className="gap-2" onClick={abrirModal}>
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+        <Button className="gap-2 w-full sm:w-auto" onClick={abrirModal}>
           <FileText className="h-4 w-4" /> Novo Lançamento
         </Button>
       </div>
@@ -221,7 +221,7 @@ export default function ExtratoDiarista() {
               </Select>
             </div>
 
-            <div className={cn("grid gap-3", isDiariaCategoria ? "grid-cols-3" : "grid-cols-2")}>
+            <div className={cn("grid gap-3", isDiariaCategoria ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2")}>
               <div className="space-y-2">
                 <Label>Data</Label>
                 <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
@@ -290,7 +290,7 @@ export default function ExtratoDiarista() {
             )}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
             {[
               { key: "anterior" as const, label: "Quinzena Anterior", q: quinzenaAnterior },
               { key: "atual" as const, label: "Quinzena Atual", q: quinzenaAtual },
@@ -330,22 +330,22 @@ export default function ExtratoDiarista() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-none overflow-hidden shadow-lg">
-          <div className="bg-accent p-6 text-center">
-            <p className="text-2xl font-bold text-accent-foreground">{fmtBRL(aPagar)}</p>
+          <div className="bg-accent p-4 sm:p-6 text-center">
+            <p className="text-xl sm:text-2xl font-bold text-accent-foreground">{fmtBRL(aPagar)}</p>
             <p className="text-sm text-accent-foreground/90">A Pagar</p>
           </div>
         </Card>
         <Card className="border-none overflow-hidden shadow-lg">
-          <div className="bg-primary p-6 text-center">
-            <p className="text-2xl font-bold text-primary-foreground">{fmtBRL(totalCreditos)}</p>
+          <div className="bg-primary p-4 sm:p-6 text-center">
+            <p className="text-xl sm:text-2xl font-bold text-primary-foreground">{fmtBRL(totalCreditos)}</p>
             <p className="text-sm text-primary-foreground/90">Créditos</p>
           </div>
         </Card>
         <Card className="border-none overflow-hidden shadow-lg">
-          <div className="bg-destructive p-6 text-center">
-            <p className="text-2xl font-bold text-destructive-foreground">{fmtBRL(totalPago)}</p>
+          <div className="bg-destructive p-4 sm:p-6 text-center">
+            <p className="text-xl sm:text-2xl font-bold text-destructive-foreground">{fmtBRL(totalPago)}</p>
             <p className="text-sm text-destructive-foreground/90">Débitos / Pagos</p>
           </div>
         </Card>
@@ -375,12 +375,12 @@ export default function ExtratoDiarista() {
                 return (
                   <Card key={l.id} className={cn("border-l-4 shadow-sm hover:shadow-md transition-shadow", accent)}>
                     <CardContent className="p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0">
                           <p className="text-xs text-muted-foreground whitespace-nowrap">
                             {new Date(l.data).toLocaleDateString("pt-BR")}
                           </p>
-                          <p className="text-sm font-bold text-foreground whitespace-nowrap">
+                          <p className="text-sm font-bold text-foreground break-words">
                             {l.categoria?.descricao ?? "—"}
                           </p>
                         </div>

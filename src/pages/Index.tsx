@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useColaboradores, useDiarias, useFechamentos } from "@/hooks/useSupabaseData";
+import { useColaboradores, useDiarias, useFechamentos, useLancamentos } from "@/hooks/useSupabaseData";
 
 // Compute the quinzena (1-15 or 16-end) for a given reference date
 function getQuinzena(ref: Date) {
@@ -40,22 +40,32 @@ export default function Dashboard() {
 
   const { data: colaboradores = [], isLoading: loadingC } = useColaboradores();
   const { data: diarias = [], isLoading: loadingD } = useDiarias();
+  const { data: lancamentos = [], isLoading: loadingL } = useLancamentos();
   const { data: fechamentos = [], isLoading: loadingF } = useFechamentos();
 
-  const isLoading = loadingC || loadingD || loadingF;
+  const isLoading = loadingC || loadingD || loadingL || loadingF;
 
   // Filter by quinzena
   const diariasQ = diarias.filter(d => d.data >= inicioISO && d.data <= fimISO);
+  const lancamentosQ = lancamentos.filter(l => l.data >= inicioISO && l.data <= fimISO);
   const fechamentosQ = fechamentos.filter(f => f.periodo_inicio === inicioISO);
 
-  const totalDiarias = diariasQ.reduce((s, d) => s + d.valor, 0);
+  // Saldo dos lançamentos: créditos somam, débitos subtraem
+  const totalCreditos = lancamentosQ
+    .filter(l => l.categoria?.tipo === "C")
+    .reduce((s, l) => s + l.valor, 0);
+  const totalDebitos = lancamentosQ
+    .filter(l => l.categoria?.tipo === "D")
+    .reduce((s, l) => s + l.valor, 0);
+  const saldoLancamentos = totalCreditos - totalDebitos;
 
-  const totalFechamentosPagosQ = fechamentosQ
+  // Pagamentos já realizados na quinzena (fechamentos pagos)
+  const totalPagoQ = fechamentosQ
     .filter(f => f.status === 'pago')
     .reduce((s, f) => s + Number(f.valor_final), 0);
-  const totalPagoQ = totalFechamentosPagosQ;
-  const totalAPagar = totalDiarias - totalFechamentosPagosQ;
-  const totalPendente = Math.max(totalAPagar, 0);
+
+  // Total pendente = tudo a pagar aos diaristas menos o que já foi pago
+  const totalPendente = Math.max(saldoLancamentos - totalPagoQ, 0);
 
   const fmtBRL = (n: number) =>
     n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -68,8 +78,8 @@ export default function Dashboard() {
       gradient: "from-primary to-primary/70",
     },
     {
-      title: "Diárias na Quinzena",
-      value: diariasQ.length,
+      title: "Lançamentos na Quinzena",
+      value: lancamentosQ.length,
       icon: CalendarDays,
       gradient: "from-secondary to-secondary/70",
     },
@@ -159,19 +169,23 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {totalDiarias === 0 ? (
+            {totalCreditos + totalDebitos === 0 ? (
               <p className="text-muted-foreground text-center py-10">Sem lançamentos nesta quinzena</p>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={[{
                   name: `${fmt(inicio)} — ${fmt(fim)}`,
-                  diarias: totalDiarias,
+                  creditos: totalCreditos,
+                  debitos: totalDebitos,
+                  saldo: saldoLancamentos,
                 }]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(250,15%,90%)" />
                   <XAxis dataKey="name" fontSize={12} />
                   <YAxis fontSize={12} />
                   <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`} contentStyle={{ borderRadius: '8px' }} />
-                  <Bar dataKey="diarias" name="Diárias" fill="hsl(263,70%,50%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="creditos" name="Créditos" fill="hsl(160,60%,45%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="debitos" name="Débitos" fill="hsl(0,70%,55%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="saldo" name="Saldo" fill="hsl(263,70%,50%)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}

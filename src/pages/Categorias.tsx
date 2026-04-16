@@ -95,83 +95,116 @@ export default function Categorias() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Categorias</h1>
-          <p className="text-muted-foreground">Categorias usadas nos lançamentos do extrato</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Categorias</h1>
+          <p className="text-sm text-muted-foreground">Categorias usadas nos lançamentos do extrato</p>
         </div>
-        <Button onClick={openCreate} className="gap-2">
+        <Button onClick={openCreate} className="gap-2 w-full sm:w-auto">
           <Plus className="h-4 w-4" /> Nova Categoria
         </Button>
       </div>
 
-      <Card className="shadow-md">
+      <Card className="shadow-md overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2 text-base">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <span className="flex items-center gap-2 text-base font-semibold">
               <Tags className="h-4 w-4 text-primary" /> Lista de Categorias
             </span>
-            <div className="relative">
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Pesquisar..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 w-64"
+                className="pl-8 w-full"
               />
             </div>
-          </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="space-y-2">
               {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
             </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">Nenhuma categoria encontrada</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                      Nenhuma categoria encontrada
-                    </TableCell>
-                  </TableRow>
-                ) : filtered.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell className="font-medium">{c.descricao}</TableCell>
-                    <TableCell>
-                      <Badge variant={c.tipo === "C" ? "default" : "secondary"}>
-                        {c.tipo === "C" ? "Crédito" : "Débito"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+            <>
+              {/* Mobile: cards */}
+              <div className="space-y-3 md:hidden">
+                {filtered.map((c) => (
+                  <Card key={c.id} className="border shadow-sm">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium break-words">{c.descricao}</p>
+                          <Badge variant={c.tipo === "C" ? "default" : "secondary"} className="mt-1">
+                            {c.tipo === "C" ? "Crédito" : "Débito"}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 pt-2 border-t">
                         <Switch checked={c.ativo} onCheckedChange={() => toggleAtivo(c)} />
                         <span className="text-xs text-muted-foreground">
                           {c.ativo ? "Ativo" : "Inativo"}
                         </span>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                    </CardContent>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop: table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Descrição</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((c) => (
+                      <TableRow key={c.id}>
+                        <TableCell className="font-medium">{c.descricao}</TableCell>
+                        <TableCell>
+                          <Badge variant={c.tipo === "C" ? "default" : "secondary"}>
+                            {c.tipo === "C" ? "Crédito" : "Débito"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Switch checked={c.ativo} onCheckedChange={() => toggleAtivo(c)} />
+                            <span className="text-xs text-muted-foreground">
+                              {c.ativo ? "Ativo" : "Inativo"}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

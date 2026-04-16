@@ -170,14 +170,14 @@ export default function Colaboradores() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Diaristas</h1>
-          <p className="text-muted-foreground">Gerencie seus diaristas</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Diaristas</h1>
+          <p className="text-sm text-muted-foreground">Gerencie seus diaristas</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> Novo Diarista</Button>
+            <Button className="gap-2 w-full sm:w-auto" onClick={openCreate}><Plus className="h-4 w-4" /> Novo Diarista</Button>
           </DialogTrigger>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -230,7 +230,7 @@ export default function Colaboradores() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>CPF</Label>
                   <Input disabled={readOnly} value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} placeholder="000.000.000-00" />
@@ -241,7 +241,7 @@ export default function Colaboradores() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Data de Nascimento</Label>
                   <Input disabled={readOnly} type="date" value={form.data_nascimento ?? ""} onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })} />
@@ -252,7 +252,7 @@ export default function Colaboradores() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Email</Label>
                   <Input disabled={readOnly} type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="diarista@email.com" />
@@ -285,7 +285,7 @@ export default function Colaboradores() {
                 <Input disabled={readOnly} value={form.funcao} onChange={(e) => setForm({ ...form, funcao: e.target.value })} placeholder="Montador, Eletricista..." />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Banco</Label>
                   <Input disabled={readOnly} value={form.banco} onChange={(e) => setForm({ ...form, banco: e.target.value })} placeholder="Inter" />
@@ -316,16 +316,16 @@ export default function Colaboradores() {
         </Dialog>
       </div>
 
-      <Card className="shadow-md">
+      <Card className="shadow-md overflow-hidden">
         <CardHeader>
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3">
-              <Button onClick={handleExportExcel} className="gap-2 bg-success hover:bg-success/90 text-success-foreground">
+              <Button onClick={handleExportExcel} className="gap-2 bg-success hover:bg-success/90 text-success-foreground w-full sm:w-auto">
                 <FileSpreadsheet className="h-4 w-4" /> Exportar para Excel
               </Button>
             </div>
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-sm text-muted-foreground">Mostrar:</span>
                 <RadioGroup
                   value={statusFilter}
@@ -356,65 +356,108 @@ export default function Colaboradores() {
         <CardContent>
           {isLoading ? (
             <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">Nenhum diarista encontrado.</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Celular</TableHead>
-                  <TableHead>CPF</TableHead>
-                  <TableHead>Função</TableHead>
-                  <TableHead className="text-right">Valor Diária</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile: cards */}
+              <div className="space-y-3 md:hidden">
                 {filtered.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell className="font-medium uppercase">{c.nome}</TableCell>
-                    <TableCell>{c.telefone}</TableCell>
-                    <TableCell>{c.cpf}</TableCell>
-                    <TableCell>{c.funcao}</TableCell>
-                    <TableCell className="text-right">{c.valor_diaria_padrao.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                    <TableCell>
-                      <Button
-                        size="sm"
-                        onClick={() => handleToggleAtivo(c)}
-                        className={
-                          c.ativo
-                            ? "bg-success text-success-foreground hover:bg-success/90 h-7 px-3"
-                            : "bg-muted text-muted-foreground hover:bg-muted/80 h-7 px-3"
-                        }
-                        title={c.ativo ? "Clique para inativar" : "Clique para ativar"}
-                      >
-                        {c.ativo ? "ATIVO" : "INATIVO"}
-                      </Button>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1.5">
-                        <Button variant="ghost" size="icon" className="bg-info text-info-foreground hover:bg-info/90 h-8 w-8" onClick={() => openView(c)} title="Visualizar">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                  <Card key={c.id} className="border shadow-sm">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="min-w-0">
+                        <p className="font-medium uppercase break-words">{c.nome}</p>
+                        <p className="text-xs text-muted-foreground">{c.funcao}</p>
+                        <p className="text-xs text-muted-foreground">CPF: {c.cpf}</p>
+                        {c.telefone && <p className="text-xs text-muted-foreground">Tel: {c.telefone}</p>}
+                        <p className="text-sm font-semibold mt-1">
+                          R$ {c.valor_diaria_padrao.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                        <Button
+                          size="sm"
+                          onClick={() => handleToggleAtivo(c)}
+                          className={
+                            c.ativo
+                              ? "bg-success text-success-foreground hover:bg-success/90 h-7 px-3"
+                              : "bg-muted text-muted-foreground hover:bg-muted/80 h-7 px-3"
+                          }
+                        >
+                          {c.ativo ? "ATIVO" : "INATIVO"}
+                        </Button>
+                        <div className="flex gap-1.5">
+                          <Button variant="ghost" size="icon" className="bg-info text-info-foreground hover:bg-info/90 h-8 w-8" onClick={() => openView(c)} title="Visualizar">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-                {filtered.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                      Nenhum diarista encontrado.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop: table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Celular</TableHead>
+                      <TableHead>CPF</TableHead>
+                      <TableHead>Função</TableHead>
+                      <TableHead className="text-right">Valor Diária</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ação</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((c) => (
+                      <TableRow key={c.id}>
+                        <TableCell className="font-medium uppercase">{c.nome}</TableCell>
+                        <TableCell>{c.telefone}</TableCell>
+                        <TableCell>{c.cpf}</TableCell>
+                        <TableCell>{c.funcao}</TableCell>
+                        <TableCell className="text-right">{c.valor_diaria_padrao.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            onClick={() => handleToggleAtivo(c)}
+                            className={
+                              c.ativo
+                                ? "bg-success text-success-foreground hover:bg-success/90 h-7 px-3"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80 h-7 px-3"
+                            }
+                            title={c.ativo ? "Clique para inativar" : "Clique para ativar"}
+                          >
+                            {c.ativo ? "ATIVO" : "INATIVO"}
+                          </Button>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1.5">
+                            <Button variant="ghost" size="icon" className="bg-info text-info-foreground hover:bg-info/90 h-8 w-8" onClick={() => openView(c)} title="Visualizar">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

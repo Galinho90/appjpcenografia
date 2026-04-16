@@ -277,7 +277,7 @@ export default function Diarias() {
         </Card>
       </div>
 
-      <Card className="shadow-md">
+      <Card className="shadow-md overflow-hidden">
         <CardHeader className="space-y-4">
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 items-end">
             <div className="space-y-1">

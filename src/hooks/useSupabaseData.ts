@@ -255,3 +255,51 @@ export function useFechamentos() {
     },
   });
 }
+
+// ── Clientes ──
+export function useClientes() {
+  return useQuery({
+    queryKey: ["clientes"],
+    queryFn: async (): Promise<Cliente[]> => {
+      const { data, error } = await supabase
+        .from("clientes")
+        .select("*")
+        .order("razao_social");
+      if (error) throw error;
+      return (data ?? []) as Cliente[];
+    },
+  });
+}
+
+export function useCreateCliente() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Omit<Cliente, "id" | "created_at">) => {
+      const { error } = await supabase.from("clientes").insert(data);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["clientes"] }),
+  });
+}
+
+export function useUpdateCliente() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: Partial<Cliente> & { id: string }) => {
+      const { error } = await supabase.from("clientes").update(data).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["clientes"] }),
+  });
+}
+
+export function useDeleteCliente() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("clientes").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["clientes"] }),
+  });
+}

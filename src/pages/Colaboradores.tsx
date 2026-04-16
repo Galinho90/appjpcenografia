@@ -29,6 +29,7 @@ const emptyForm = {
 
 export default function Colaboradores() {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ativos" | "inativos" | "ambos">("ativos");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mode, setMode] = useState<"create" | "edit" | "view">("create");
   const [editingId, setEditingId] = useState<string | null>(null);

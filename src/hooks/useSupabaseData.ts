@@ -93,6 +93,17 @@ export function useCreateDiaria() {
   });
 }
 
+export function useDeleteDiaria() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("diarias").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["diarias"] }),
+  });
+}
+
 // ── Vales ──
 export function useVales() {
   return useQuery({
@@ -126,6 +137,17 @@ export function useCreateVale() {
   });
 }
 
+export function useDeleteVale() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("vales").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["vales"] }),
+  });
+}
+
 // ── Reembolsos ──
 export function useReembolsos() {
   return useQuery({
@@ -153,6 +175,17 @@ export function useCreateReembolso() {
   return useMutation({
     mutationFn: async (data: { colaborador_id: string; data: string; valor: number; descricao?: string }) => {
       const { error } = await supabase.from("reembolsos").insert(data);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["reembolsos"] }),
+  });
+}
+
+export function useDeleteReembolso() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("reembolsos").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["reembolsos"] }),

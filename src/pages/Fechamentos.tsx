@@ -34,7 +34,7 @@ export default function Fechamentos() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-accent-foreground/80">Total Pendente</p>
-                <p className="text-2xl font-bold text-accent-foreground">R$ {totalPendente.toLocaleString("pt-BR")}</p>
+                <p className="text-2xl font-bold text-accent-foreground">R$ {totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               </div>
               <Clock className="h-10 w-10 text-accent-foreground/30" />
             </div>
@@ -45,7 +45,7 @@ export default function Fechamentos() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-secondary-foreground/80">Total Pago</p>
-                <p className="text-2xl font-bold text-secondary-foreground">R$ {totalPago.toLocaleString("pt-BR")}</p>
+                <p className="text-2xl font-bold text-secondary-foreground">R$ {totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               </div>
               <CheckCircle2 className="h-10 w-10 text-secondary-foreground/30" />
             </div>
@@ -79,10 +79,10 @@ export default function Fechamentos() {
                   return (
                     <TableRow key={f.id}>
                       <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
-                      <TableCell>R$ {f.total_diarias.toLocaleString("pt-BR")}</TableCell>
-                      <TableCell className="text-destructive">- R$ {f.total_vales.toLocaleString("pt-BR")}</TableCell>
-                      <TableCell className="text-success">+ R$ {f.total_reembolsos.toLocaleString("pt-BR")}</TableCell>
-                      <TableCell className="font-bold">R$ {f.valor_final.toLocaleString("pt-BR")}</TableCell>
+                      <TableCell>R$ {f.total_diarias.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                      <TableCell className="text-destructive">- R$ {f.total_vales.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                      <TableCell className="text-success">+ R$ {f.total_reembolsos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                      <TableCell className="font-bold">R$ {f.valor_final.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                       <TableCell>
                         <Badge variant={cfg.variant} className="gap-1">
                           <cfg.icon className="h-3 w-3" />

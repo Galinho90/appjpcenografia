@@ -105,7 +105,7 @@ export default function Reembolsos() {
         <div className="bg-gradient-to-br from-secondary to-secondary/70 p-4">
           <p className="text-sm text-secondary-foreground/80">Total em Reembolsos</p>
           <p className="text-2xl font-bold text-secondary-foreground">
-            R$ {reembolsos.reduce((s, r) => s + r.valor, 0).toLocaleString("pt-BR")}
+            R$ {reembolsos.reduce((s, r) => s + r.valor, 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
       </Card>
@@ -130,7 +130,7 @@ export default function Reembolsos() {
                   <TableRow key={r.id}>
                     <TableCell className="font-medium">{(r.colaborador as any)?.nome ?? "—"}</TableCell>
                     <TableCell>{new Date(r.data).toLocaleDateString("pt-BR")}</TableCell>
-                    <TableCell>R$ {r.valor.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell>R$ {r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                     <TableCell className="text-muted-foreground">{r.descricao}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">

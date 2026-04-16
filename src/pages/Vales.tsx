@@ -105,7 +105,7 @@ export default function Vales() {
         <div className="bg-gradient-to-br from-accent to-accent/70 p-4">
           <p className="text-sm text-accent-foreground/80">Total em Vales</p>
           <p className="text-2xl font-bold text-accent-foreground">
-            R$ {vales.reduce((s, v) => s + v.valor, 0).toLocaleString("pt-BR")}
+            R$ {vales.reduce((s, v) => s + v.valor, 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
       </Card>
@@ -130,7 +130,7 @@ export default function Vales() {
                   <TableRow key={v.id}>
                     <TableCell className="font-medium">{(v.colaborador as any)?.nome ?? "—"}</TableCell>
                     <TableCell>{new Date(v.data).toLocaleDateString("pt-BR")}</TableCell>
-                    <TableCell>R$ {v.valor.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell>R$ {v.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                     <TableCell className="text-muted-foreground">{v.descricao}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">

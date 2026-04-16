@@ -59,13 +59,14 @@ export default function Dashboard() {
     .reduce((s, l) => s + l.valor, 0);
   const saldoLancamentos = totalCreditos - totalDebitos;
 
-  // Pagamentos já realizados na quinzena (fechamentos pagos)
-  const totalPagoQ = fechamentosQ
+  // Pagamentos já realizados: vales/débitos já entregues + fechamentos pagos
+  const totalFechamentosPagos = fechamentosQ
     .filter(f => f.status === 'pago')
     .reduce((s, f) => s + Number(f.valor_final), 0);
+  const totalPagoQ = totalDebitos + totalFechamentosPagos;
 
-  // Total pendente = tudo a pagar aos diaristas menos o que já foi pago
-  const totalPendente = Math.max(saldoLancamentos - totalPagoQ, 0);
+  // Total pendente = créditos − (débitos já pagos + fechamentos pagos)
+  const totalPendente = Math.max(totalCreditos - totalPagoQ, 0);
 
   const fmtBRL = (n: number) =>
     n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

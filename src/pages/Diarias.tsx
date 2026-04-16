@@ -279,7 +279,7 @@ export default function Diarias() {
 
       <Card className="shadow-md">
         <CardHeader className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4 items-end">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5 items-end">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Diarista</Label>
               <Select value={filtroColaborador} onValueChange={setFiltroColaborador}>
@@ -304,23 +304,19 @@ export default function Diarias() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">De</Label>
-                <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Até</Label>
-                <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
-              </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">De</Label>
+              <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
             </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Até</Label>
+              <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+            </div>
+            <Button variant="outline" size="sm" onClick={limparFiltros}>Limpar filtros</Button>
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {filtered.length} {filtered.length === 1 ? "lançamento encontrado" : "lançamentos encontrados"}
-            </p>
-            <Button variant="ghost" size="sm" onClick={limparFiltros}>Limpar filtros</Button>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            {filtered.length} {filtered.length === 1 ? "lançamento encontrado" : "lançamentos encontrados"}
+          </p>
         </CardHeader>
         <CardContent>
           {isLoading ? (

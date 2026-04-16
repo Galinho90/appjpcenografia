@@ -162,14 +162,14 @@ export default function Diarias() {
         <Card className="border-none shadow-lg overflow-hidden">
           <div className="bg-gradient-to-br from-secondary to-secondary/70 p-4">
             <p className="text-sm text-secondary-foreground/80">Valor Total</p>
-            <p className="text-2xl font-bold text-secondary-foreground">R$ {totalValor.toLocaleString("pt-BR")}</p>
+            <p className="text-2xl font-bold text-secondary-foreground">R$ {totalValor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
         </Card>
         <Card className="border-none shadow-lg overflow-hidden">
           <div className="bg-gradient-to-br from-accent to-accent/70 p-4">
             <p className="text-sm text-accent-foreground/80">Média por Diária</p>
             <p className="text-2xl font-bold text-accent-foreground">
-              R$ {diarias.length ? Math.round(totalValor / diarias.length).toLocaleString("pt-BR") : 0}
+              R$ {diarias.length ? Math.round(totalValor / diarias.length).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 0}
             </p>
           </div>
         </Card>
@@ -236,7 +236,7 @@ export default function Diarias() {
                     <TableCell>{new Date(d.data).toLocaleDateString("pt-BR")}</TableCell>
                     <TableCell>{d.horario_entrada || "—"}</TableCell>
                     <TableCell>{d.horario_saida || "—"}</TableCell>
-                    <TableCell>R$ {d.valor.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell>R$ {d.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{d.observacoes || "—"}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">

@@ -83,10 +83,10 @@ export default function Relatorios() {
                 {fechamentos.map((f) => (
                   <TableRow key={f.id}>
                     <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
-                    <TableCell>R$ {f.total_diarias.toLocaleString("pt-BR")}</TableCell>
-                    <TableCell>R$ {f.total_vales.toLocaleString("pt-BR")}</TableCell>
-                    <TableCell>R$ {f.total_reembolsos.toLocaleString("pt-BR")}</TableCell>
-                    <TableCell className="font-bold">R$ {f.valor_final.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell>R$ {f.total_diarias.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell>R$ {f.total_vales.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell>R$ {f.total_reembolsos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell className="font-bold">R$ {f.valor_final.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                     <TableCell className="capitalize">{f.status}</TableCell>
                   </TableRow>
                 ))}

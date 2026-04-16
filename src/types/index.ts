@@ -73,3 +73,21 @@ export interface TransacaoLog {
   resposta_api: string;
   created_at: string;
 }
+
+export interface Cliente {
+  id: string;
+  cnpj: string;
+  razao_social: string;
+  nome_fantasia?: string;
+  email?: string;
+  telefone?: string;
+  cep?: string;
+  logradouro?: string;
+  numero?: string;
+  complemento?: string;
+  bairro?: string;
+  cidade?: string;
+  uf?: string;
+  ativo: boolean;
+  created_at: string;
+}

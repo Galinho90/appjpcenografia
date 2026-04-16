@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      clientes: {
+        Row: {
+          ativo: boolean
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
+          cnpj: string
+          complemento: string | null
+          created_at: string
+          email: string | null
+          id: string
+          logradouro: string | null
+          nome_fantasia: string | null
+          numero: string | null
+          razao_social: string
+          telefone: string | null
+          uf: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          cnpj: string
+          complemento?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          logradouro?: string | null
+          nome_fantasia?: string | null
+          numero?: string | null
+          razao_social: string
+          telefone?: string | null
+          uf?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          cnpj?: string
+          complemento?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          logradouro?: string | null
+          nome_fantasia?: string | null
+          numero?: string | null
+          razao_social?: string
+          telefone?: string | null
+          uf?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       colaboradores: {
         Row: {
           agencia: string | null

@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useReembolsos, useColaboradores, useCreateReembolso } from "@/hooks/useSupabaseData";
+import { useReembolsos, useColaboradores, useCreateReembolso, useDeleteReembolso } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Reembolsos() {
@@ -17,8 +18,21 @@ export default function Reembolsos() {
   const { data: reembolsos = [], isLoading } = useReembolsos();
   const { data: colaboradores = [] } = useColaboradores();
   const createMutation = useCreateReembolso();
+  const deleteMutation = useDeleteReembolso();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [form, setForm] = useState({ colaborador_id: "", data: "", valor: 0, descricao: "" });
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteMutation.mutateAsync(deleteId);
+      toast({ title: "Reembolso excluído!" });
+      setDeleteId(null);
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -90,6 +104,7 @@ export default function Reembolsos() {
                   <TableHead>Data</TableHead>
                   <TableHead>Valor</TableHead>
                   <TableHead>Descrição</TableHead>
+                  <TableHead className="w-[60px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -99,6 +114,11 @@ export default function Reembolsos() {
                     <TableCell>{new Date(r.data).toLocaleDateString("pt-BR")}</TableCell>
                     <TableCell>R$ {r.valor.toLocaleString("pt-BR")}</TableCell>
                     <TableCell className="text-muted-foreground">{r.descricao}</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(r.id)} className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -106,6 +126,21 @@ export default function Reembolsos() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir reembolso?</AlertDialogTitle>
+            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleteMutation.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

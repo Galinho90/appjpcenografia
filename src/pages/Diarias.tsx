@@ -200,13 +200,13 @@ export default function Diarias() {
               <Label>Categoria</Label>
               <Popover open={catPopoverOpen} onOpenChange={setCatPopoverOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal min-w-0">
                     {categoriaSelecionada ? (
-                      <span className="flex items-center gap-2">
-                        <Badge variant={categoriaSelecionada.tipo === "C" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0">
+                      <span className="flex min-w-0 items-center gap-2 overflow-hidden">
+                        <Badge variant={categoriaSelecionada.tipo === "C" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 shrink-0">
                           {categoriaSelecionada.tipo === "C" ? "Crédito" : "Débito"}
                         </Badge>
-                        {categoriaSelecionada.descricao}
+                        <span className="truncate">{categoriaSelecionada.descricao}</span>
                       </span>
                     ) : "Selecione a categoria..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -224,10 +224,10 @@ export default function Diarias() {
                             setCatPopoverOpen(false);
                           }}>
                             <Check className={cn("mr-2 h-4 w-4", form.categoria_id === c.id ? "opacity-100" : "opacity-0")} />
-                            <Badge variant={c.tipo === "C" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 mr-2">
+                            <Badge variant={c.tipo === "C" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 mr-2 shrink-0">
                               {c.tipo === "C" ? "Crédito" : "Débito"}
                             </Badge>
-                            {c.descricao}
+                            <span className="truncate">{c.descricao}</span>
                           </CommandItem>
                         ))}
                       </CommandGroup>
@@ -238,7 +238,7 @@ export default function Diarias() {
             </div>
 
             {isDiaria ? (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2"><Label>Data</Label><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></div>
                 <div className="space-y-2"><Label>Entrada</Label><Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} /></div>
                 <div className="space-y-2"><Label>Saída</Label><Input type="time" value={form.hora_saida} onChange={(e) => setForm({ ...form, hora_saida: e.target.value })} /></div>
@@ -322,51 +322,95 @@ export default function Diarias() {
           {isLoading ? (
             <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : (
-            <div className="overflow-x-auto -mx-2 sm:mx-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="whitespace-nowrap">Diarista</TableHead>
-                    <TableHead className="whitespace-nowrap">Categoria</TableHead>
-                    <TableHead className="whitespace-nowrap">Data</TableHead>
-                    <TableHead className="whitespace-nowrap hidden md:table-cell">Entrada</TableHead>
-                    <TableHead className="whitespace-nowrap hidden md:table-cell">Saída</TableHead>
-                    <TableHead className="whitespace-nowrap">Valor</TableHead>
-                    <TableHead className="whitespace-nowrap hidden lg:table-cell">Descrição</TableHead>
-                    <TableHead className="w-[90px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((l) => (
-                    <TableRow key={l.id}>
-                      <TableCell className="font-medium whitespace-nowrap">{l.colaborador?.nome ?? "—"}</TableCell>
-                      <TableCell>
-                        <Badge variant={l.categoria?.tipo === "C" ? "default" : "destructive"} className="whitespace-nowrap">
+            <>
+              <div className="space-y-3 md:hidden">
+                {filtered.map((l) => (
+                  <Card key={l.id} className="border shadow-sm">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm break-words">{l.colaborador?.nome ?? "—"}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</p>
+                        </div>
+                        <Badge variant={l.categoria?.tipo === "C" ? "default" : "destructive"} className="shrink-0 whitespace-nowrap">
                           {l.categoria?.descricao ?? "—"}
                         </Badge>
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</TableCell>
-                      <TableCell className="hidden md:table-cell">{l.hora_entrada || "—"}</TableCell>
-                      <TableCell className="hidden md:table-cell">{l.hora_saida || "—"}</TableCell>
-                      <TableCell className={`whitespace-nowrap ${l.categoria?.tipo === "D" ? "text-destructive font-medium" : "text-primary font-medium"}`}>
-                        {l.categoria?.tipo === "D" ? "- " : "+ "}R$ {l.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm hidden lg:table-cell max-w-[200px] truncate">{l.descricao || "—"}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(l.id)} className="text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Valor</p>
+                          <p className={l.categoria?.tipo === "D" ? "text-destructive font-medium" : "text-primary font-medium"}>
+                            {l.categoria?.tipo === "D" ? "- " : "+ "}R$ {l.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
                         </div>
-                      </TableCell>
+                        <div>
+                          <p className="text-muted-foreground">Horário</p>
+                          <p>{l.hora_entrada || l.hora_saida ? `${l.hora_entrada || "—"} / ${l.hora_saida || "—"}` : "—"}</p>
+                        </div>
+                      </div>
+
+                      {l.descricao && <p className="text-sm text-muted-foreground break-words">{l.descricao}</p>}
+
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(l.id)} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="hidden md:block overflow-x-auto -mx-2 sm:mx-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap">Diarista</TableHead>
+                      <TableHead className="whitespace-nowrap">Categoria</TableHead>
+                      <TableHead className="whitespace-nowrap">Data</TableHead>
+                      <TableHead className="whitespace-nowrap">Entrada</TableHead>
+                      <TableHead className="whitespace-nowrap">Saída</TableHead>
+                      <TableHead className="whitespace-nowrap">Valor</TableHead>
+                      <TableHead className="whitespace-nowrap">Descrição</TableHead>
+                      <TableHead className="w-[90px]"></TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((l) => (
+                      <TableRow key={l.id}>
+                        <TableCell className="font-medium whitespace-nowrap">{l.colaborador?.nome ?? "—"}</TableCell>
+                        <TableCell>
+                          <Badge variant={l.categoria?.tipo === "C" ? "default" : "destructive"} className="whitespace-nowrap">
+                            {l.categoria?.descricao ?? "—"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</TableCell>
+                        <TableCell>{l.hora_entrada || "—"}</TableCell>
+                        <TableCell>{l.hora_saida || "—"}</TableCell>
+                        <TableCell className={`whitespace-nowrap ${l.categoria?.tipo === "D" ? "text-destructive font-medium" : "text-primary font-medium"}`}>
+                          {l.categoria?.tipo === "D" ? "- " : "+ "}R$ {l.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm max-w-[200px] truncate">{l.descricao || "—"}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(l.id)} className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

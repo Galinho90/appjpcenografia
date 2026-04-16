@@ -156,6 +156,15 @@ export default function Colaboradores() {
     }
   };
 
+  const handleToggleAtivo = async (c: Colaborador) => {
+    try {
+      await updateMutation.mutateAsync({ id: c.id, ativo: !c.ativo } as any);
+      toast({ title: c.ativo ? "Diarista inativado" : "Diarista ativado" });
+    } catch (e: any) {
+      toast({ title: "Erro ao alterar status", description: e.message, variant: "destructive" });
+    }
+  };
+
   const readOnly = mode === "view";
   const saving = createMutation.isPending || updateMutation.isPending;
 
@@ -369,9 +378,18 @@ export default function Colaboradores() {
                     <TableCell>{c.funcao}</TableCell>
                     <TableCell className="text-right">{c.valor_diaria_padrao.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                     <TableCell>
-                      <Badge variant={c.ativo ? "default" : "secondary"} className={c.ativo ? "bg-info text-info-foreground hover:bg-info/90" : ""}>
+                      <Button
+                        size="sm"
+                        onClick={() => handleToggleAtivo(c)}
+                        className={
+                          c.ativo
+                            ? "bg-info text-info-foreground hover:bg-info/90 h-7 px-3"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80 h-7 px-3"
+                        }
+                        title={c.ativo ? "Clique para inativar" : "Clique para ativar"}
+                      >
                         {c.ativo ? "ATIVO" : "INATIVO"}
-                      </Badge>
+                      </Button>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1.5">

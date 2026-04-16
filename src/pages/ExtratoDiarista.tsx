@@ -11,6 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   useColaboradores, useDiarias, useVales, useReembolsos, useFechamentos,
   useCreateDiaria, useCreateVale, useCreateReembolso,

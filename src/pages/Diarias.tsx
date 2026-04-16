@@ -129,8 +129,10 @@ export default function Diarias() {
     const matchesSearch = !term || nome.includes(term) || cat.includes(term) || l.data.includes(term) || desc.includes(term);
     const matchesColab = filtroColaborador === "all" || l.colaborador_id === filtroColaborador;
     const matchesCat = filtroCategoria === "all" || l.categoria_id === filtroCategoria;
-    const matchesInicio = !dataInicio || l.data >= dataInicio;
-    const matchesFim = !dataFim || l.data <= dataFim;
+    const inicioEfetivo = dataInicio || qInicioISO;
+    const fimEfetivo = dataFim || qFimISO;
+    const matchesInicio = l.data >= inicioEfetivo;
+    const matchesFim = l.data <= fimEfetivo;
     return matchesSearch && matchesColab && matchesCat && matchesInicio && matchesFim;
   });
 
@@ -140,6 +142,7 @@ export default function Diarias() {
     setFiltroCategoria("all");
     setDataInicio("");
     setDataFim("");
+    setQuinzenaRef(new Date());
   };
 
   const totalCreditos = filtered.filter((l) => l.categoria?.tipo === "C").reduce((s, l) => s + l.valor, 0);

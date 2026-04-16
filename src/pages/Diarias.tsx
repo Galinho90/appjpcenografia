@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { CalendarDays, Plus, Search } from "lucide-react";
+import { CalendarDays, Plus, Search, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDiarias, useColaboradores, useCreateDiaria } from "@/hooks/useSupabaseData";
+import { useDiarias, useColaboradores, useCreateDiaria, useDeleteDiaria } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Diarias() {
@@ -23,8 +24,21 @@ export default function Diarias() {
   const { data: diarias = [], isLoading } = useDiarias();
   const { data: colaboradores = [] } = useColaboradores();
   const createMutation = useCreateDiaria();
+  const deleteMutation = useDeleteDiaria();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [form, setForm] = useState({ colaborador_id: "", data: "", hora_entrada: "", hora_saida: "", valor: 0, observacoes: "" });
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteMutation.mutateAsync(deleteId);
+      toast({ title: "Diária excluída!" });
+      setDeleteId(null);
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
 
   const filtered = diarias.filter((d) => {
     const nome = (d.colaborador as any)?.nome?.toLowerCase() ?? "";
@@ -181,6 +195,7 @@ export default function Diarias() {
                   <TableHead>Saída</TableHead>
                   <TableHead>Valor</TableHead>
                   <TableHead>Observações</TableHead>
+                  <TableHead className="w-[60px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -192,6 +207,11 @@ export default function Diarias() {
                     <TableCell>{d.horario_saida || "—"}</TableCell>
                     <TableCell>R$ {d.valor.toLocaleString("pt-BR")}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{d.observacoes || "—"}</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(d.id)} className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -199,6 +219,21 @@ export default function Diarias() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir diária?</AlertDialogTitle>
+            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleteMutation.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

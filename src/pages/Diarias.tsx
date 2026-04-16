@@ -1,37 +1,65 @@
-import { useState } from "react";
-import { Plus, Search, Trash2, Pencil } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, Search, Trash2, Pencil, Check, ChevronsUpDown } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDiarias, useColaboradores, useCreateDiaria, useDeleteDiaria, useUpdateDiaria } from "@/hooks/useSupabaseData";
+import {
+  useColaboradores,
+  useCategorias,
+  useLancamentos,
+  useCreateLancamento,
+  useUpdateLancamento,
+  useDeleteLancamento,
+} from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
-const emptyForm = { colaborador_id: "", data: "", hora_entrada: "", hora_saida: "", valor: 0, observacoes: "" };
+const emptyForm = {
+  colaborador_id: "",
+  categoria_id: "",
+  data: "",
+  hora_entrada: "",
+  hora_saida: "",
+  valor: 0,
+  descricao: "",
+};
 
 export default function Diarias() {
   const [search, setSearch] = useState("");
   const [filtroColaborador, setFiltroColaborador] = useState<string>("all");
+  const [filtroCategoria, setFiltroCategoria] = useState<string>("all");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [colabPopoverOpen, setColabPopoverOpen] = useState(false);
   const { toast } = useToast();
 
-  const { data: diarias = [], isLoading } = useDiarias();
+  const { data: lancamentos = [], isLoading } = useLancamentos();
   const { data: colaboradores = [] } = useColaboradores();
-  const createMutation = useCreateDiaria();
-  const updateMutation = useUpdateDiaria();
-  const deleteMutation = useDeleteDiaria();
+  const { data: categorias = [] } = useCategorias();
+  const createMutation = useCreateLancamento();
+  const updateMutation = useUpdateLancamento();
+  const deleteMutation = useDeleteLancamento();
 
   const [form, setForm] = useState(emptyForm);
+
+  const categoriasAtivas = useMemo(() => categorias.filter((c) => c.ativo), [categorias]);
+  const colaboradoresAtivos = useMemo(() => colaboradores.filter((c) => c.ativo), [colaboradores]);
+  const categoriaSelecionada = categorias.find((c) => c.id === form.categoria_id);
+  const isDiaria = (categoriaSelecionada?.descricao || "").toUpperCase().includes("DIÁRIA")
+    || (categoriaSelecionada?.descricao || "").toUpperCase().includes("DIARIA");
 
   const openCreate = () => {
     setEditingId(null);
@@ -39,15 +67,16 @@ export default function Diarias() {
     setDialogOpen(true);
   };
 
-  const openEdit = (d: any) => {
-    setEditingId(d.id);
+  const openEdit = (l: any) => {
+    setEditingId(l.id);
     setForm({
-      colaborador_id: d.colaborador_id,
-      data: d.data,
-      hora_entrada: d.horario_entrada || "",
-      hora_saida: d.horario_saida || "",
-      valor: d.valor,
-      observacoes: d.observacoes || "",
+      colaborador_id: l.colaborador_id,
+      categoria_id: l.categoria_id,
+      data: l.data,
+      hora_entrada: l.hora_entrada || "",
+      hora_saida: l.hora_saida || "",
+      valor: Number(l.valor),
+      descricao: l.descricao || "",
     });
     setDialogOpen(true);
   };
@@ -56,49 +85,59 @@ export default function Diarias() {
     if (!deleteId) return;
     try {
       await deleteMutation.mutateAsync(deleteId);
-      toast({ title: "Diária excluída!" });
+      toast({ title: "Lançamento excluído!" });
       setDeleteId(null);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
   };
 
-  const filtered = diarias.filter((d) => {
-    const nome = (d.colaborador as any)?.nome?.toLowerCase() ?? "";
-    const obs = d.observacoes?.toLowerCase() ?? "";
+  const filtered = lancamentos.filter((l) => {
+    const nome = l.colaborador?.nome?.toLowerCase() ?? "";
+    const cat = l.categoria?.descricao?.toLowerCase() ?? "";
+    const desc = l.descricao?.toLowerCase() ?? "";
     const term = search.toLowerCase();
-    const matchesSearch = !term || nome.includes(term) || d.data.includes(term) || obs.includes(term);
-    const matchesColab = filtroColaborador === "all" || d.colaborador_id === filtroColaborador;
-    const matchesInicio = !dataInicio || d.data >= dataInicio;
-    const matchesFim = !dataFim || d.data <= dataFim;
-    return matchesSearch && matchesColab && matchesInicio && matchesFim;
+    const matchesSearch = !term || nome.includes(term) || cat.includes(term) || l.data.includes(term) || desc.includes(term);
+    const matchesColab = filtroColaborador === "all" || l.colaborador_id === filtroColaborador;
+    const matchesCat = filtroCategoria === "all" || l.categoria_id === filtroCategoria;
+    const matchesInicio = !dataInicio || l.data >= dataInicio;
+    const matchesFim = !dataFim || l.data <= dataFim;
+    return matchesSearch && matchesColab && matchesCat && matchesInicio && matchesFim;
   });
 
   const limparFiltros = () => {
     setSearch("");
     setFiltroColaborador("all");
+    setFiltroCategoria("all");
     setDataInicio("");
     setDataFim("");
   };
 
-  const totalValor = filtered.reduce((s, d) => s + d.valor, 0);
+  const totalCreditos = filtered.filter((l) => l.categoria?.tipo === "C").reduce((s, l) => s + l.valor, 0);
+  const totalDebitos = filtered.filter((l) => l.categoria?.tipo === "D").reduce((s, l) => s + l.valor, 0);
+  const saldo = totalCreditos - totalDebitos;
 
   const handleSave = async () => {
+    if (!form.colaborador_id || !form.categoria_id || !form.data) {
+      toast({ title: "Preencha colaborador, categoria e data", variant: "destructive" });
+      return;
+    }
     try {
       const payload = {
         colaborador_id: form.colaborador_id,
+        categoria_id: form.categoria_id,
         data: form.data,
-        hora_entrada: form.hora_entrada || undefined,
-        hora_saida: form.hora_saida || undefined,
-        valor: form.valor,
-        observacoes: form.observacoes || undefined,
+        hora_entrada: isDiaria && form.hora_entrada ? form.hora_entrada : null,
+        hora_saida: isDiaria && form.hora_saida ? form.hora_saida : null,
+        valor: Number(form.valor) || 0,
+        descricao: form.descricao || null,
       };
       if (editingId) {
         await updateMutation.mutateAsync({ id: editingId, ...payload });
-        toast({ title: "Diária atualizada!" });
+        toast({ title: "Lançamento atualizado!" });
       } else {
-        await createMutation.mutateAsync(payload);
-        toast({ title: "Diária registrada!" });
+        await createMutation.mutateAsync(payload as any);
+        toast({ title: "Lançamento registrado!" });
       }
       setDialogOpen(false);
       setForm(emptyForm);
@@ -109,44 +148,100 @@ export default function Diarias() {
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const colabSelecionado = colaboradores.find((c) => c.id === form.colaborador_id);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Diárias</h1>
-          <p className="text-muted-foreground">Controle de diárias trabalhadas</p>
+          <h1 className="text-3xl font-bold text-foreground">Lançamentos</h1>
+          <p className="text-muted-foreground">Controle de lançamentos por categoria</p>
         </div>
-        <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Diária</Button>
+        <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Lançamento</Button>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setForm(emptyForm); } }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{editingId ? "Editar Diária" : "Nova Diária"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingId ? "Editar Lançamento" : "Novo Lançamento"}</DialogTitle></DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label>Colaborador</Label>
-              <Select value={form.colaborador_id} onValueChange={(v) => {
-                const col = colaboradores.find(c => c.id === v);
-                setForm({ ...form, colaborador_id: v, valor: editingId ? form.valor : (col?.valor_diaria_padrao ?? form.valor) });
-              }}>
-                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+              <Label>Diarista</Label>
+              {colaboradoresAtivos.length > 5 ? (
+                <Popover open={colabPopoverOpen} onOpenChange={setColabPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                      {colabSelecionado?.nome || "Selecione..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar diarista..." />
+                      <CommandList>
+                        <CommandEmpty>Nenhum encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          {colaboradoresAtivos.map((c) => (
+                            <CommandItem key={c.id} value={c.nome} onSelect={() => {
+                              setForm({ ...form, colaborador_id: c.id, valor: editingId ? form.valor : (c.valor_diaria_padrao ?? form.valor) });
+                              setColabPopoverOpen(false);
+                            }}>
+                              <Check className={cn("mr-2 h-4 w-4", form.colaborador_id === c.id ? "opacity-100" : "opacity-0")} />
+                              {c.nome}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Select value={form.colaborador_id} onValueChange={(v) => {
+                  const col = colaboradores.find(c => c.id === v);
+                  setForm({ ...form, colaborador_id: v, valor: editingId ? form.valor : (col?.valor_diaria_padrao ?? form.valor) });
+                }}>
+                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    {colaboradoresAtivos.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Categoria</Label>
+              <Select value={form.categoria_id} onValueChange={(v) => setForm({ ...form, categoria_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione a categoria..." /></SelectTrigger>
                 <SelectContent>
-                  {colaboradores.filter(c => c.ativo).map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                  {categoriasAtivas.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      <span className="flex items-center gap-2">
+                        <Badge variant={c.tipo === "C" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0">
+                          {c.tipo === "C" ? "Crédito" : "Débito"}
+                        </Badge>
+                        {c.descricao}
+                      </span>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+
+            {isDiaria ? (
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2"><Label>Data</Label><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Entrada</Label><Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Saída</Label><Input type="time" value={form.hora_saida} onChange={(e) => setForm({ ...form, hora_saida: e.target.value })} /></div>
+              </div>
+            ) : (
               <div className="space-y-2"><Label>Data</Label><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Entrada</Label><Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Saída</Label><Input type="time" value={form.hora_saida} onChange={(e) => setForm({ ...form, hora_saida: e.target.value })} /></div>
-            </div>
-            <div className="space-y-2"><Label>Valor (R$)</Label><Input type="number" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} /></div>
-            <div className="space-y-2"><Label>Observações</Label><Textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} placeholder="Observações opcionais..." /></div>
+            )}
+
+            <div className="space-y-2"><Label>Valor (R$)</Label><Input type="number" step="0.01" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} /></div>
+            <div className="space-y-2"><Label>Descrição</Label><Textarea value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Descrição opcional..." /></div>
             <Button className="w-full" onClick={handleSave} disabled={isPending}>
-              {isPending ? "Salvando..." : (editingId ? "Atualizar Diária" : "Salvar Diária")}
+              {isPending ? "Salvando..." : (editingId ? "Atualizar Lançamento" : "Salvar Lançamento")}
             </Button>
           </div>
         </DialogContent>
@@ -155,42 +250,40 @@ export default function Diarias() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="border-none shadow-lg overflow-hidden">
           <div className="bg-gradient-to-br from-primary to-primary/70 p-4">
-            <p className="text-sm text-primary-foreground/80">Total Diárias</p>
-            <p className="text-2xl font-bold text-primary-foreground">{diarias.length}</p>
+            <p className="text-sm text-primary-foreground/80">Total de Créditos</p>
+            <p className="text-2xl font-bold text-primary-foreground">R$ {totalCreditos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          </div>
+        </Card>
+        <Card className="border-none shadow-lg overflow-hidden">
+          <div className="bg-gradient-to-br from-destructive to-destructive/70 p-4">
+            <p className="text-sm text-destructive-foreground/80">Total de Débitos</p>
+            <p className="text-2xl font-bold text-destructive-foreground">R$ {totalDebitos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
         </Card>
         <Card className="border-none shadow-lg overflow-hidden">
           <div className="bg-gradient-to-br from-secondary to-secondary/70 p-4">
-            <p className="text-sm text-secondary-foreground/80">Valor Total</p>
-            <p className="text-2xl font-bold text-secondary-foreground">R$ {totalValor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          </div>
-        </Card>
-        <Card className="border-none shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-br from-accent to-accent/70 p-4">
-            <p className="text-sm text-accent-foreground/80">Média por Diária</p>
-            <p className="text-2xl font-bold text-accent-foreground">
-              R$ {diarias.length ? Math.round(totalValor / diarias.length).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 0}
-            </p>
+            <p className="text-sm text-secondary-foreground/80">Saldo</p>
+            <p className="text-2xl font-bold text-secondary-foreground">R$ {saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
         </Card>
       </div>
 
       <Card className="shadow-md">
         <CardHeader className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4 items-end">
-            <div className="space-y-1">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5 items-end">
+            <div className="space-y-1 lg:col-span-2">
               <Label className="text-xs text-muted-foreground">Buscar</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Nome, data, obs..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+                <Input placeholder="Nome, categoria, data, descrição..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Colaborador</Label>
+              <Label className="text-xs text-muted-foreground">Diarista</Label>
               <Select value={filtroColaborador} onValueChange={setFiltroColaborador}>
-                <SelectTrigger><SelectValue placeholder="Colaborador" /></SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos colaboradores</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   {colaboradores.map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                   ))}
@@ -198,12 +291,26 @@ export default function Diarias() {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">De</Label>
-              <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+              <Label className="text-xs text-muted-foreground">Categoria</Label>
+              <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {categorias.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.descricao}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Até</Label>
-              <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">De</Label>
+                <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Até</Label>
+                <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+              </div>
             </div>
           </div>
           <div className="flex items-center justify-between">
@@ -220,30 +327,38 @@ export default function Diarias() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Colaborador</TableHead>
+                  <TableHead>Diarista</TableHead>
+                  <TableHead>Categoria</TableHead>
                   <TableHead>Data</TableHead>
                   <TableHead>Entrada</TableHead>
                   <TableHead>Saída</TableHead>
                   <TableHead>Valor</TableHead>
-                  <TableHead>Observações</TableHead>
+                  <TableHead>Descrição</TableHead>
                   <TableHead className="w-[100px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell className="font-medium">{(d.colaborador as any)?.nome ?? "—"}</TableCell>
-                    <TableCell>{new Date(d.data).toLocaleDateString("pt-BR")}</TableCell>
-                    <TableCell>{d.horario_entrada || "—"}</TableCell>
-                    <TableCell>{d.horario_saida || "—"}</TableCell>
-                    <TableCell>R$ {d.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{d.observacoes || "—"}</TableCell>
+                {filtered.map((l) => (
+                  <TableRow key={l.id}>
+                    <TableCell className="font-medium">{l.colaborador?.nome ?? "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant={l.categoria?.tipo === "C" ? "default" : "destructive"}>
+                        {l.categoria?.descricao ?? "—"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</TableCell>
+                    <TableCell>{l.hora_entrada || "—"}</TableCell>
+                    <TableCell>{l.hora_saida || "—"}</TableCell>
+                    <TableCell className={l.categoria?.tipo === "D" ? "text-destructive font-medium" : "text-primary font-medium"}>
+                      {l.categoria?.tipo === "D" ? "- " : "+ "}R$ {l.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{l.descricao || "—"}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(d)}>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(d.id)} className="text-destructive hover:text-destructive">
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(l.id)} className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -259,7 +374,7 @@ export default function Diarias() {
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir diária?</AlertDialogTitle>
+            <AlertDialogTitle>Excluir lançamento?</AlertDialogTitle>
             <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

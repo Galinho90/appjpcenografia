@@ -279,14 +279,7 @@ export default function Diarias() {
 
       <Card className="shadow-md">
         <CardHeader className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5 items-end">
-            <div className="space-y-1 lg:col-span-2">
-              <Label className="text-xs text-muted-foreground">Buscar</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Nome, categoria, data, descrição..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
-              </div>
-            </div>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4 items-end">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Diarista</Label>
               <Select value={filtroColaborador} onValueChange={setFiltroColaborador}>

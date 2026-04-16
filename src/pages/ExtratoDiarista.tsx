@@ -428,16 +428,16 @@ export default function ExtratoDiarista() {
                     )}
                   >
                     <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-3 flex-wrap min-w-0">
+                          <p className="text-xs text-muted-foreground whitespace-nowrap">
                             {new Date(l.data).toLocaleDateString("pt-BR")}
                           </p>
-                          <p className="text-sm font-bold text-foreground mt-0.5">
+                          <p className="text-sm font-bold text-foreground whitespace-nowrap">
                             {tipoLabel[l.tipo]}
                           </p>
                           {l.detalhe && (
-                            <p className="text-xs text-muted-foreground mt-1 break-words">
+                            <p className="text-xs text-muted-foreground break-words">
                               {l.detalhe}
                             </p>
                           )}

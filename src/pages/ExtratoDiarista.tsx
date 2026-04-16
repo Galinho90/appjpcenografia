@@ -428,8 +428,8 @@ export default function ExtratoDiarista() {
                     )}
                   >
                     <CardContent className="p-4">
-                      <div className="flex items-center justify-between gap-3 flex-wrap">
-                        <div className="flex items-center gap-3 flex-wrap min-w-0">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 flex-wrap min-w-0 flex-1">
                           <p className="text-xs text-muted-foreground whitespace-nowrap">
                             {new Date(l.data).toLocaleDateString("pt-BR")}
                           </p>

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useColaboradores, useDiarias, useFechamentos, useVales, useReembolsos } from "@/hooks/useSupabaseData";
+import { useColaboradores, useDiarias, useFechamentos } from "@/hooks/useSupabaseData";
 
 // Compute the quinzena (1-15 or 16-end) for a given reference date
 function getQuinzena(ref: Date) {
@@ -40,27 +40,21 @@ export default function Dashboard() {
 
   const { data: colaboradores = [], isLoading: loadingC } = useColaboradores();
   const { data: diarias = [], isLoading: loadingD } = useDiarias();
-  const { data: vales = [] } = useVales();
-  const { data: reembolsos = [] } = useReembolsos();
   const { data: fechamentos = [], isLoading: loadingF } = useFechamentos();
 
   const isLoading = loadingC || loadingD || loadingF;
 
   // Filter by quinzena
   const diariasQ = diarias.filter(d => d.data >= inicioISO && d.data <= fimISO);
-  const valesQ = vales.filter(v => v.data >= inicioISO && v.data <= fimISO);
-  const reembolsosQ = reembolsos.filter(r => r.data >= inicioISO && r.data <= fimISO);
   const fechamentosQ = fechamentos.filter(f => f.periodo_inicio === inicioISO);
 
   const totalDiarias = diariasQ.reduce((s, d) => s + d.valor, 0);
-  const totalVales = valesQ.reduce((s, v) => s + v.valor, 0);
-  const totalReembolsos = reembolsosQ.reduce((s, r) => s + r.valor, 0);
 
   const totalFechamentosPagosQ = fechamentosQ
     .filter(f => f.status === 'pago')
     .reduce((s, f) => s + Number(f.valor_final), 0);
-  const totalPagoQ = totalVales + totalFechamentosPagosQ;
-  const totalAPagar = totalDiarias - totalVales + totalReembolsos - totalFechamentosPagosQ;
+  const totalPagoQ = totalFechamentosPagosQ;
+  const totalAPagar = totalDiarias - totalFechamentosPagosQ;
   const totalPendente = Math.max(totalAPagar, 0);
 
   const fmtBRL = (n: number) =>
@@ -165,23 +159,19 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {totalDiarias + totalVales + totalReembolsos === 0 ? (
+            {totalDiarias === 0 ? (
               <p className="text-muted-foreground text-center py-10">Sem lançamentos nesta quinzena</p>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={[{
                   name: `${fmt(inicio)} — ${fmt(fim)}`,
                   diarias: totalDiarias,
-                  vales: totalVales,
-                  reembolsos: totalReembolsos,
                 }]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(250,15%,90%)" />
                   <XAxis dataKey="name" fontSize={12} />
                   <YAxis fontSize={12} />
                   <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`} contentStyle={{ borderRadius: '8px' }} />
                   <Bar dataKey="diarias" name="Diárias" fill="hsl(263,70%,50%)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="vales" name="Vales" fill="hsl(38,92%,50%)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="reembolsos" name="Reembolsos" fill="hsl(160,60%,45%)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}

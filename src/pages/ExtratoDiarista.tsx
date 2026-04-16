@@ -101,12 +101,21 @@ export default function ExtratoDiarista() {
     return [...ds, ...vs, ...rs].sort((a, b) => a.data.localeCompare(b.data));
   }, [colaboradorId, diarias, vales, reembolsos, inicioISO, fimISO]);
 
-  const totalLancamentos = lancamentos.reduce((s, l) => s + l.valor, 0);
+  // Lançamentos = somatório do que o diarista tem a receber (diárias + reembolsos)
+  const totalLancamentos = lancamentos
+    .filter((l) => l.tipo === "diaria" || l.tipo === "reembolso")
+    .reduce((s, l) => s + l.valor, 0);
+
+  // Pagos = vales já adiantados + valor de fechamentos efetivamente pagos
+  const totalVales = lancamentos
+    .filter((l) => l.tipo === "vale")
+    .reduce((s, l) => s + Math.abs(l.valor), 0);
 
   const fechamentoSelecionado = fechamentos.find(
     (f: any) => f.colaborador_id === colaboradorId && f.periodo_inicio === inicioISO && f.periodo_fim === fimISO
   );
-  const totalPago = fechamentoSelecionado?.status === "pago" ? Number((fechamentoSelecionado as any).valor_final) : 0;
+  const totalFechamentoPago = fechamentoSelecionado?.status === "pago" ? Number((fechamentoSelecionado as any).valor_final) : 0;
+  const totalPago = totalVales + totalFechamentoPago;
   const aPagar = Math.max(totalLancamentos - totalPago, 0);
 
   const colaboradorNome = colaboradores.find((c) => c.id === colaboradorId)?.nome;

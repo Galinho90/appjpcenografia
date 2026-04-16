@@ -203,10 +203,38 @@ export default function Colaboradores() {
 
       <Card className="shadow-md">
         <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Buscar por nome ou função..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <Button onClick={handleExportExcel} className="gap-2 bg-success hover:bg-success/90 text-success-foreground">
+                <FileSpreadsheet className="h-4 w-4" /> Exportar para Excel
+              </Button>
+            </div>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">Mostrar:</span>
+                <RadioGroup
+                  value={statusFilter}
+                  onValueChange={(v) => setStatusFilter(v as "ativos" | "inativos" | "ambos")}
+                  className="flex items-center gap-4"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <RadioGroupItem value="ativos" id="f-ativos" />
+                    <Label htmlFor="f-ativos" className="cursor-pointer">Ativos</Label>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <RadioGroupItem value="inativos" id="f-inativos" />
+                    <Label htmlFor="f-inativos" className="cursor-pointer">Inativos</Label>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <RadioGroupItem value="ambos" id="f-ambos" />
+                    <Label htmlFor="f-ambos" className="cursor-pointer">Ambos</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="relative w-full md:w-72">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="Pesquisar..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -218,11 +246,12 @@ export default function Colaboradores() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
+                  <TableHead>Celular</TableHead>
                   <TableHead>CPF</TableHead>
                   <TableHead>Função</TableHead>
-                  <TableHead>Diária</TableHead>
+                  <TableHead className="text-right">Valor Diária</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="text-right">Ação</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

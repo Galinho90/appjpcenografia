@@ -34,10 +34,33 @@ const emptyForm = {
   descricao: "",
 };
 
+function getQuinzena(ref: Date) {
+  const year = ref.getFullYear();
+  const month = ref.getMonth();
+  const isFirst = ref.getDate() <= 15;
+  const inicio = new Date(year, month, isFirst ? 1 : 16);
+  const fim = isFirst ? new Date(year, month, 15) : new Date(year, month + 1, 0);
+  return { inicio, fim, isFirst };
+}
+function shiftQuinzena(ref: Date, delta: number) {
+  const { inicio, isFirst } = getQuinzena(ref);
+  if (delta > 0) {
+    return isFirst
+      ? new Date(inicio.getFullYear(), inicio.getMonth(), 16)
+      : new Date(inicio.getFullYear(), inicio.getMonth() + 1, 1);
+  }
+  return isFirst
+    ? new Date(inicio.getFullYear(), inicio.getMonth() - 1, 16)
+    : new Date(inicio.getFullYear(), inicio.getMonth(), 1);
+}
+const fmtDate = (d: Date) => d.toLocaleDateString("pt-BR");
+const toISO = (d: Date) => d.toISOString().slice(0, 10);
+
 export default function Diarias() {
   const [search, setSearch] = useState("");
   const [filtroColaborador, setFiltroColaborador] = useState<string>("all");
   const [filtroCategoria, setFiltroCategoria] = useState<string>("all");
+  const [quinzenaRef, setQuinzenaRef] = useState<Date>(new Date());
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -46,6 +69,11 @@ export default function Diarias() {
   const [colabPopoverOpen, setColabPopoverOpen] = useState(false);
   const [catPopoverOpen, setCatPopoverOpen] = useState(false);
   const { toast } = useToast();
+
+  const { inicio: qInicio, fim: qFim } = useMemo(() => getQuinzena(quinzenaRef), [quinzenaRef]);
+  const qInicioISO = toISO(qInicio);
+  const qFimISO = toISO(qFim);
+  const isCurrentQuinzena = useMemo(() => toISO(getQuinzena(new Date()).inicio) === qInicioISO, [qInicioISO]);
 
   const { data: lancamentos = [], isLoading } = useLancamentos();
   const { data: colaboradores = [] } = useColaboradores();

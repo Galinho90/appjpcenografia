@@ -189,7 +189,26 @@ export default function Diarias() {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Lançamentos</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Controle de lançamentos por categoria</p>
         </div>
-        <Button className="gap-2 w-full sm:w-auto" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Lançamento</Button>
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <Card className="shadow-md w-full sm:w-auto">
+            <CardContent className="flex items-center gap-2 p-2">
+              <Button variant="ghost" size="icon" onClick={() => setQuinzenaRef(shiftQuinzena(quinzenaRef, -1))} aria-label="Quinzena anterior">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="px-2 text-center flex-1 sm:min-w-[180px]">
+                <p className="text-xs text-muted-foreground">Quinzena</p>
+                <p className="text-sm font-semibold whitespace-nowrap">{fmtDate(qInicio)} — {fmtDate(qFim)}</p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setQuinzenaRef(shiftQuinzena(quinzenaRef, 1))} aria-label="Próxima quinzena">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              {!isCurrentQuinzena && (
+                <Button variant="outline" size="sm" onClick={() => setQuinzenaRef(new Date())}>Hoje</Button>
+              )}
+            </CardContent>
+          </Card>
+          <Button className="gap-2 w-full sm:w-auto" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Lançamento</Button>
+        </div>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setForm(emptyForm); } }}>

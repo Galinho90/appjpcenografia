@@ -14,10 +14,10 @@ import logoJpEventos from "@/assets/logo-jp-eventos.png";
 const menuItems = [
   { title: "Home", url: "/", icon: LayoutDashboard },
   { title: "Diárias", url: "/diarias", icon: CalendarDays },
-  { title: "Extrato do Diarista", url: "/extrato", icon: FileText },
-  { title: "Diaristas", url: "/colaboradores", icon: Users },
   { title: "Vales", url: "/vales", icon: Wallet },
   { title: "Reembolsos", url: "/reembolsos", icon: Receipt },
+  { title: "Extrato do Diarista", url: "/extrato", icon: FileText },
+  { title: "Diaristas", url: "/colaboradores", icon: Users },
   { title: "Clientes", url: "/clientes", icon: Building2 },
   { title: "Categorias", url: "/categorias", icon: Tags },
   { title: "Relatórios", url: "/relatorios", icon: FileBarChart },

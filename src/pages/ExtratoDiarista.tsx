@@ -429,18 +429,13 @@ export default function ExtratoDiarista() {
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 flex-wrap min-w-0 flex-1">
+                        <div className="flex items-center gap-3 min-w-0">
                           <p className="text-xs text-muted-foreground whitespace-nowrap">
                             {new Date(l.data).toLocaleDateString("pt-BR")}
                           </p>
                           <p className="text-sm font-bold text-foreground whitespace-nowrap">
                             {tipoLabel[l.tipo]}
                           </p>
-                          {l.detalhe && (
-                            <p className="text-xs text-muted-foreground break-words">
-                              {l.detalhe}
-                            </p>
-                          )}
                         </div>
                         <p
                           className={cn(
@@ -451,6 +446,11 @@ export default function ExtratoDiarista() {
                           {fmtBRL(l.valor)}
                         </p>
                       </div>
+                      {l.detalhe && (
+                        <p className="text-xs text-muted-foreground mt-2 break-words">
+                          {l.detalhe}
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 );

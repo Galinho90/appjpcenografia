@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      categorias: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string
+          id: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao: string
+          id?: string
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string
+          id?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           ativo: boolean
@@ -221,6 +248,60 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fechamentos_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lancamentos: {
+        Row: {
+          categoria_id: string
+          colaborador_id: string
+          created_at: string
+          data: string
+          descricao: string | null
+          hora_entrada: string | null
+          hora_saida: string | null
+          id: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          categoria_id: string
+          colaborador_id: string
+          created_at?: string
+          data: string
+          descricao?: string | null
+          hora_entrada?: string | null
+          hora_saida?: string | null
+          id?: string
+          updated_at?: string
+          valor?: number
+        }
+        Update: {
+          categoria_id?: string
+          colaborador_id?: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          hora_entrada?: string | null
+          hora_saida?: string | null
+          id?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lancamentos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_colaborador_id_fkey"
             columns: ["colaborador_id"]
             isOneToOne: false
             referencedRelation: "colaboradores"

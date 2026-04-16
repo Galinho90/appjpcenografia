@@ -156,6 +156,15 @@ export default function Colaboradores() {
     }
   };
 
+  const handleToggleAtivo = async (c: Colaborador) => {
+    try {
+      await updateMutation.mutateAsync({ id: c.id, ativo: !c.ativo } as any);
+      toast({ title: c.ativo ? "Diarista inativado" : "Diarista ativado" });
+    } catch (e: any) {
+      toast({ title: "Erro ao alterar status", description: e.message, variant: "destructive" });
+    }
+  };
+
   const readOnly = mode === "view";
   const saving = createMutation.isPending || updateMutation.isPending;
 

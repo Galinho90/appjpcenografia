@@ -56,6 +56,15 @@ export default function Dashboard() {
   const totalVales = valesQ.reduce((s, v) => s + v.valor, 0);
   const totalReembolsos = reembolsosQ.reduce((s, r) => s + r.valor, 0);
 
+  const totalPagoQ = fechamentosQ
+    .filter(f => f.status === 'pago')
+    .reduce((s, f) => s + Number(f.valor_final), 0);
+  const totalAPagar = totalDiarias - totalVales + totalReembolsos - totalPagoQ;
+  const totalPendente = Math.max(totalAPagar, 0);
+
+  const fmtBRL = (n: number) =>
+    n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   const stats = [
     {
       title: "Colaboradores Ativos",
@@ -71,13 +80,13 @@ export default function Dashboard() {
     },
     {
       title: "Total Pendente",
-      value: `R$ ${fechamentosQ.filter(f => f.status === 'pendente').reduce((s, f) => s + f.valor_final, 0).toLocaleString('pt-BR')}`,
+      value: `R$ ${fmtBRL(totalPendente)}`,
       icon: DollarSign,
       gradient: "from-accent to-accent/70",
     },
     {
       title: "Pagamentos Realizados",
-      value: fechamentosQ.filter(f => f.status === 'pago').length,
+      value: `R$ ${fmtBRL(totalPagoQ)}`,
       icon: CheckCircle2,
       gradient: "from-info to-info/70",
     },

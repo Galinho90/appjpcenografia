@@ -383,7 +383,7 @@ export default function Colaboradores() {
                         onClick={() => handleToggleAtivo(c)}
                         className={
                           c.ativo
-                            ? "bg-info text-info-foreground hover:bg-info/90 h-7 px-3"
+                            ? "bg-success text-success-foreground hover:bg-success/90 h-7 px-3"
                             : "bg-muted text-muted-foreground hover:bg-muted/80 h-7 px-3"
                         }
                         title={c.ativo ? "Clique para inativar" : "Clique para ativar"}

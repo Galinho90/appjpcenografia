@@ -257,14 +257,11 @@ export default function ExtratoDiarista() {
 
   return (
     <div className="space-y-6">
-      <Card className="shadow-md">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-2xl">Extrato do Diarista</CardTitle>
-          <Button className="gap-2" onClick={abrirModal}>
-            <FileText className="h-4 w-4" /> Novo Lançamento
-          </Button>
-        </CardHeader>
-      </Card>
+      <div className="flex justify-end">
+        <Button className="gap-2" onClick={abrirModal}>
+          <FileText className="h-4 w-4" /> Novo Lançamento
+        </Button>
+      </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">

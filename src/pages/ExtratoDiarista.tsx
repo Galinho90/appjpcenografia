@@ -2,11 +2,19 @@ import { useMemo, useState } from "react";
 import { FileText, CheckCircle2, FileSpreadsheet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useColaboradores, useDiarias, useVales, useReembolsos, useFechamentos } from "@/hooks/useSupabaseData";
+import { useToast } from "@/hooks/use-toast";
+import {
+  useColaboradores, useDiarias, useVales, useReembolsos, useFechamentos,
+  useCreateDiaria, useCreateVale, useCreateReembolso,
+} from "@/hooks/useSupabaseData";
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();

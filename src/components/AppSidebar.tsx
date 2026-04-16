@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, CalendarDays, FileBarChart, FileText,
-  Settings, Building2, Tags, Wallet, Receipt,
+  Settings, Building2, Tags,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -14,8 +14,6 @@ import logoJpEventos from "@/assets/logo-jp-eventos.png";
 const menuItems = [
   { title: "Home", url: "/", icon: LayoutDashboard },
   { title: "Lançamentos", url: "/diarias", icon: CalendarDays },
-  { title: "Vales", url: "/vales", icon: Wallet },
-  { title: "Reembolsos", url: "/reembolsos", icon: Receipt },
   { title: "Extrato do Diarista", url: "/extrato", icon: FileText },
   { title: "Diaristas", url: "/colaboradores", icon: Users },
   { title: "Clientes", url: "/clientes", icon: Building2 },

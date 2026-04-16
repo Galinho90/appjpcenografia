@@ -14,6 +14,9 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Diarias() {
   const [search, setSearch] = useState("");
+  const [filtroColaborador, setFiltroColaborador] = useState<string>("all");
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
 
@@ -23,13 +26,25 @@ export default function Diarias() {
 
   const [form, setForm] = useState({ colaborador_id: "", data: "", hora_entrada: "", hora_saida: "", valor: 0, observacoes: "" });
 
-  const filtered = diarias.filter(
-    (d) =>
-      (d.colaborador as any)?.nome?.toLowerCase().includes(search.toLowerCase()) ||
-      d.data.includes(search)
-  );
+  const filtered = diarias.filter((d) => {
+    const nome = (d.colaborador as any)?.nome?.toLowerCase() ?? "";
+    const obs = d.observacoes?.toLowerCase() ?? "";
+    const term = search.toLowerCase();
+    const matchesSearch = !term || nome.includes(term) || d.data.includes(term) || obs.includes(term);
+    const matchesColab = filtroColaborador === "all" || d.colaborador_id === filtroColaborador;
+    const matchesInicio = !dataInicio || d.data >= dataInicio;
+    const matchesFim = !dataFim || d.data <= dataFim;
+    return matchesSearch && matchesColab && matchesInicio && matchesFim;
+  });
 
-  const totalValor = diarias.reduce((s, d) => s + d.valor, 0);
+  const limparFiltros = () => {
+    setSearch("");
+    setFiltroColaborador("all");
+    setDataInicio("");
+    setDataFim("");
+  };
+
+  const totalValor = filtered.reduce((s, d) => s + d.valor, 0);
 
   const handleSave = async () => {
     try {

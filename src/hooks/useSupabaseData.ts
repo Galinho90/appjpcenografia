@@ -12,13 +12,18 @@ export function useColaboradores() {
         .select("*")
         .order("nome");
       if (error) throw error;
-      return (data ?? []).map((c) => ({
+      return (data ?? []).map((c: any) => ({
         ...c,
         telefone: c.telefone ?? "",
         chave_pix: c.chave_pix ?? "",
         banco: c.banco ?? "",
         agencia: c.agencia ?? "",
         conta: c.conta ?? "",
+        rg: c.rg ?? "",
+        data_nascimento: c.data_nascimento ?? "",
+        email: c.email ?? "",
+        pix: c.pix ?? "",
+        foto_url: c.foto_url ?? "",
         valor_diaria_padrao: Number(c.valor_diaria_padrao),
       }));
     },

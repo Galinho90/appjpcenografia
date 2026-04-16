@@ -170,43 +170,112 @@ export default function Colaboradores() {
           <DialogTrigger asChild>
             <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> Novo Diarista</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {mode === "create" ? "Cadastrar Diarista" : mode === "edit" ? "Editar Diarista" : "Detalhes do Diarista"}
               </DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nome Completo</Label>
-                  <Input disabled={readOnly} value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome completo" />
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Nome</Label>
+                    <Input disabled={readOnly} value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome completo" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Celular</Label>
+                    <Input disabled={readOnly} value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(11) 99999-9999" />
+                  </div>
                 </div>
+                <div className="space-y-2 flex flex-col items-center">
+                  <Label>Foto do Diarista</Label>
+                  <div className="border rounded-md w-32 h-32 flex items-center justify-center overflow-hidden bg-muted/30">
+                    {form.foto_url ? (
+                      <img src={form.foto_url} alt="Foto" className="object-cover w-full h-full" />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Sem foto</span>
+                    )}
+                  </div>
+                  {!readOnly && (
+                    <>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleFotoUpload(e.target.files[0])}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-32 gap-2"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                      >
+                        <Upload className="h-4 w-4" />
+                        {uploading ? "Enviando..." : "Enviar"}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>CPF</Label>
                   <Input disabled={readOnly} value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} placeholder="000.000.000-00" />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Telefone</Label>
-                  <Input disabled={readOnly} value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(11) 99999-9999" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Função</Label>
-                  <Input disabled={readOnly} value={form.funcao} onChange={(e) => setForm({ ...form, funcao: e.target.value })} placeholder="Montador, Eletricista..." />
+                  <Label>RG</Label>
+                  <Input disabled={readOnly} value={form.rg ?? ""} onChange={(e) => setForm({ ...form, rg: e.target.value })} placeholder="00.000.000-0" />
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Valor Diária Padrão</Label>
+                  <Label>Data de Nascimento</Label>
+                  <Input disabled={readOnly} type="date" value={form.data_nascimento ?? ""} onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Valor da Diária</Label>
                   <Input disabled={readOnly} type="number" value={form.valor_diaria_padrao || ""} onChange={(e) => setForm({ ...form, valor_diaria_padrao: Number(e.target.value) })} placeholder="200" />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Chave PIX</Label>
-                  <Input disabled={readOnly} value={form.chave_pix} onChange={(e) => setForm({ ...form, chave_pix: e.target.value })} placeholder="CPF, email ou telefone" />
+                  <Label>Email</Label>
+                  <Input disabled={readOnly} type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="diarista@email.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label>PIX</Label>
+                  <Input disabled={readOnly} value={form.pix ?? ""} onChange={(e) => setForm({ ...form, pix: e.target.value })} placeholder="CPF, email ou telefone" />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label>Senha</Label>
+                <div className="flex gap-2">
+                  <Input
+                    disabled={readOnly}
+                    value={form.senha ?? ""}
+                    onChange={(e) => setForm({ ...form, senha: e.target.value })}
+                    placeholder={mode === "edit" ? "Deixe em branco para manter" : "Senha de acesso"}
+                  />
+                  {!readOnly && (
+                    <Button type="button" variant="outline" className="gap-2 shrink-0" onClick={() => setForm({ ...form, senha: gerarSenha() })}>
+                      <RefreshCw className="h-4 w-4" /> Gerar senha
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Função</Label>
+                <Input disabled={readOnly} value={form.funcao} onChange={(e) => setForm({ ...form, funcao: e.target.value })} placeholder="Montador, Eletricista..." />
+              </div>
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Banco</Label>
@@ -221,6 +290,7 @@ export default function Colaboradores() {
                   <Input disabled={readOnly} value={form.conta} onChange={(e) => setForm({ ...form, conta: e.target.value })} placeholder="12345-6" />
                 </div>
               </div>
+
               {mode !== "create" && (
                 <div className="flex items-center justify-between rounded-md border p-3">
                   <Label>Ativo</Label>

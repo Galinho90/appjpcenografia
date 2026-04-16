@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import * as XLSX from "xlsx";
-import { Plus, Search, Edit, Trash2, Eye, FileSpreadsheet } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, FileSpreadsheet, Upload, RefreshCw } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,13 +19,22 @@ import {
 } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 import type { Colaborador } from "@/types";
 
 const emptyForm = {
-  nome: "", cpf: "", telefone: "", funcao: "",
-  valor_diaria_padrao: 0, chave_pix: "", banco: "", agencia: "", conta: "",
+  nome: "", cpf: "", rg: "", data_nascimento: "", telefone: "", email: "",
+  funcao: "", valor_diaria_padrao: 0, pix: "", senha: "",
+  chave_pix: "", banco: "", agencia: "", conta: "", foto_url: "",
   ativo: true,
 };
+
+function gerarSenha(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  let s = "";
+  for (let i = 0; i < 10; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
 
 export default function Colaboradores() {
   const [search, setSearch] = useState("");

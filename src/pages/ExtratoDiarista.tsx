@@ -286,7 +286,12 @@ export default function ExtratoDiarista() {
                     <span className={cn("inline-flex h-9 w-9 items-center justify-center rounded-md", active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
                       <CheckCircle2 className="h-4 w-4" />
                     </span>
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                    <span
+                      role="button"
+                      title="Baixar PDF do extrato"
+                      onClick={(e) => { e.stopPropagation(); gerarPDF(opt.q, opt.label); }}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground hover:bg-muted/70 cursor-pointer"
+                    >
                       <FileSpreadsheet className="h-4 w-4" />
                     </span>
                   </div>

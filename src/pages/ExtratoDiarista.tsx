@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FileText, CheckCircle2, FileSpreadsheet } from "lucide-react";
+import { FileText, FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

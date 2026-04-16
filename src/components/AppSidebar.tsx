@@ -9,6 +9,7 @@ import {
   SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
   SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
+import logoJpEventos from "@/assets/logo-jp-eventos.png";
 
 const menuItems = [
   { title: "Home", url: "/", icon: LayoutDashboard },
@@ -29,19 +30,13 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
         {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
-              <span className="text-sidebar-primary-foreground font-bold text-sm">EV</span>
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-sidebar-foreground">EventStands</h2>
-              <p className="text-xs text-sidebar-foreground/70">Gestão de Diaristas</p>
-            </div>
+          <div className="rounded-lg bg-white px-3 py-2 flex items-center justify-center">
+            <img src={logoJpEventos} alt="JP Eventos e Cenografia" className="h-12 w-auto object-contain" />
           </div>
         )}
         {collapsed && (
-          <div className="h-8 w-8 rounded-lg bg-sidebar-primary flex items-center justify-center mx-auto">
-            <span className="text-sidebar-primary-foreground font-bold text-sm">EV</span>
+          <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center mx-auto">
+            <img src={logoJpEventos} alt="JP" className="h-6 w-6 object-contain" />
           </div>
         )}
       </SidebarHeader>

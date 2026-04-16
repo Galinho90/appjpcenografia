@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -17,8 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {
-  useColaboradores, useDiarias, useVales, useReembolsos, useFechamentos,
-  useCreateDiaria, useCreateVale, useCreateReembolso,
+  useColaboradores, useFechamentos,
+  useCategorias, useLancamentos, useCreateLancamento,
 } from "@/hooks/useSupabaseData";
 
 function getQuinzena(ref: Date) {
@@ -34,163 +33,113 @@ function getQuinzena(ref: Date) {
 
 function shiftQuinzena(q: { inicio: Date; fim: Date }, dir: -1 | 1) {
   const ref = new Date(q.inicio);
-  if (dir === 1) {
-    ref.setDate(q.fim.getDate() + 1);
-  } else {
-    ref.setDate(q.inicio.getDate() - 1);
-  }
+  if (dir === 1) ref.setDate(q.fim.getDate() + 1);
+  else ref.setDate(q.inicio.getDate() - 1);
   return getQuinzena(ref);
 }
 
 const fmtDate = (d: Date) => d.toLocaleDateString("pt-BR");
 const toISO = (d: Date) => d.toISOString().slice(0, 10);
-const fmtBRL = (n: number) => `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-type Lancamento = {
-  id: string;
-  tipo: "diaria" | "vale" | "reembolso";
-  data: string;
-  valor: number;
-  detalhe?: string;
-};
+const fmtBRL = (n: number) =>
+  `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function ExtratoDiarista() {
+  const { toast } = useToast();
   const { data: colaboradores = [], isLoading: loadingCol } = useColaboradores();
-  const { data: diarias = [] } = useDiarias();
-  const { data: vales = [] } = useVales();
-  const { data: reembolsos = [] } = useReembolsos();
+  const { data: categorias = [] } = useCategorias();
+  const { data: lancamentos = [] } = useLancamentos();
   const { data: fechamentos = [] } = useFechamentos();
+  const createLancamento = useCreateLancamento();
 
   const [colaboradorId, setColaboradorId] = useState<string>("");
 
   const quinzenaAtual = useMemo(() => getQuinzena(new Date()), []);
   const quinzenaAnterior = useMemo(() => shiftQuinzena(quinzenaAtual, -1), [quinzenaAtual]);
-
   const [periodo, setPeriodo] = useState<"anterior" | "atual">("atual");
   const selecionada = periodo === "atual" ? quinzenaAtual : quinzenaAnterior;
   const inicioISO = toISO(selecionada.inicio);
   const fimISO = toISO(selecionada.fim);
 
-  const lancamentos = useMemo<Lancamento[]>(() => {
+  // Filtra lançamentos do diarista no período
+  const lancamentosFiltrados = useMemo(() => {
     if (!colaboradorId) return [];
-    const inRange = (d: string) => d >= inicioISO && d <= fimISO;
-    const ds = diarias
-      .filter((d: any) => d.colaborador_id === colaboradorId && inRange(d.data))
-      .map((d: any) => ({
-        id: `d-${d.id}`,
-        tipo: "diaria" as const,
-        data: d.data,
-        valor: Number(d.valor),
-        detalhe: `ENTRADA: ${d.horario_entrada ?? "—"} / SAÍDA: ${d.horario_saida ?? "—"}`,
-      }));
-    const vs = vales
-      .filter((v: any) => v.colaborador_id === colaboradorId && inRange(v.data))
-      .map((v: any) => ({
-        id: `v-${v.id}`,
-        tipo: "vale" as const,
-        data: v.data,
-        valor: -Math.abs(Number(v.valor)),
-        detalhe: v.descricao ?? "",
-      }));
-    const rs = reembolsos
-      .filter((r: any) => r.colaborador_id === colaboradorId && inRange(r.data))
-      .map((r: any) => ({
-        id: `r-${r.id}`,
-        tipo: "reembolso" as const,
-        data: r.data,
-        valor: Number(r.valor),
-        detalhe: r.descricao ?? "",
-      }));
-    return [...ds, ...vs, ...rs].sort((a, b) => a.data.localeCompare(b.data));
-  }, [colaboradorId, diarias, vales, reembolsos, inicioISO, fimISO]);
+    return lancamentos
+      .filter(l => l.colaborador_id === colaboradorId && l.data >= inicioISO && l.data <= fimISO)
+      .sort((a, b) => a.data.localeCompare(b.data));
+  }, [lancamentos, colaboradorId, inicioISO, fimISO]);
 
-  // Lançamentos = somatório do que o diarista tem a receber (diárias + reembolsos)
-  const totalLancamentos = lancamentos
-    .filter((l) => l.tipo === "diaria" || l.tipo === "reembolso")
+  // Crédito = soma a pagar; Débito = desconta
+  const totalCreditos = lancamentosFiltrados
+    .filter(l => l.categoria?.tipo === "C")
+    .reduce((s, l) => s + l.valor, 0);
+  const totalDebitos = lancamentosFiltrados
+    .filter(l => l.categoria?.tipo === "D")
     .reduce((s, l) => s + l.valor, 0);
 
-  // Pagos = vales já adiantados + valor de fechamentos efetivamente pagos
-  const totalVales = lancamentos
-    .filter((l) => l.tipo === "vale")
-    .reduce((s, l) => s + Math.abs(l.valor), 0);
-
-  const fechamentoSelecionado = fechamentos.find(
-    (f: any) => f.colaborador_id === colaboradorId && f.periodo_inicio === inicioISO && f.periodo_fim === fimISO
+  const fechamentoSel = fechamentos.find(
+    (f: any) => f.colaborador_id === colaboradorId && f.periodo_inicio === inicioISO && f.periodo_fim === fimISO,
   );
-  const totalFechamentoPago = fechamentoSelecionado?.status === "pago" ? Number((fechamentoSelecionado as any).valor_final) : 0;
-  const totalPago = totalVales + totalFechamentoPago;
-  const aPagar = Math.max(totalLancamentos - totalPago, 0);
+  const totalFechamentoPago = fechamentoSel?.status === "pago" ? Number((fechamentoSel as any).valor_final) : 0;
+  const totalPago = totalDebitos + totalFechamentoPago;
+  const aPagar = Math.max(totalCreditos - totalPago, 0);
 
-  const colaboradorNome = colaboradores.find((c) => c.id === colaboradorId)?.nome;
-  const colaboradorSel = colaboradores.find((c) => c.id === colaboradorId);
+  const colaboradorSel = colaboradores.find(c => c.id === colaboradorId);
+  const colaboradorNome = colaboradorSel?.nome;
 
-  const tipoLabel: Record<Lancamento["tipo"], string> = {
-    diaria: "DIÁRIA",
-    vale: "VALE",
-    reembolso: "REEMBOLSO",
-  };
-
-  // ── Modal "Novo Lançamento" ──
-  const { toast } = useToast();
+  // ── Modal ──
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [tab, setTab] = useState<"diaria" | "vale" | "reembolso">("diaria");
   const hoje = toISO(new Date());
-  const [diariaForm, setDiariaForm] = useState({ data: hoje, hora_entrada: "", hora_saida: "", valor: 0, observacoes: "" });
-  const [valeForm, setValeForm] = useState({ data: hoje, valor: 0, descricao: "" });
-  const [reembForm, setReembForm] = useState({ data: hoje, valor: 0, descricao: "" });
+  const categoriasAtivas = categorias.filter(c => c.ativo);
+  const [form, setForm] = useState({
+    categoria_id: "",
+    data: hoje,
+    valor: 0,
+    hora_entrada: "",
+    hora_saida: "",
+    descricao: "",
+  });
 
-  const createDiaria = useCreateDiaria();
-  const createVale = useCreateVale();
-  const createReemb = useCreateReembolso();
+  const categoriaSelecionada = categorias.find(c => c.id === form.categoria_id);
+  const isDiariaCategoria = categoriaSelecionada?.descricao.toUpperCase().includes("DIÁRIA")
+    || categoriaSelecionada?.descricao.toUpperCase().includes("DIARIA");
 
   const abrirModal = () => {
     if (!colaboradorId) {
-      toast({ title: "Selecione um diarista", description: "Escolha um diarista antes de lançar.", variant: "destructive" });
+      toast({ title: "Selecione um diarista", variant: "destructive" });
       return;
     }
-    setDiariaForm({ data: hoje, hora_entrada: "", hora_saida: "", valor: colaboradorSel?.valor_diaria_padrao ?? 0, observacoes: "" });
-    setValeForm({ data: hoje, valor: 0, descricao: "" });
-    setReembForm({ data: hoje, valor: 0, descricao: "" });
-    setTab("diaria");
+    setForm({
+      categoria_id: "",
+      data: hoje,
+      valor: colaboradorSel?.valor_diaria_padrao ?? 0,
+      hora_entrada: "",
+      hora_saida: "",
+      descricao: "",
+    });
     setDialogOpen(true);
   };
 
   const handleSalvar = async () => {
+    if (!form.categoria_id) {
+      toast({ title: "Selecione uma categoria", variant: "destructive" });
+      return;
+    }
     try {
-      if (tab === "diaria") {
-        await createDiaria.mutateAsync({
-          colaborador_id: colaboradorId,
-          data: diariaForm.data,
-          hora_entrada: diariaForm.hora_entrada || undefined,
-          hora_saida: diariaForm.hora_saida || undefined,
-          valor: Number(diariaForm.valor),
-          observacoes: diariaForm.observacoes || undefined,
-        });
-        toast({ title: "Diária registrada!" });
-      } else if (tab === "vale") {
-        await createVale.mutateAsync({
-          colaborador_id: colaboradorId,
-          data: valeForm.data,
-          valor: Number(valeForm.valor),
-          descricao: valeForm.descricao || undefined,
-        });
-        toast({ title: "Vale registrado!" });
-      } else {
-        await createReemb.mutateAsync({
-          colaborador_id: colaboradorId,
-          data: reembForm.data,
-          valor: Number(reembForm.valor),
-          descricao: reembForm.descricao || undefined,
-        });
-        toast({ title: "Reembolso registrado!" });
-      }
+      await createLancamento.mutateAsync({
+        colaborador_id: colaboradorId,
+        categoria_id: form.categoria_id,
+        data: form.data,
+        valor: Number(form.valor),
+        hora_entrada: form.hora_entrada || null,
+        hora_saida: form.hora_saida || null,
+        descricao: form.descricao || null,
+      });
+      toast({ title: "Lançamento registrado!" });
       setDialogOpen(false);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
   };
-
-  const salvando = createDiaria.isPending || createVale.isPending || createReemb.isPending;
 
   const gerarPDF = (q: { inicio: Date; fim: Date }, labelPeriodo: string) => {
     if (!colaboradorId) {
@@ -200,36 +149,23 @@ export default function ExtratoDiarista() {
     const ini = toISO(q.inicio);
     const fim = toISO(q.fim);
     const inRange = (d: string) => d >= ini && d <= fim;
+    const list = lancamentos
+      .filter(l => l.colaborador_id === colaboradorId && inRange(l.data))
+      .sort((a, b) => a.data.localeCompare(b.data));
 
-    const ds = diarias.filter((d: any) => d.colaborador_id === colaboradorId && inRange(d.data));
-    const vs = vales.filter((v: any) => v.colaborador_id === colaboradorId && inRange(v.data));
-    const rs = reembolsos.filter((r: any) => r.colaborador_id === colaboradorId && inRange(r.data));
+    const linhas = list.map(l => {
+      const isDeb = l.categoria?.tipo === "D";
+      return [
+        new Date(l.data).toLocaleDateString("pt-BR"),
+        l.categoria?.descricao ?? "—",
+        l.descricao || "",
+        `${isDeb ? "- " : ""}${fmtBRL(l.valor)}`,
+      ] as [string, string, string, string];
+    });
 
-    const linhas: [string, string, string, string][] = [
-      ...ds.map((d: any) => [
-        new Date(d.data).toLocaleDateString("pt-BR"),
-        "Diária",
-        `${d.horario_entrada || "—"} / ${d.horario_saida || "—"}`,
-        fmtBRL(Number(d.valor)),
-      ] as [string, string, string, string]),
-      ...vs.map((v: any) => [
-        new Date(v.data).toLocaleDateString("pt-BR"),
-        "Vale",
-        v.descricao || "",
-        `- ${fmtBRL(Math.abs(Number(v.valor)))}`,
-      ] as [string, string, string, string]),
-      ...rs.map((r: any) => [
-        new Date(r.data).toLocaleDateString("pt-BR"),
-        "Reembolso",
-        r.descricao || "",
-        fmtBRL(Number(r.valor)),
-      ] as [string, string, string, string]),
-    ].sort((a, b) => a[0].split("/").reverse().join("").localeCompare(b[0].split("/").reverse().join("")));
-
-    const totalDiarias = ds.reduce((s: number, d: any) => s + Number(d.valor), 0);
-    const totalVales = vs.reduce((s: number, v: any) => s + Number(v.valor), 0);
-    const totalReemb = rs.reduce((s: number, r: any) => s + Number(r.valor), 0);
-    const total = totalDiarias - totalVales + totalReemb;
+    const totC = list.filter(l => l.categoria?.tipo === "C").reduce((s, l) => s + l.valor, 0);
+    const totD = list.filter(l => l.categoria?.tipo === "D").reduce((s, l) => s + l.valor, 0);
+    const total = totC - totD;
 
     const doc = new jsPDF();
     doc.setFontSize(16);
@@ -239,7 +175,7 @@ export default function ExtratoDiarista() {
     doc.text(`${labelPeriodo}: ${fmtDate(q.inicio)} a ${fmtDate(q.fim)}`, 14, 35);
 
     autoTable(doc, {
-      head: [["Data", "Tipo", "Detalhe", "Valor"]],
+      head: [["Data", "Categoria", "Descrição", "Valor"]],
       body: linhas.length ? linhas : [["—", "—", "Sem lançamentos", "—"]],
       startY: 42,
       headStyles: { fillColor: [124, 58, 237] },
@@ -248,11 +184,10 @@ export default function ExtratoDiarista() {
 
     const finalY = (doc as any).lastAutoTable.finalY + 8;
     doc.setFontSize(11);
-    doc.text(`Total Diárias: ${fmtBRL(totalDiarias)}`, 14, finalY);
-    doc.text(`Total Vales: -${fmtBRL(totalVales)}`, 14, finalY + 6);
-    doc.text(`Total Reembolsos: ${fmtBRL(totalReemb)}`, 14, finalY + 12);
+    doc.text(`Total Créditos: ${fmtBRL(totC)}`, 14, finalY);
+    doc.text(`Total Débitos: -${fmtBRL(totD)}`, 14, finalY + 6);
     doc.setFontSize(13);
-    doc.text(`TOTAL A PAGAR: ${fmtBRL(total)}`, 14, finalY + 22);
+    doc.text(`TOTAL A PAGAR: ${fmtBRL(total)}`, 14, finalY + 16);
 
     const slug = (colaboradorNome ?? "diarista").toLowerCase().replace(/\s+/g, "-");
     doc.save(`extrato-${slug}-${ini}-${fim}.pdf`);
@@ -271,42 +206,62 @@ export default function ExtratoDiarista() {
           <DialogHeader>
             <DialogTitle>Novo Lançamento {colaboradorNome ? `— ${colaboradorNome}` : ""}</DialogTitle>
           </DialogHeader>
-          <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="mt-2">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="diaria">Diária</TabsTrigger>
-              <TabsTrigger value="vale">Vale</TabsTrigger>
-              <TabsTrigger value="reembolso">Reembolso</TabsTrigger>
-            </TabsList>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>Categoria</Label>
+              <Select value={form.categoria_id} onValueChange={(v) => setForm({ ...form, categoria_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione a categoria..." /></SelectTrigger>
+                <SelectContent>
+                  {categoriasAtivas.map(c => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.descricao} ({c.tipo === "C" ? "Crédito" : "Débito"})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-            <TabsContent value="diaria" className="space-y-4 pt-4">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-2"><Label>Data</Label><Input type="date" value={diariaForm.data} onChange={(e) => setDiariaForm({ ...diariaForm, data: e.target.value })} /></div>
-                <div className="space-y-2"><Label>Entrada</Label><Input type="time" value={diariaForm.hora_entrada} onChange={(e) => setDiariaForm({ ...diariaForm, hora_entrada: e.target.value })} /></div>
-                <div className="space-y-2"><Label>Saída</Label><Input type="time" value={diariaForm.hora_saida} onChange={(e) => setDiariaForm({ ...diariaForm, hora_saida: e.target.value })} /></div>
+            <div className={cn("grid gap-3", isDiariaCategoria ? "grid-cols-3" : "grid-cols-2")}>
+              <div className="space-y-2">
+                <Label>Data</Label>
+                <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
               </div>
-              <div className="space-y-2"><Label>Valor (R$)</Label><Input type="number" value={diariaForm.valor || ""} onChange={(e) => setDiariaForm({ ...diariaForm, valor: Number(e.target.value) })} /></div>
-              <div className="space-y-2"><Label>Observações</Label><Textarea value={diariaForm.observacoes} onChange={(e) => setDiariaForm({ ...diariaForm, observacoes: e.target.value })} placeholder="Opcional..." /></div>
-            </TabsContent>
+              {isDiariaCategoria && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Entrada</Label>
+                    <Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Saída</Label>
+                    <Input type="time" value={form.hora_saida} onChange={(e) => setForm({ ...form, hora_saida: e.target.value })} />
+                  </div>
+                </>
+              )}
+              {!isDiariaCategoria && (
+                <div className="space-y-2">
+                  <Label>Valor (R$)</Label>
+                  <Input type="number" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
+                </div>
+              )}
+            </div>
 
-            <TabsContent value="vale" className="space-y-4 pt-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2"><Label>Data</Label><Input type="date" value={valeForm.data} onChange={(e) => setValeForm({ ...valeForm, data: e.target.value })} /></div>
-                <div className="space-y-2"><Label>Valor (R$)</Label><Input type="number" value={valeForm.valor || ""} onChange={(e) => setValeForm({ ...valeForm, valor: Number(e.target.value) })} /></div>
+            {isDiariaCategoria && (
+              <div className="space-y-2">
+                <Label>Valor (R$)</Label>
+                <Input type="number" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
               </div>
-              <div className="space-y-2"><Label>Descrição</Label><Input value={valeForm.descricao} onChange={(e) => setValeForm({ ...valeForm, descricao: e.target.value })} placeholder="Motivo do vale..." /></div>
-            </TabsContent>
+            )}
 
-            <TabsContent value="reembolso" className="space-y-4 pt-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2"><Label>Data</Label><Input type="date" value={reembForm.data} onChange={(e) => setReembForm({ ...reembForm, data: e.target.value })} /></div>
-                <div className="space-y-2"><Label>Valor (R$)</Label><Input type="number" value={reembForm.valor || ""} onChange={(e) => setReembForm({ ...reembForm, valor: Number(e.target.value) })} /></div>
-              </div>
-              <div className="space-y-2"><Label>Descrição</Label><Input value={reembForm.descricao} onChange={(e) => setReembForm({ ...reembForm, descricao: e.target.value })} placeholder="Descrição do reembolso..." /></div>
-            </TabsContent>
-          </Tabs>
-          <Button className="w-full mt-2" onClick={handleSalvar} disabled={salvando}>
-            {salvando ? "Salvando..." : "Salvar Lançamento"}
-          </Button>
+            <div className="space-y-2">
+              <Label>Descrição</Label>
+              <Textarea value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Opcional..." />
+            </div>
+
+            <Button className="w-full" onClick={handleSalvar} disabled={createLancamento.isPending}>
+              {createLancamento.isPending ? "Salvando..." : "Salvar Lançamento"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -322,18 +277,12 @@ export default function ExtratoDiarista() {
             {loadingCol ? (
               <Skeleton className="h-10 w-full" />
             ) : colaboradores.length > 5 ? (
-              <ColaboradorCombobox
-                colaboradores={colaboradores}
-                value={colaboradorId}
-                onChange={setColaboradorId}
-              />
+              <ColaboradorCombobox colaboradores={colaboradores} value={colaboradorId} onChange={setColaboradorId} />
             ) : (
               <Select value={colaboradorId} onValueChange={setColaboradorId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um diarista..." />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Selecione um diarista..." /></SelectTrigger>
                 <SelectContent>
-                  {colaboradores.map((c) => (
+                  {colaboradores.map(c => (
                     <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                   ))}
                 </SelectContent>
@@ -345,7 +294,7 @@ export default function ExtratoDiarista() {
             {[
               { key: "anterior" as const, label: "Quinzena Anterior", q: quinzenaAnterior },
               { key: "atual" as const, label: "Quinzena Atual", q: quinzenaAtual },
-            ].map((opt) => {
+            ].map(opt => {
               const active = periodo === opt.key;
               return (
                 <button
@@ -354,9 +303,7 @@ export default function ExtratoDiarista() {
                   onClick={() => setPeriodo(opt.key)}
                   className={cn(
                     "rounded-lg border-2 p-5 text-center transition-all",
-                    active
-                      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
-                      : "border-border bg-card hover:border-primary/40"
+                    active ? "border-primary bg-primary/5 ring-2 ring-primary/30" : "border-border bg-card hover:border-primary/40",
                   )}
                 >
                   <p className="font-semibold text-foreground">{opt.label}</p>
@@ -392,14 +339,14 @@ export default function ExtratoDiarista() {
         </Card>
         <Card className="border-none overflow-hidden shadow-lg">
           <div className="bg-primary p-6 text-center">
-            <p className="text-2xl font-bold text-primary-foreground">{fmtBRL(totalLancamentos)}</p>
-            <p className="text-sm text-primary-foreground/90">Lançamentos</p>
+            <p className="text-2xl font-bold text-primary-foreground">{fmtBRL(totalCreditos)}</p>
+            <p className="text-sm text-primary-foreground/90">Créditos</p>
           </div>
         </Card>
         <Card className="border-none overflow-hidden shadow-lg">
           <div className="bg-destructive p-6 text-center">
             <p className="text-2xl font-bold text-destructive-foreground">{fmtBRL(totalPago)}</p>
-            <p className="text-sm text-destructive-foreground/90">Pagos</p>
+            <p className="text-sm text-destructive-foreground/90">Débitos / Pagos</p>
           </div>
         </Card>
       </div>
@@ -413,26 +360,20 @@ export default function ExtratoDiarista() {
         <CardContent>
           {!colaboradorId ? (
             <p className="py-8 text-center text-muted-foreground">Selecione um diarista para visualizar o extrato.</p>
-          ) : lancamentos.length === 0 ? (
+          ) : lancamentosFiltrados.length === 0 ? (
             <p className="py-8 text-center text-muted-foreground">Nenhum lançamento na quinzena selecionada.</p>
           ) : (
             <div className="flex flex-col gap-3">
-              {lancamentos.map((l) => {
-                const isNegativo = l.valor < 0;
-                const accentClass =
-                  l.tipo === "diaria"
-                    ? "border-l-success"
-                    : l.tipo === "vale"
-                    ? "border-l-destructive"
-                    : "border-l-info";
+              {lancamentosFiltrados.map(l => {
+                const isDeb = l.categoria?.tipo === "D";
+                const accent = isDeb ? "border-l-destructive" : "border-l-success";
+                const colorValue = isDeb ? "text-destructive" : "text-success";
+                const horarios = l.hora_entrada || l.hora_saida
+                  ? `ENTRADA: ${l.hora_entrada ?? "—"} / SAÍDA: ${l.hora_saida ?? "—"}`
+                  : "";
+                const detalhe = [horarios, l.descricao].filter(Boolean).join(" • ");
                 return (
-                  <Card
-                    key={l.id}
-                    className={cn(
-                      "border-l-4 shadow-sm hover:shadow-md transition-shadow",
-                      accentClass
-                    )}
-                  >
+                  <Card key={l.id} className={cn("border-l-4 shadow-sm hover:shadow-md transition-shadow", accent)}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
@@ -440,22 +381,15 @@ export default function ExtratoDiarista() {
                             {new Date(l.data).toLocaleDateString("pt-BR")}
                           </p>
                           <p className="text-sm font-bold text-foreground whitespace-nowrap">
-                            {tipoLabel[l.tipo]}
+                            {l.categoria?.descricao ?? "—"}
                           </p>
                         </div>
-                        <p
-                          className={cn(
-                            "text-base font-bold whitespace-nowrap",
-                            isNegativo ? "text-destructive" : "text-success"
-                          )}
-                        >
-                          {fmtBRL(l.valor)}
+                        <p className={cn("text-base font-bold whitespace-nowrap", colorValue)}>
+                          {isDeb ? "- " : ""}{fmtBRL(l.valor)}
                         </p>
                       </div>
-                      {l.detalhe && (
-                        <p className="text-xs text-muted-foreground mt-2 break-words">
-                          {l.detalhe}
-                        </p>
+                      {detalhe && (
+                        <p className="text-xs text-muted-foreground mt-2 break-words">{detalhe}</p>
                       )}
                     </CardContent>
                   </Card>
@@ -479,16 +413,11 @@ function ColaboradorCombobox({
   onChange: (id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const selecionado = colaboradores.find((c) => c.id === value);
+  const selecionado = colaboradores.find(c => c.id === value);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between font-normal"
-        >
+        <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between font-normal">
           {selecionado ? selecionado.nome : "Selecione um diarista..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -499,14 +428,11 @@ function ColaboradorCombobox({
           <CommandList>
             <CommandEmpty>Nenhum diarista encontrado.</CommandEmpty>
             <CommandGroup>
-              {colaboradores.map((c) => (
+              {colaboradores.map(c => (
                 <CommandItem
                   key={c.id}
                   value={c.nome}
-                  onSelect={() => {
-                    onChange(c.id);
-                    setOpen(false);
-                  }}
+                  onSelect={() => { onChange(c.id); setOpen(false); }}
                 >
                   <Check className={cn("mr-2 h-4 w-4", value === c.id ? "opacity-100" : "opacity-0")} />
                   {c.nome}
@@ -519,4 +445,3 @@ function ColaboradorCombobox({
     </Popover>
   );
 }
-

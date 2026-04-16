@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import * as XLSX from "xlsx";
-import { Plus, Search, Edit, Trash2, Eye, FileSpreadsheet } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, FileSpreadsheet, Upload, RefreshCw } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,13 +19,22 @@ import {
 } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 import type { Colaborador } from "@/types";
 
 const emptyForm = {
-  nome: "", cpf: "", telefone: "", funcao: "",
-  valor_diaria_padrao: 0, chave_pix: "", banco: "", agencia: "", conta: "",
+  nome: "", cpf: "", rg: "", data_nascimento: "", telefone: "", email: "",
+  funcao: "", valor_diaria_padrao: 0, pix: "", senha: "",
+  chave_pix: "", banco: "", agencia: "", conta: "", foto_url: "",
   ativo: true,
 };
+
+function gerarSenha(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  let s = "";
+  for (let i = 0; i < 10; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
 
 export default function Colaboradores() {
   const [search, setSearch] = useState("");
@@ -41,7 +50,27 @@ export default function Colaboradores() {
   const updateMutation = useUpdateColaborador();
   const deleteMutation = useDeleteColaborador();
 
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<any>(emptyForm);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFotoUpload = async (file: File) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("diaristas-fotos").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("diaristas-fotos").getPublicUrl(path);
+      setForm({ ...form, foto_url: data.publicUrl });
+      toast({ title: "Foto enviada!" });
+    } catch (e: any) {
+      toast({ title: "Erro ao enviar foto", description: e.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const filtered = colaboradores.filter((c) => {
     if (statusFilter === "ativos" && !c.ativo) return false;
@@ -93,12 +122,19 @@ export default function Colaboradores() {
 
   const handleSave = async () => {
     try {
+      const { senha, ...rest } = form;
+      const payload: any = { ...rest };
+      if (senha && senha.trim()) {
+        // hash leve no client (placeholder). Para produção, usar edge function com bcrypt.
+        payload.senha_hash = btoa(unescape(encodeURIComponent(senha)));
+      }
+      if (!payload.data_nascimento) payload.data_nascimento = null;
       if (mode === "edit" && editingId) {
-        await updateMutation.mutateAsync({ id: editingId, ...form });
-        toast({ title: "Colaborador atualizado!" });
+        await updateMutation.mutateAsync({ id: editingId, ...payload });
+        toast({ title: "Diarista atualizado!" });
       } else {
-        await createMutation.mutateAsync(form);
-        toast({ title: "Colaborador cadastrado com sucesso!" });
+        await createMutation.mutateAsync(payload);
+        toast({ title: "Diarista cadastrado com sucesso!" });
       }
       setDialogOpen(false);
       setForm(emptyForm);
@@ -134,43 +170,112 @@ export default function Colaboradores() {
           <DialogTrigger asChild>
             <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> Novo Diarista</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {mode === "create" ? "Cadastrar Diarista" : mode === "edit" ? "Editar Diarista" : "Detalhes do Diarista"}
               </DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nome Completo</Label>
-                  <Input disabled={readOnly} value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome completo" />
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Nome</Label>
+                    <Input disabled={readOnly} value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome completo" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Celular</Label>
+                    <Input disabled={readOnly} value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(11) 99999-9999" />
+                  </div>
                 </div>
+                <div className="space-y-2 flex flex-col items-center">
+                  <Label>Foto do Diarista</Label>
+                  <div className="border rounded-md w-32 h-32 flex items-center justify-center overflow-hidden bg-muted/30">
+                    {form.foto_url ? (
+                      <img src={form.foto_url} alt="Foto" className="object-cover w-full h-full" />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Sem foto</span>
+                    )}
+                  </div>
+                  {!readOnly && (
+                    <>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleFotoUpload(e.target.files[0])}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-32 gap-2"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                      >
+                        <Upload className="h-4 w-4" />
+                        {uploading ? "Enviando..." : "Enviar"}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>CPF</Label>
                   <Input disabled={readOnly} value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} placeholder="000.000.000-00" />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Telefone</Label>
-                  <Input disabled={readOnly} value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(11) 99999-9999" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Função</Label>
-                  <Input disabled={readOnly} value={form.funcao} onChange={(e) => setForm({ ...form, funcao: e.target.value })} placeholder="Montador, Eletricista..." />
+                  <Label>RG</Label>
+                  <Input disabled={readOnly} value={form.rg ?? ""} onChange={(e) => setForm({ ...form, rg: e.target.value })} placeholder="00.000.000-0" />
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Valor Diária Padrão</Label>
+                  <Label>Data de Nascimento</Label>
+                  <Input disabled={readOnly} type="date" value={form.data_nascimento ?? ""} onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Valor da Diária</Label>
                   <Input disabled={readOnly} type="number" value={form.valor_diaria_padrao || ""} onChange={(e) => setForm({ ...form, valor_diaria_padrao: Number(e.target.value) })} placeholder="200" />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Chave PIX</Label>
-                  <Input disabled={readOnly} value={form.chave_pix} onChange={(e) => setForm({ ...form, chave_pix: e.target.value })} placeholder="CPF, email ou telefone" />
+                  <Label>Email</Label>
+                  <Input disabled={readOnly} type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="diarista@email.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label>PIX</Label>
+                  <Input disabled={readOnly} value={form.pix ?? ""} onChange={(e) => setForm({ ...form, pix: e.target.value })} placeholder="CPF, email ou telefone" />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label>Senha</Label>
+                <div className="flex gap-2">
+                  <Input
+                    disabled={readOnly}
+                    value={form.senha ?? ""}
+                    onChange={(e) => setForm({ ...form, senha: e.target.value })}
+                    placeholder={mode === "edit" ? "Deixe em branco para manter" : "Senha de acesso"}
+                  />
+                  {!readOnly && (
+                    <Button type="button" variant="outline" className="gap-2 shrink-0" onClick={() => setForm({ ...form, senha: gerarSenha() })}>
+                      <RefreshCw className="h-4 w-4" /> Gerar senha
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Função</Label>
+                <Input disabled={readOnly} value={form.funcao} onChange={(e) => setForm({ ...form, funcao: e.target.value })} placeholder="Montador, Eletricista..." />
+              </div>
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Banco</Label>
@@ -185,6 +290,7 @@ export default function Colaboradores() {
                   <Input disabled={readOnly} value={form.conta} onChange={(e) => setForm({ ...form, conta: e.target.value })} placeholder="12345-6" />
                 </div>
               </div>
+
               {mode !== "create" && (
                 <div className="flex items-center justify-between rounded-md border p-3">
                   <Label>Ativo</Label>

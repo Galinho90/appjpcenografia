@@ -4,13 +4,18 @@ export interface Colaborador {
   id: string;
   nome: string;
   cpf: string;
+  rg?: string;
+  data_nascimento?: string;
   telefone: string;
+  email?: string;
+  pix?: string;
   funcao: string;
   valor_diaria_padrao: number;
   chave_pix: string;
   banco: string;
   agencia: string;
   conta: string;
+  foto_url?: string;
   created_at: string;
   ativo: boolean;
 }

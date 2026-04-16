@@ -44,6 +44,7 @@ export default function Diarias() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [colabPopoverOpen, setColabPopoverOpen] = useState(false);
+  const [catPopoverOpen, setCatPopoverOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: lancamentos = [], isLoading } = useLancamentos();
@@ -197,21 +198,43 @@ export default function Diarias() {
 
             <div className="space-y-2">
               <Label>Categoria</Label>
-              <Select value={form.categoria_id} onValueChange={(v) => setForm({ ...form, categoria_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Selecione a categoria..." /></SelectTrigger>
-                <SelectContent>
-                  {categoriasAtivas.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
+              <Popover open={catPopoverOpen} onOpenChange={setCatPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                    {categoriaSelecionada ? (
                       <span className="flex items-center gap-2">
-                        <Badge variant={c.tipo === "C" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0">
-                          {c.tipo === "C" ? "Crédito" : "Débito"}
+                        <Badge variant={categoriaSelecionada.tipo === "C" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0">
+                          {categoriaSelecionada.tipo === "C" ? "Crédito" : "Débito"}
                         </Badge>
-                        {c.descricao}
+                        {categoriaSelecionada.descricao}
                       </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    ) : "Selecione a categoria..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar categoria..." />
+                    <CommandList>
+                      <CommandEmpty>Nenhuma encontrada.</CommandEmpty>
+                      <CommandGroup>
+                        {categoriasAtivas.map((c) => (
+                          <CommandItem key={c.id} value={c.descricao} onSelect={() => {
+                            setForm({ ...form, categoria_id: c.id });
+                            setCatPopoverOpen(false);
+                          }}>
+                            <Check className={cn("mr-2 h-4 w-4", form.categoria_id === c.id ? "opacity-100" : "opacity-0")} />
+                            <Badge variant={c.tipo === "C" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 mr-2">
+                              {c.tipo === "C" ? "Crédito" : "Débito"}
+                            </Badge>
+                            {c.descricao}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {isDiaria ? (

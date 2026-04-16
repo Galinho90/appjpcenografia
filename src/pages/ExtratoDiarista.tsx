@@ -1,0 +1,235 @@
+import { useMemo, useState } from "react";
+import { FileText, CheckCircle2, FileSpreadsheet } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { useColaboradores, useDiarias, useVales, useReembolsos, useFechamentos } from "@/hooks/useSupabaseData";
+
+function getQuinzena(ref: Date) {
+  const y = ref.getFullYear();
+  const m = ref.getMonth();
+  const d = ref.getDate();
+  if (d <= 15) {
+    return { inicio: new Date(y, m, 1), fim: new Date(y, m, 15) };
+  }
+  const fim = new Date(y, m + 1, 0);
+  return { inicio: new Date(y, m, 16), fim };
+}
+
+function shiftQuinzena(q: { inicio: Date; fim: Date }, dir: -1 | 1) {
+  const ref = new Date(q.inicio);
+  if (dir === 1) {
+    ref.setDate(q.fim.getDate() + 1);
+  } else {
+    ref.setDate(q.inicio.getDate() - 1);
+  }
+  return getQuinzena(ref);
+}
+
+const fmtDate = (d: Date) => d.toLocaleDateString("pt-BR");
+const toISO = (d: Date) => d.toISOString().slice(0, 10);
+const fmtBRL = (n: number) => `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+type Lancamento = {
+  id: string;
+  tipo: "diaria" | "vale" | "reembolso";
+  data: string;
+  valor: number;
+  detalhe?: string;
+};
+
+export default function ExtratoDiarista() {
+  const { data: colaboradores = [], isLoading: loadingCol } = useColaboradores();
+  const { data: diarias = [] } = useDiarias();
+  const { data: vales = [] } = useVales();
+  const { data: reembolsos = [] } = useReembolsos();
+  const { data: fechamentos = [] } = useFechamentos();
+
+  const [colaboradorId, setColaboradorId] = useState<string>("");
+
+  const quinzenaAtual = useMemo(() => getQuinzena(new Date()), []);
+  const quinzenaAnterior = useMemo(() => shiftQuinzena(quinzenaAtual, -1), [quinzenaAtual]);
+
+  const [periodo, setPeriodo] = useState<"anterior" | "atual">("atual");
+  const selecionada = periodo === "atual" ? quinzenaAtual : quinzenaAnterior;
+  const inicioISO = toISO(selecionada.inicio);
+  const fimISO = toISO(selecionada.fim);
+
+  const lancamentos = useMemo<Lancamento[]>(() => {
+    if (!colaboradorId) return [];
+    const inRange = (d: string) => d >= inicioISO && d <= fimISO;
+    const ds = diarias
+      .filter((d: any) => d.colaborador_id === colaboradorId && inRange(d.data))
+      .map((d: any) => ({
+        id: `d-${d.id}`,
+        tipo: "diaria" as const,
+        data: d.data,
+        valor: Number(d.valor),
+        detalhe: `ENTRADA: ${d.horario_entrada ?? "—"} / SAÍDA: ${d.horario_saida ?? "—"}`,
+      }));
+    const vs = vales
+      .filter((v: any) => v.colaborador_id === colaboradorId && inRange(v.data))
+      .map((v: any) => ({
+        id: `v-${v.id}`,
+        tipo: "vale" as const,
+        data: v.data,
+        valor: -Math.abs(Number(v.valor)),
+        detalhe: v.descricao ?? "",
+      }));
+    const rs = reembolsos
+      .filter((r: any) => r.colaborador_id === colaboradorId && inRange(r.data))
+      .map((r: any) => ({
+        id: `r-${r.id}`,
+        tipo: "reembolso" as const,
+        data: r.data,
+        valor: Number(r.valor),
+        detalhe: r.descricao ?? "",
+      }));
+    return [...ds, ...vs, ...rs].sort((a, b) => a.data.localeCompare(b.data));
+  }, [colaboradorId, diarias, vales, reembolsos, inicioISO, fimISO]);
+
+  const totalLancamentos = lancamentos.reduce((s, l) => s + l.valor, 0);
+
+  const fechamentoSelecionado = fechamentos.find(
+    (f: any) => f.colaborador_id === colaboradorId && f.periodo_inicio === inicioISO && f.periodo_fim === fimISO
+  );
+  const totalPago = fechamentoSelecionado?.status === "pago" ? Number((fechamentoSelecionado as any).valor_final) : 0;
+  const aPagar = Math.max(totalLancamentos - totalPago, 0);
+
+  const colaboradorNome = colaboradores.find((c) => c.id === colaboradorId)?.nome;
+
+  const tipoLabel: Record<Lancamento["tipo"], string> = {
+    diaria: "DIÁRIA",
+    vale: "VALE",
+    reembolso: "REEMBOLSO",
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="shadow-md">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-2xl">Extrato do Diarista</CardTitle>
+          <Button className="gap-2">
+            <FileText className="h-4 w-4" /> Novo Lançamento
+          </Button>
+        </CardHeader>
+      </Card>
+
+      <Card className="shadow-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileText className="h-4 w-4 text-primary" /> Extrato
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Diarista</Label>
+            {loadingCol ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <Select value={colaboradorId} onValueChange={setColaboradorId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um diarista..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {colaboradores.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[
+              { key: "anterior" as const, label: "Quinzena Anterior", q: quinzenaAnterior },
+              { key: "atual" as const, label: "Quinzena Atual", q: quinzenaAtual },
+            ].map((opt) => {
+              const active = periodo === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setPeriodo(opt.key)}
+                  className={cn(
+                    "rounded-lg border-2 p-5 text-center transition-all",
+                    active
+                      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
+                      : "border-border bg-card hover:border-primary/40"
+                  )}
+                >
+                  <p className="font-semibold text-foreground">{opt.label}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {fmtDate(opt.q.inicio)} a {fmtDate(opt.q.fim)}
+                  </p>
+                  <div className="mt-3 flex items-center justify-center gap-2">
+                    <span className={cn("inline-flex h-9 w-9 items-center justify-center rounded-md", active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                      <CheckCircle2 className="h-4 w-4" />
+                    </span>
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                      <FileSpreadsheet className="h-4 w-4" />
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card className="border-none overflow-hidden shadow-lg">
+          <div className="bg-accent p-6 text-center">
+            <p className="text-2xl font-bold text-accent-foreground">{fmtBRL(aPagar)}</p>
+            <p className="text-sm text-accent-foreground/90">A Pagar</p>
+          </div>
+        </Card>
+        <Card className="border-none overflow-hidden shadow-lg">
+          <div className="bg-primary p-6 text-center">
+            <p className="text-2xl font-bold text-primary-foreground">{fmtBRL(totalLancamentos)}</p>
+            <p className="text-sm text-primary-foreground/90">Lançamentos</p>
+          </div>
+        </Card>
+        <Card className="border-none overflow-hidden shadow-lg">
+          <div className="bg-destructive p-6 text-center">
+            <p className="text-2xl font-bold text-destructive-foreground">{fmtBRL(totalPago)}</p>
+            <p className="text-sm text-destructive-foreground/90">Pagos</p>
+          </div>
+        </Card>
+      </div>
+
+      <Card className="shadow-md">
+        <CardHeader>
+          <CardTitle className="text-base">
+            Extrato {colaboradorNome ? `— ${colaboradorNome}` : ""}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!colaboradorId ? (
+            <p className="py-8 text-center text-muted-foreground">Selecione um diarista para visualizar o extrato.</p>
+          ) : lancamentos.length === 0 ? (
+            <p className="py-8 text-center text-muted-foreground">Nenhum lançamento na quinzena selecionada.</p>
+          ) : (
+            <ul className="divide-y">
+              {lancamentos.map((l) => (
+                <li key={l.id} className="flex items-start justify-between gap-4 py-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">{new Date(l.data).toLocaleDateString("pt-BR")}</p>
+                    <p className="text-sm font-bold text-foreground">{tipoLabel[l.tipo]}</p>
+                    {l.detalhe && <p className="text-xs text-muted-foreground">{l.detalhe}</p>}
+                  </div>
+                  <p className={cn("text-sm font-semibold whitespace-nowrap", l.valor < 0 ? "text-destructive" : "text-foreground")}>
+                    {fmtBRL(l.valor)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -11,6 +11,7 @@ import Vales from "./pages/Vales";
 import Reembolsos from "./pages/Reembolsos";
 import Fechamentos from "./pages/Fechamentos";
 import Relatorios from "./pages/Relatorios";
+import ExtratoDiarista from "./pages/ExtratoDiarista";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/reembolsos" element={<AppLayout><Reembolsos /></AppLayout>} />
           <Route path="/fechamentos" element={<AppLayout><Fechamentos /></AppLayout>} />
           <Route path="/relatorios" element={<AppLayout><Relatorios /></AppLayout>} />
+          <Route path="/extrato" element={<AppLayout><ExtratoDiarista /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -166,47 +166,33 @@ export default function Diarias() {
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label>Diarista</Label>
-              {colaboradoresAtivos.length > 5 ? (
-                <Popover open={colabPopoverOpen} onOpenChange={setColabPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
-                      {colabSelecionado?.nome || "Selecione..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Buscar diarista..." />
-                      <CommandList>
-                        <CommandEmpty>Nenhum encontrado.</CommandEmpty>
-                        <CommandGroup>
-                          {colaboradoresAtivos.map((c) => (
-                            <CommandItem key={c.id} value={c.nome} onSelect={() => {
-                              setForm({ ...form, colaborador_id: c.id, valor: editingId ? form.valor : (c.valor_diaria_padrao ?? form.valor) });
-                              setColabPopoverOpen(false);
-                            }}>
-                              <Check className={cn("mr-2 h-4 w-4", form.colaborador_id === c.id ? "opacity-100" : "opacity-0")} />
-                              {c.nome}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              ) : (
-                <Select value={form.colaborador_id} onValueChange={(v) => {
-                  const col = colaboradores.find(c => c.id === v);
-                  setForm({ ...form, colaborador_id: v, valor: editingId ? form.valor : (col?.valor_diaria_padrao ?? form.valor) });
-                }}>
-                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                  <SelectContent>
-                    {colaboradoresAtivos.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <Popover open={colabPopoverOpen} onOpenChange={setColabPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                    {colabSelecionado?.nome || "Selecione..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar diarista..." />
+                    <CommandList>
+                      <CommandEmpty>Nenhum encontrado.</CommandEmpty>
+                      <CommandGroup>
+                        {colaboradoresAtivos.map((c) => (
+                          <CommandItem key={c.id} value={c.nome} onSelect={() => {
+                            setForm({ ...form, colaborador_id: c.id, valor: editingId ? form.valor : (c.valor_diaria_padrao ?? form.valor) });
+                            setColabPopoverOpen(false);
+                          }}>
+                            <Check className={cn("mr-2 h-4 w-4", form.colaborador_id === c.id ? "opacity-100" : "opacity-0")} />
+                            {c.nome}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">

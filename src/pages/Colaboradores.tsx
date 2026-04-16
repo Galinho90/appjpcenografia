@@ -375,6 +375,9 @@ export default function Colaboradores() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1.5">
+                        <Button variant="ghost" size="icon" className="bg-info text-info-foreground hover:bg-info/90 h-8 w-8" onClick={() => openView(c)} title="Visualizar">
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
                           <Edit className="h-4 w-4" />
                         </Button>

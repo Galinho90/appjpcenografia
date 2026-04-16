@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS public.vales CASCADE;
+DROP TABLE IF EXISTS public.reembolsos CASCADE;

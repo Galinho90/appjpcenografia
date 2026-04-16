@@ -1,15 +1,60 @@
-import { Users, CalendarDays, DollarSign, CheckCircle2, TrendingUp, Clock } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Users, CalendarDays, DollarSign, CheckCircle2, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useColaboradores, useDiarias, useFechamentos } from "@/hooks/useSupabaseData";
+import { useColaboradores, useDiarias, useFechamentos, useVales, useReembolsos } from "@/hooks/useSupabaseData";
+
+// Compute the quinzena (1-15 or 16-end) for a given reference date
+function getQuinzena(ref: Date) {
+  const year = ref.getFullYear();
+  const month = ref.getMonth();
+  const isFirst = ref.getDate() <= 15;
+  const inicio = new Date(year, month, isFirst ? 1 : 16);
+  const fim = isFirst ? new Date(year, month, 15) : new Date(year, month + 1, 0);
+  return { inicio, fim, isFirst };
+}
+
+function shiftQuinzena(ref: Date, delta: number) {
+  const { inicio, isFirst } = getQuinzena(ref);
+  if (delta > 0) {
+    return isFirst
+      ? new Date(inicio.getFullYear(), inicio.getMonth(), 16)
+      : new Date(inicio.getFullYear(), inicio.getMonth() + 1, 1);
+  } else {
+    return isFirst
+      ? new Date(inicio.getFullYear(), inicio.getMonth() - 1, 16)
+      : new Date(inicio.getFullYear(), inicio.getMonth(), 1);
+  }
+}
+
+const fmt = (d: Date) => d.toLocaleDateString("pt-BR");
+const toISO = (d: Date) => d.toISOString().slice(0, 10);
 
 export default function Dashboard() {
+  const [ref, setRef] = useState(new Date());
+  const { inicio, fim } = useMemo(() => getQuinzena(ref), [ref]);
+  const inicioISO = toISO(inicio);
+  const fimISO = toISO(fim);
+
   const { data: colaboradores = [], isLoading: loadingC } = useColaboradores();
   const { data: diarias = [], isLoading: loadingD } = useDiarias();
+  const { data: vales = [] } = useVales();
+  const { data: reembolsos = [] } = useReembolsos();
   const { data: fechamentos = [], isLoading: loadingF } = useFechamentos();
 
   const isLoading = loadingC || loadingD || loadingF;
+
+  // Filter by quinzena
+  const diariasQ = diarias.filter(d => d.data >= inicioISO && d.data <= fimISO);
+  const valesQ = vales.filter(v => v.data >= inicioISO && v.data <= fimISO);
+  const reembolsosQ = reembolsos.filter(r => r.data >= inicioISO && r.data <= fimISO);
+  const fechamentosQ = fechamentos.filter(f => f.periodo_inicio === inicioISO);
+
+  const totalDiarias = diariasQ.reduce((s, d) => s + d.valor, 0);
+  const totalVales = valesQ.reduce((s, v) => s + v.valor, 0);
+  const totalReembolsos = reembolsosQ.reduce((s, r) => s + r.valor, 0);
 
   const stats = [
     {
@@ -19,26 +64,25 @@ export default function Dashboard() {
       gradient: "from-primary to-primary/70",
     },
     {
-      title: "Diárias do Mês",
-      value: diarias.length,
+      title: "Diárias na Quinzena",
+      value: diariasQ.length,
       icon: CalendarDays,
       gradient: "from-secondary to-secondary/70",
     },
     {
       title: "Total Pendente",
-      value: `R$ ${fechamentos.filter(f => f.status === 'pendente').reduce((s, f) => s + f.valor_final, 0).toLocaleString('pt-BR')}`,
+      value: `R$ ${fechamentosQ.filter(f => f.status === 'pendente').reduce((s, f) => s + f.valor_final, 0).toLocaleString('pt-BR')}`,
       icon: DollarSign,
       gradient: "from-accent to-accent/70",
     },
     {
       title: "Pagamentos Realizados",
-      value: fechamentos.filter(f => f.status === 'pago').length,
+      value: fechamentosQ.filter(f => f.status === 'pago').length,
       icon: CheckCircle2,
       gradient: "from-info to-info/70",
     },
   ];
 
-  // Group colaboradores by funcao for pie chart
   const funcaoCounts = colaboradores.reduce<Record<string, number>>((acc, c) => {
     acc[c.funcao || "Outros"] = (acc[c.funcao || "Outros"] || 0) + 1;
     return acc;
@@ -48,11 +92,36 @@ export default function Dashboard() {
     name, value, color: colors[i % colors.length],
   }));
 
+  const isCurrentQuinzena = useMemo(() => {
+    const now = getQuinzena(new Date());
+    return toISO(now.inicio) === inicioISO;
+  }, [inicioISO]);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Visão geral da operação</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">Visão geral da operação</p>
+        </div>
+
+        <Card className="shadow-md">
+          <CardContent className="flex items-center gap-2 p-2">
+            <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, -1))} aria-label="Quinzena anterior">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="px-2 text-center min-w-[180px]">
+              <p className="text-xs text-muted-foreground">Quinzena</p>
+              <p className="text-sm font-semibold">{fmt(inicio)} — {fmt(fim)}</p>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, 1))} aria-label="Próxima quinzena">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            {!isCurrentQuinzena && (
+              <Button variant="outline" size="sm" onClick={() => setRef(new Date())}>Hoje</Button>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {isLoading ? (
@@ -82,20 +151,20 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
-              Custos por Quinzena
+              Totais da Quinzena
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {fechamentos.length === 0 ? (
-              <p className="text-muted-foreground text-center py-10">Sem dados de fechamento ainda</p>
+            {totalDiarias + totalVales + totalReembolsos === 0 ? (
+              <p className="text-muted-foreground text-center py-10">Sem lançamentos nesta quinzena</p>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={fechamentos.map(f => ({
-                  name: `${new Date(f.periodo_inicio).toLocaleDateString("pt-BR")}`,
-                  diarias: f.total_diarias,
-                  vales: f.total_vales,
-                  reembolsos: f.total_reembolsos,
-                }))}>
+                <BarChart data={[{
+                  name: `${fmt(inicio)} — ${fmt(fim)}`,
+                  diarias: totalDiarias,
+                  vales: totalVales,
+                  reembolsos: totalReembolsos,
+                }]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(250,15%,90%)" />
                   <XAxis dataKey="name" fontSize={12} />
                   <YAxis fontSize={12} />

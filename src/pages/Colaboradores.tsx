@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Plus, Search, Edit, Trash2, Eye } from "lucide-react";
+import * as XLSX from "xlsx";
+import { Plus, Search, Edit, Trash2, Eye, FileSpreadsheet } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +29,7 @@ const emptyForm = {
 
 export default function Colaboradores() {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ativos" | "inativos" | "ambos">("ativos");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mode, setMode] = useState<"create" | "edit" | "view">("create");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -40,11 +43,32 @@ export default function Colaboradores() {
 
   const [form, setForm] = useState(emptyForm);
 
-  const filtered = colaboradores.filter(
-    (c) =>
-      c.nome.toLowerCase().includes(search.toLowerCase()) ||
-      c.funcao.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = colaboradores.filter((c) => {
+    if (statusFilter === "ativos" && !c.ativo) return false;
+    if (statusFilter === "inativos" && c.ativo) return false;
+    const q = search.toLowerCase();
+    return (
+      c.nome.toLowerCase().includes(q) ||
+      c.funcao.toLowerCase().includes(q) ||
+      c.cpf.toLowerCase().includes(q) ||
+      (c.telefone ?? "").toLowerCase().includes(q)
+    );
+  });
+
+  const handleExportExcel = () => {
+    const rows = filtered.map((c) => ({
+      Nome: c.nome,
+      Celular: c.telefone ?? "",
+      CPF: c.cpf,
+      Função: c.funcao,
+      "Valor Diária": Number(c.valor_diaria_padrao),
+      Status: c.ativo ? "Ativo" : "Inativo",
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Diaristas");
+    XLSX.writeFile(wb, `diaristas-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
 
   const openCreate = () => {
     setMode("create");
@@ -179,10 +203,38 @@ export default function Colaboradores() {
 
       <Card className="shadow-md">
         <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Buscar por nome ou função..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <Button onClick={handleExportExcel} className="gap-2 bg-success hover:bg-success/90 text-success-foreground">
+                <FileSpreadsheet className="h-4 w-4" /> Exportar para Excel
+              </Button>
+            </div>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">Mostrar:</span>
+                <RadioGroup
+                  value={statusFilter}
+                  onValueChange={(v) => setStatusFilter(v as "ativos" | "inativos" | "ambos")}
+                  className="flex items-center gap-4"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <RadioGroupItem value="ativos" id="f-ativos" />
+                    <Label htmlFor="f-ativos" className="cursor-pointer">Ativos</Label>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <RadioGroupItem value="inativos" id="f-inativos" />
+                    <Label htmlFor="f-inativos" className="cursor-pointer">Inativos</Label>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <RadioGroupItem value="ambos" id="f-ambos" />
+                    <Label htmlFor="f-ambos" className="cursor-pointer">Ambos</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="relative w-full md:w-72">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="Pesquisar..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -194,40 +246,46 @@ export default function Colaboradores() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
+                  <TableHead>Celular</TableHead>
                   <TableHead>CPF</TableHead>
                   <TableHead>Função</TableHead>
-                  <TableHead>Diária</TableHead>
+                  <TableHead className="text-right">Valor Diária</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="text-right">Ação</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map((c) => (
                   <TableRow key={c.id}>
-                    <TableCell className="font-medium">{c.nome}</TableCell>
+                    <TableCell className="font-medium uppercase">{c.nome}</TableCell>
+                    <TableCell>{c.telefone}</TableCell>
                     <TableCell>{c.cpf}</TableCell>
                     <TableCell>{c.funcao}</TableCell>
-                    <TableCell>R$ {c.valor_diaria_padrao.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell className="text-right">{c.valor_diaria_padrao.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                     <TableCell>
-                      <Badge variant={c.ativo ? "default" : "secondary"}>
-                        {c.ativo ? "Ativo" : "Inativo"}
+                      <Badge variant={c.ativo ? "default" : "secondary"} className={c.ativo ? "bg-info text-info-foreground hover:bg-info/90" : ""}>
+                        {c.ativo ? "ATIVO" : "INATIVO"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openView(c)} title="Visualizar">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)} title="Editar">
+                      <div className="flex justify-end gap-1.5">
+                        <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)} title="Excluir">
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                        <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>
                 ))}
+                {filtered.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      Nenhum diarista encontrado.
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           )}

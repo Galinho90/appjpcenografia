@@ -410,20 +410,52 @@ export default function ExtratoDiarista() {
           ) : lancamentos.length === 0 ? (
             <p className="py-8 text-center text-muted-foreground">Nenhum lançamento na quinzena selecionada.</p>
           ) : (
-            <ul className="divide-y">
-              {lancamentos.map((l) => (
-                <li key={l.id} className="flex items-start justify-between gap-4 py-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">{new Date(l.data).toLocaleDateString("pt-BR")}</p>
-                    <p className="text-sm font-bold text-foreground">{tipoLabel[l.tipo]}</p>
-                    {l.detalhe && <p className="text-xs text-muted-foreground">{l.detalhe}</p>}
-                  </div>
-                  <p className={cn("text-sm font-semibold whitespace-nowrap", l.valor < 0 ? "text-destructive" : "text-foreground")}>
-                    {fmtBRL(l.valor)}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {lancamentos.map((l) => {
+                const isNegativo = l.valor < 0;
+                const accentClass =
+                  l.tipo === "diaria"
+                    ? "border-l-success"
+                    : l.tipo === "vale"
+                    ? "border-l-destructive"
+                    : "border-l-info";
+                return (
+                  <Card
+                    key={l.id}
+                    className={cn(
+                      "border-l-4 shadow-sm hover:shadow-md transition-shadow",
+                      accentClass
+                    )}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(l.data).toLocaleDateString("pt-BR")}
+                          </p>
+                          <p className="text-sm font-bold text-foreground mt-0.5">
+                            {tipoLabel[l.tipo]}
+                          </p>
+                          {l.detalhe && (
+                            <p className="text-xs text-muted-foreground mt-1 break-words">
+                              {l.detalhe}
+                            </p>
+                          )}
+                        </div>
+                        <p
+                          className={cn(
+                            "text-base font-bold whitespace-nowrap",
+                            isNegativo ? "text-destructive" : "text-success"
+                          )}
+                        >
+                          {fmtBRL(l.valor)}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>

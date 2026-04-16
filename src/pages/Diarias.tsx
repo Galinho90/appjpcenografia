@@ -153,12 +153,12 @@ export default function Diarias() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Lançamentos</h1>
-          <p className="text-muted-foreground">Controle de lançamentos por categoria</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Lançamentos</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Controle de lançamentos por categoria</p>
         </div>
-        <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Lançamento</Button>
+        <Button className="gap-2 w-full sm:w-auto" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Lançamento</Button>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setForm(emptyForm); } }}>
@@ -256,7 +256,7 @@ export default function Diarias() {
         </DialogContent>
       </Dialog>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-none shadow-lg overflow-hidden">
           <div className="bg-gradient-to-br from-primary to-primary/70 p-4">
             <p className="text-sm text-primary-foreground/80">Total de Créditos</p>
@@ -279,7 +279,7 @@ export default function Diarias() {
 
       <Card className="shadow-md">
         <CardHeader className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5 items-end">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 items-end">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Diarista</Label>
               <Select value={filtroColaborador} onValueChange={setFiltroColaborador}>
@@ -312,59 +312,61 @@ export default function Diarias() {
               <Label className="text-xs text-muted-foreground">Até</Label>
               <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
             </div>
-            <Button variant="outline" size="sm" onClick={limparFiltros}>Limpar filtros</Button>
+            <Button variant="outline" size="sm" onClick={limparFiltros} className="w-full">Limpar filtros</Button>
           </div>
           <p className="text-sm text-muted-foreground">
             {filtered.length} {filtered.length === 1 ? "lançamento encontrado" : "lançamentos encontrados"}
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-2 sm:px-6">
           {isLoading ? (
             <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Diarista</TableHead>
-                  <TableHead>Categoria</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Entrada</TableHead>
-                  <TableHead>Saída</TableHead>
-                  <TableHead>Valor</TableHead>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead className="w-[100px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((l) => (
-                  <TableRow key={l.id}>
-                    <TableCell className="font-medium">{l.colaborador?.nome ?? "—"}</TableCell>
-                    <TableCell>
-                      <Badge variant={l.categoria?.tipo === "C" ? "default" : "destructive"}>
-                        {l.categoria?.descricao ?? "—"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</TableCell>
-                    <TableCell>{l.hora_entrada || "—"}</TableCell>
-                    <TableCell>{l.hora_saida || "—"}</TableCell>
-                    <TableCell className={l.categoria?.tipo === "D" ? "text-destructive font-medium" : "text-primary font-medium"}>
-                      {l.categoria?.tipo === "D" ? "- " : "+ "}R$ {l.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{l.descricao || "—"}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(l.id)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto -mx-2 sm:mx-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="whitespace-nowrap">Diarista</TableHead>
+                    <TableHead className="whitespace-nowrap">Categoria</TableHead>
+                    <TableHead className="whitespace-nowrap">Data</TableHead>
+                    <TableHead className="whitespace-nowrap hidden md:table-cell">Entrada</TableHead>
+                    <TableHead className="whitespace-nowrap hidden md:table-cell">Saída</TableHead>
+                    <TableHead className="whitespace-nowrap">Valor</TableHead>
+                    <TableHead className="whitespace-nowrap hidden lg:table-cell">Descrição</TableHead>
+                    <TableHead className="w-[90px]"></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((l) => (
+                    <TableRow key={l.id}>
+                      <TableCell className="font-medium whitespace-nowrap">{l.colaborador?.nome ?? "—"}</TableCell>
+                      <TableCell>
+                        <Badge variant={l.categoria?.tipo === "C" ? "default" : "destructive"} className="whitespace-nowrap">
+                          {l.categoria?.descricao ?? "—"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</TableCell>
+                      <TableCell className="hidden md:table-cell">{l.hora_entrada || "—"}</TableCell>
+                      <TableCell className="hidden md:table-cell">{l.hora_saida || "—"}</TableCell>
+                      <TableCell className={`whitespace-nowrap ${l.categoria?.tipo === "D" ? "text-destructive font-medium" : "text-primary font-medium"}`}>
+                        {l.categoria?.tipo === "D" ? "- " : "+ "}R$ {l.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm hidden lg:table-cell max-w-[200px] truncate">{l.descricao || "—"}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(l.id)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

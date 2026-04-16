@@ -7,8 +7,6 @@ import { AppLayout } from "@/components/AppLayout";
 import Index from "./pages/Index";
 import Colaboradores from "./pages/Colaboradores";
 import Diarias from "./pages/Diarias";
-import Vales from "./pages/Vales";
-import Reembolsos from "./pages/Reembolsos";
 import Fechamentos from "./pages/Fechamentos";
 import Relatorios from "./pages/Relatorios";
 import ExtratoDiarista from "./pages/ExtratoDiarista";
@@ -31,8 +29,6 @@ const App = () => (
           <Route path="/" element={<AppLayout><Index /></AppLayout>} />
           <Route path="/colaboradores" element={<AppLayout><Colaboradores /></AppLayout>} />
           <Route path="/diarias" element={<AppLayout><Diarias /></AppLayout>} />
-          <Route path="/vales" element={<AppLayout><Vales /></AppLayout>} />
-          <Route path="/reembolsos" element={<AppLayout><Reembolsos /></AppLayout>} />
           <Route path="/fechamentos" element={<AppLayout><Fechamentos /></AppLayout>} />
           <Route path="/relatorios" element={<AppLayout><Relatorios /></AppLayout>} />
           <Route path="/extrato" element={<AppLayout><ExtratoDiarista /></AppLayout>} />

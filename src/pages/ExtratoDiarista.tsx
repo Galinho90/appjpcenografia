@@ -410,7 +410,7 @@ export default function ExtratoDiarista() {
           ) : lancamentos.length === 0 ? (
             <p className="py-8 text-center text-muted-foreground">Nenhum lançamento na quinzena selecionada.</p>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="flex flex-col gap-3">
               {lancamentos.map((l) => {
                 const isNegativo = l.valor < 0;
                 const accentClass =

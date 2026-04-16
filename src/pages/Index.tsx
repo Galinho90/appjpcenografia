@@ -60,6 +60,7 @@ export default function Dashboard() {
     .filter(f => f.status === 'pago')
     .reduce((s, f) => s + Number(f.valor_final), 0);
   const totalPagoQ = totalVales + totalFechamentosPagosQ;
+  const totalAPagar = totalDiarias - totalVales + totalReembolsos - totalFechamentosPagosQ;
   const totalPendente = Math.max(totalAPagar, 0);
 
   const fmtBRL = (n: number) =>

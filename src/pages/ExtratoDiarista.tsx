@@ -7,6 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -318,6 +321,12 @@ export default function ExtratoDiarista() {
             <Label>Diarista</Label>
             {loadingCol ? (
               <Skeleton className="h-10 w-full" />
+            ) : colaboradores.length > 5 ? (
+              <ColaboradorCombobox
+                colaboradores={colaboradores}
+                value={colaboradorId}
+                onChange={setColaboradorId}
+              />
             ) : (
               <Select value={colaboradorId} onValueChange={setColaboradorId}>
                 <SelectTrigger>

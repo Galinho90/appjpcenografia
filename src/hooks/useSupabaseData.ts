@@ -36,6 +36,17 @@ export function useCreateColaborador() {
   });
 }
 
+export function useUpdateColaborador() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: Partial<Colaborador> & { id: string }) => {
+      const { error } = await supabase.from("colaboradores").update(data).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["colaboradores"] }),
+  });
+}
+
 export function useDeleteColaborador() {
   const qc = useQueryClient();
   return useMutation({

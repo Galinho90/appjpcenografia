@@ -1,29 +1,44 @@
 import { useState } from "react";
-import { Users, Plus, Search, Edit, Trash2, Eye } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Search, Edit, Trash2, Eye } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { useColaboradores, useCreateColaborador, useDeleteColaborador } from "@/hooks/useSupabaseData";
+import { Switch } from "@/components/ui/switch";
+import {
+  useColaboradores, useCreateColaborador, useDeleteColaborador, useUpdateColaborador,
+} from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Colaborador } from "@/types";
+
+const emptyForm = {
+  nome: "", cpf: "", telefone: "", funcao: "",
+  valor_diaria_padrao: 0, chave_pix: "", banco: "", agencia: "", conta: "",
+  ativo: true,
+};
 
 export default function Colaboradores() {
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [mode, setMode] = useState<"create" | "edit" | "view">("create");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const { data: colaboradores = [], isLoading } = useColaboradores();
   const createMutation = useCreateColaborador();
+  const updateMutation = useUpdateColaborador();
   const deleteMutation = useDeleteColaborador();
 
-  const [form, setForm] = useState({
-    nome: "", cpf: "", telefone: "", funcao: "",
-    valor_diaria_padrao: 0, chave_pix: "", banco: "", agencia: "", conta: "",
-  });
+  const [form, setForm] = useState(emptyForm);
 
   const filtered = colaboradores.filter(
     (c) =>
@@ -31,87 +46,132 @@ export default function Colaboradores() {
       c.funcao.toLowerCase().includes(search.toLowerCase())
   );
 
+  const openCreate = () => {
+    setMode("create");
+    setEditingId(null);
+    setForm(emptyForm);
+    setDialogOpen(true);
+  };
+
+  const openView = (c: Colaborador) => {
+    setMode("view");
+    setEditingId(c.id);
+    setForm({ ...emptyForm, ...c });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (c: Colaborador) => {
+    setMode("edit");
+    setEditingId(c.id);
+    setForm({ ...emptyForm, ...c });
+    setDialogOpen(true);
+  };
+
   const handleSave = async () => {
     try {
-      await createMutation.mutateAsync(form);
-      toast({ title: "Colaborador cadastrado com sucesso!" });
+      if (mode === "edit" && editingId) {
+        await updateMutation.mutateAsync({ id: editingId, ...form });
+        toast({ title: "Colaborador atualizado!" });
+      } else {
+        await createMutation.mutateAsync(form);
+        toast({ title: "Colaborador cadastrado com sucesso!" });
+      }
       setDialogOpen(false);
-      setForm({ nome: "", cpf: "", telefone: "", funcao: "", valor_diaria_padrao: 0, chave_pix: "", banco: "", agencia: "", conta: "" });
+      setForm(emptyForm);
+      setEditingId(null);
     } catch (e: any) {
-      toast({ title: "Erro ao cadastrar", description: e.message, variant: "destructive" });
+      toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!deleteId) return;
     try {
-      await deleteMutation.mutateAsync(id);
+      await deleteMutation.mutateAsync(deleteId);
       toast({ title: "Colaborador removido" });
     } catch (e: any) {
       toast({ title: "Erro ao remover", description: e.message, variant: "destructive" });
+    } finally {
+      setDeleteId(null);
     }
   };
+
+  const readOnly = mode === "view";
+  const saving = createMutation.isPending || updateMutation.isPending;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Colaboradores</h1>
+          <h1 className="text-3xl font-bold text-foreground">Diaristas</h1>
           <p className="text-muted-foreground">Gerencie seus diaristas</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2"><Plus className="h-4 w-4" /> Novo Colaborador</Button>
+            <Button className="gap-2" onClick={openCreate}><Plus className="h-4 w-4" /> Novo Diarista</Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>Cadastrar Colaborador</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>
+                {mode === "create" ? "Cadastrar Diarista" : mode === "edit" ? "Editar Diarista" : "Detalhes do Diarista"}
+              </DialogTitle>
+            </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Nome Completo</Label>
-                  <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome completo" />
+                  <Input disabled={readOnly} value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome completo" />
                 </div>
                 <div className="space-y-2">
                   <Label>CPF</Label>
-                  <Input value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} placeholder="000.000.000-00" />
+                  <Input disabled={readOnly} value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} placeholder="000.000.000-00" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Telefone</Label>
-                  <Input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(11) 99999-9999" />
+                  <Input disabled={readOnly} value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(11) 99999-9999" />
                 </div>
                 <div className="space-y-2">
                   <Label>Função</Label>
-                  <Input value={form.funcao} onChange={(e) => setForm({ ...form, funcao: e.target.value })} placeholder="Montador, Eletricista..." />
+                  <Input disabled={readOnly} value={form.funcao} onChange={(e) => setForm({ ...form, funcao: e.target.value })} placeholder="Montador, Eletricista..." />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Valor Diária Padrão</Label>
-                  <Input type="number" value={form.valor_diaria_padrao || ""} onChange={(e) => setForm({ ...form, valor_diaria_padrao: Number(e.target.value) })} placeholder="200" />
+                  <Input disabled={readOnly} type="number" value={form.valor_diaria_padrao || ""} onChange={(e) => setForm({ ...form, valor_diaria_padrao: Number(e.target.value) })} placeholder="200" />
                 </div>
                 <div className="space-y-2">
                   <Label>Chave PIX</Label>
-                  <Input value={form.chave_pix} onChange={(e) => setForm({ ...form, chave_pix: e.target.value })} placeholder="CPF, email ou telefone" />
+                  <Input disabled={readOnly} value={form.chave_pix} onChange={(e) => setForm({ ...form, chave_pix: e.target.value })} placeholder="CPF, email ou telefone" />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Banco</Label>
-                  <Input value={form.banco} onChange={(e) => setForm({ ...form, banco: e.target.value })} placeholder="Inter" />
+                  <Input disabled={readOnly} value={form.banco} onChange={(e) => setForm({ ...form, banco: e.target.value })} placeholder="Inter" />
                 </div>
                 <div className="space-y-2">
                   <Label>Agência</Label>
-                  <Input value={form.agencia} onChange={(e) => setForm({ ...form, agencia: e.target.value })} placeholder="0001" />
+                  <Input disabled={readOnly} value={form.agencia} onChange={(e) => setForm({ ...form, agencia: e.target.value })} placeholder="0001" />
                 </div>
                 <div className="space-y-2">
                   <Label>Conta</Label>
-                  <Input value={form.conta} onChange={(e) => setForm({ ...form, conta: e.target.value })} placeholder="12345-6" />
+                  <Input disabled={readOnly} value={form.conta} onChange={(e) => setForm({ ...form, conta: e.target.value })} placeholder="12345-6" />
                 </div>
               </div>
-              <Button className="w-full mt-2" onClick={handleSave} disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Salvando..." : "Salvar Colaborador"}
-              </Button>
+              {mode !== "create" && (
+                <div className="flex items-center justify-between rounded-md border p-3">
+                  <Label>Ativo</Label>
+                  <Switch disabled={readOnly} checked={form.ativo} onCheckedChange={(v) => setForm({ ...form, ativo: v })} />
+                </div>
+              )}
+              {!readOnly && (
+                <Button className="w-full mt-2" onClick={handleSave} disabled={saving}>
+                  {saving ? "Salvando..." : mode === "edit" ? "Atualizar" : "Salvar Diarista"}
+                </Button>
+              )}
             </div>
           </DialogContent>
         </Dialog>
@@ -155,9 +215,15 @@ export default function Colaboradores() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon"><Eye className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => openView(c)} title="Visualizar">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(c)} title="Editar">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)} title="Excluir">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -167,6 +233,23 @@ export default function Colaboradores() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir diarista?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O diarista será removido permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

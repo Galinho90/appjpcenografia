@@ -12,6 +12,9 @@ import Reembolsos from "./pages/Reembolsos";
 import Fechamentos from "./pages/Fechamentos";
 import Relatorios from "./pages/Relatorios";
 import ExtratoDiarista from "./pages/ExtratoDiarista";
+import Clientes from "./pages/Clientes";
+import Categorias from "./pages/Categorias";
+import Configuracoes from "./pages/Configuracoes";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +36,9 @@ const App = () => (
           <Route path="/fechamentos" element={<AppLayout><Fechamentos /></AppLayout>} />
           <Route path="/relatorios" element={<AppLayout><Relatorios /></AppLayout>} />
           <Route path="/extrato" element={<AppLayout><ExtratoDiarista /></AppLayout>} />
+          <Route path="/clientes" element={<AppLayout><Clientes /></AppLayout>} />
+          <Route path="/categorias" element={<AppLayout><Categorias /></AppLayout>} />
+          <Route path="/configuracoes" element={<AppLayout><Configuracoes /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

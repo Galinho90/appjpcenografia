@@ -16,6 +16,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth, type AppRole } from "@/hooks/useAuth";
 import { maskPhoneBR, isValidPhoneBR } from "@/lib/phone";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 type Empresa = {
   id?: string;
@@ -43,6 +44,8 @@ export default function Configuracoes() {
   const [prefs, setPrefs] = useState<Preferencias>(defaultPrefs);
   const [savingEmpresa, setSavingEmpresa] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoCropFile, setLogoCropFile] = useState<File | null>(null);
+  const [logoCropOpen, setLogoCropOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: empresaData } = useQuery({
@@ -108,20 +111,11 @@ export default function Configuracoes() {
     toast({ title: "Preferências salvas", description: "Configurações aplicadas." });
   };
 
-  const handleLogoUpload = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast({ title: "Arquivo inválido", description: "Selecione uma imagem.", variant: "destructive" });
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: "Arquivo muito grande", description: "Máximo 2MB.", variant: "destructive" });
-      return;
-    }
+  const handleLogoUpload = async (blob: Blob) => {
     setUploadingLogo(true);
     try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `logo-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("branding").upload(path, file, { upsert: true, contentType: file.type });
+      const path = `logo-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage.from("branding").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("branding").getPublicUrl(path);
       const newUrl = pub.publicUrl;
@@ -316,7 +310,10 @@ export default function Configuracoes() {
                             className="hidden"
                             onChange={(e) => {
                               const f = e.target.files?.[0];
-                              if (f) handleLogoUpload(f);
+                              if (f) {
+                                setLogoCropFile(f);
+                                setLogoCropOpen(true);
+                              }
                               e.target.value = "";
                             }}
                           />
@@ -583,6 +580,16 @@ export default function Configuracoes() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ImageCropDialog
+        file={logoCropFile}
+        open={logoCropOpen}
+        onOpenChange={(o) => { setLogoCropOpen(o); if (!o) setLogoCropFile(null); }}
+        aspect={1}
+        maxSize={512}
+        title="Ajustar logo da empresa"
+        onCropped={handleLogoUpload}
+      />
     </div>
   );
 }

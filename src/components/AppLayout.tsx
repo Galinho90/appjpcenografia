@@ -60,7 +60,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <div className="hidden sm:flex flex-col leading-tight items-start">
                     <span className="text-sm font-medium text-foreground">{displayName}</span>
                     {role && (
-                      <span className="text-[10px] uppercase text-muted-foreground">{role}</span>
+                      <span className="text-[10px] uppercase text-muted-foreground">
+                        {role === "admin" ? "Administrador" : role === "gerente" ? "Gerente" : role === "visualizador" ? "Visualizador" : role}
+                      </span>
                     )}
                   </div>
                 </button>

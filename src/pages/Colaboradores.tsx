@@ -22,6 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import type { Colaborador } from "@/types";
 import { usePermissions } from "@/hooks/usePermissions";
+import { maskPhoneBR } from "@/lib/phone";
+import { maskCPF } from "@/lib/masks";
 
 const emptyForm = {
   nome: "", cpf: "", rg: "", data_nascimento: "", telefone: "", email: "",

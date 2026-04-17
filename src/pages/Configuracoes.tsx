@@ -44,6 +44,8 @@ export default function Configuracoes() {
   const [prefs, setPrefs] = useState<Preferencias>(defaultPrefs);
   const [savingEmpresa, setSavingEmpresa] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoCropFile, setLogoCropFile] = useState<File | null>(null);
+  const [logoCropOpen, setLogoCropOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: empresaData } = useQuery({

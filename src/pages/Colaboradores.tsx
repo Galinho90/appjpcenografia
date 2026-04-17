@@ -376,6 +376,21 @@ export default function Colaboradores() {
                   <Switch disabled={readOnly} checked={form.ativo} onCheckedChange={(v) => setForm({ ...form, ativo: v })} />
                 </div>
               )}
+              {mode === "edit" && !form.user_id && !readOnly && (
+                <div className="rounded-md border border-dashed p-3 space-y-2 bg-muted/30">
+                  <p className="text-sm text-muted-foreground">
+                    Este diarista ainda não tem acesso ao painel. Informe celular e senha (ou gere uma) e clique abaixo.
+                  </p>
+                  <Button type="button" variant="secondary" className="w-full" onClick={handleCriarAcesso}>
+                    Criar acesso do diarista
+                  </Button>
+                </div>
+              )}
+              {mode === "edit" && form.user_id && (
+                <div className="rounded-md border p-3 bg-success/10 text-sm text-foreground">
+                  ✓ Acesso ao painel já criado para este diarista.
+                </div>
+              )}
               {!readOnly && (
                 <Button className="w-full mt-2" onClick={handleSave} disabled={saving}>
                   {saving ? "Salvando..." : mode === "edit" ? "Atualizar" : "Salvar Diarista"}

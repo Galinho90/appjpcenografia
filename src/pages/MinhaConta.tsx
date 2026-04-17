@@ -10,8 +10,15 @@ import { useMyProfile } from "@/hooks/useProfile";
 import { useQueryClient } from "@tanstack/react-query";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { Upload, Trash2 } from "lucide-react";
+import MinhaContaDiarista from "./MinhaContaDiarista";
 
 export default function MinhaConta() {
+  const { role } = useAuth();
+  if (role === "visualizador") return <MinhaContaDiarista />;
+  return <MinhaContaAdmin />;
+}
+
+function MinhaContaAdmin() {
   const { user } = useAuth();
   const meta = (user?.user_metadata ?? {}) as { nome?: string; phone?: string };
   const [nome, setNome] = useState(meta.nome ?? "");

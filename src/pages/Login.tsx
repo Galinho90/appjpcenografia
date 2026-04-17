@@ -52,7 +52,6 @@ export default function Login() {
           <div className="mx-auto h-20 w-20 rounded-xl bg-white flex items-center justify-center mb-2 shadow-md p-2">
             <img src={logoSrc} alt={empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"} className="h-full w-full object-contain" />
           </div>
-          <CardTitle className="text-2xl">JP Eventos</CardTitle>
           <CardDescription>Acesse o sistema com seu celular</CardDescription>
         </CardHeader>
         <CardContent>

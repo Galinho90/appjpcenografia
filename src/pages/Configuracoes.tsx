@@ -11,10 +11,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 type Empresa = {
+  id?: string;
   razao_social: string;
+  nome_fantasia?: string | null;
   cnpj: string;
   email: string;
   telefone: string;
@@ -26,7 +28,6 @@ type Preferencias = {
   formato_data: "dd/MM/yyyy" | "yyyy-MM-dd";
 };
 
-const EMPRESA_KEY = "config:empresa";
 const PREFS_KEY = "config:preferencias";
 
 const defaultEmpresa: Empresa = { razao_social: "JP Eventos e Cenografia", cnpj: "", email: "", telefone: "" };
@@ -35,19 +36,63 @@ const defaultPrefs: Preferencias = { valor_diaria_padrao: 150, tema_escuro: fals
 export default function Configuracoes() {
   const [empresa, setEmpresa] = useState<Empresa>(defaultEmpresa);
   const [prefs, setPrefs] = useState<Preferencias>(defaultPrefs);
+  const [savingEmpresa, setSavingEmpresa] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: empresaData } = useQuery({
+    queryKey: ["configuracoes_empresa"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("configuracoes_empresa")
+        .select("*")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
 
   useEffect(() => {
+    if (empresaData) {
+      setEmpresa({
+        id: empresaData.id,
+        razao_social: empresaData.razao_social ?? "",
+        nome_fantasia: empresaData.nome_fantasia,
+        cnpj: empresaData.cnpj ?? "",
+        email: empresaData.email ?? "",
+        telefone: empresaData.telefone ?? "",
+      });
+    }
     try {
-      const e = localStorage.getItem(EMPRESA_KEY);
       const p = localStorage.getItem(PREFS_KEY);
-      if (e) setEmpresa({ ...defaultEmpresa, ...JSON.parse(e) });
       if (p) setPrefs({ ...defaultPrefs, ...JSON.parse(p) });
     } catch {}
-  }, []);
+  }, [empresaData]);
 
-  const salvarEmpresa = () => {
-    localStorage.setItem(EMPRESA_KEY, JSON.stringify(empresa));
-    toast({ title: "Empresa salva", description: "Dados atualizados com sucesso." });
+  const salvarEmpresa = async () => {
+    setSavingEmpresa(true);
+    try {
+      const payload = {
+        razao_social: empresa.razao_social,
+        cnpj: empresa.cnpj || null,
+        email: empresa.email || null,
+        telefone: empresa.telefone || null,
+      };
+      if (empresa.id) {
+        const { error } = await supabase.from("configuracoes_empresa").update(payload).eq("id", empresa.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("configuracoes_empresa").insert(payload);
+        if (error) throw error;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["configuracoes_empresa"] });
+      toast({ title: "Empresa salva", description: "Dados atualizados com sucesso." });
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
+    } finally {
+      setSavingEmpresa(false);
+    }
   };
 
   const salvarPrefs = () => {
@@ -105,7 +150,7 @@ export default function Configuracoes() {
                   <Input id="tel" value={empresa.telefone} onChange={(e) => setEmpresa({ ...empresa, telefone: e.target.value })} />
                 </div>
               </div>
-              <Button onClick={salvarEmpresa}><Save className="h-4 w-4 mr-2" />Salvar</Button>
+              <Button onClick={salvarEmpresa} disabled={savingEmpresa}><Save className="h-4 w-4 mr-2" />{savingEmpresa ? "Salvando..." : "Salvar"}</Button>
             </CardContent>
           </Card>
         </TabsContent>

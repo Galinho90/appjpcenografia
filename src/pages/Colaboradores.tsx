@@ -22,7 +22,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import type { Colaborador } from "@/types";
 import { usePermissions } from "@/hooks/usePermissions";
-import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 const emptyForm = {
   nome: "", cpf: "", rg: "", data_nascimento: "", telefone: "", email: "",
@@ -56,16 +55,23 @@ export default function Colaboradores() {
   const [form, setForm] = useState<any>(emptyForm);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [cropFile, setCropFile] = useState<File | null>(null);
-  const [cropOpen, setCropOpen] = useState(false);
 
-  const uploadCroppedFoto = async (blob: Blob) => {
+  const uploadFoto = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Arquivo inválido", description: "Envie uma imagem.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Imagem muito grande", description: "Máximo 5MB.", variant: "destructive" });
+      return;
+    }
     setUploading(true);
     try {
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("diaristas-fotos")
-        .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+        .upload(path, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("diaristas-fotos").getPublicUrl(path);
       setForm((f: any) => ({ ...f, foto_url: data.publicUrl }));
@@ -222,10 +228,7 @@ export default function Colaboradores() {
                         className="hidden"
                         onChange={(e) => {
                           const f = e.target.files?.[0];
-                          if (f) {
-                            setCropFile(f);
-                            setCropOpen(true);
-                          }
+                          if (f) uploadFoto(f);
                           e.target.value = "";
                         }}
                       />
@@ -522,16 +525,6 @@ export default function Colaboradores() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <ImageCropDialog
-        file={cropFile}
-        open={cropOpen}
-        onOpenChange={(o) => { setCropOpen(o); if (!o) setCropFile(null); }}
-        aspect={1}
-        maxSize={512}
-        title="Ajustar foto do diarista"
-        onCropped={uploadCroppedFoto}
-      />
     </div>
   );
 }

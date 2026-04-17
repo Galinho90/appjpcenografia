@@ -43,6 +43,7 @@ const App = () => (
             <Route path="/clientes" element={<Protected><Clientes /></Protected>} />
             <Route path="/categorias" element={<Protected><Categorias /></Protected>} />
             <Route path="/configuracoes" element={<Protected><RequireAdmin><Configuracoes /></RequireAdmin></Protected>} />
+            <Route path="/minha-conta" element={<Protected><MinhaConta /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

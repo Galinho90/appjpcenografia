@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import type { Colaborador } from "@/types";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const emptyForm = {
   nome: "", cpf: "", rg: "", data_nascimento: "", telefone: "", email: "",
@@ -44,6 +45,7 @@ export default function Colaboradores() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { canEdit } = usePermissions();
 
   const { data: colaboradores = [], isLoading } = useColaboradores();
   const createMutation = useCreateColaborador();

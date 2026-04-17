@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
 import { AuthProvider } from "@/hooks/useAuth";
 import { RequireAuth } from "@/components/RequireAuth";
+import { RequireAdmin } from "@/components/RequireAdmin";
 import Index from "./pages/Index";
 import Colaboradores from "./pages/Colaboradores";
 import Diarias from "./pages/Diarias";
@@ -41,7 +42,7 @@ const App = () => (
             <Route path="/extrato" element={<Protected><ExtratoDiarista /></Protected>} />
             <Route path="/clientes" element={<Protected><Clientes /></Protected>} />
             <Route path="/categorias" element={<Protected><Categorias /></Protected>} />
-            <Route path="/configuracoes" element={<Protected><Configuracoes /></Protected>} />
+            <Route path="/configuracoes" element={<Protected><RequireAdmin><Configuracoes /></RequireAdmin></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

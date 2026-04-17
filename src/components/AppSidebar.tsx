@@ -107,9 +107,9 @@ export function AppSidebar() {
         {!collapsed && user && (
           <div className="px-2 pt-2 border-t border-sidebar-border">
             <div className="text-xs text-sidebar-foreground/60 truncate">{displayName}</div>
-            {role && (
+            {role && role !== "visualizador" && (
               <div className="text-[10px] uppercase text-sidebar-foreground/40">
-                {role === "admin" ? "Administrador" : role === "gerente" ? "Gerente" : role === "visualizador" ? "Visualizador" : role}
+                {role === "admin" ? "Administrador" : role === "gerente" ? "Gerente" : role}
               </div>
             )}
           </div>

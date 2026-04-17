@@ -18,6 +18,7 @@ export interface Colaborador {
   foto_url?: string;
   created_at: string;
   ativo: boolean;
+  user_id?: string | null;
 }
 
 export interface Diaria {

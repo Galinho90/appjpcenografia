@@ -1,72 +1,70 @@
 
-## Login por celular + senha (sem SMS), cadastro só por admin
+O usuário quer que ao cadastrar um diarista (em Colaboradores), seja criado automaticamente um usuário de login (celular + senha) com papel `visualizador`, e que esse diarista, ao logar, veja apenas um dashboard com o **próprio extrato** (read-only).
 
-### Abordagem
-Usar Supabase Auth padrão tratando o celular como **email interno**: `5511999998888@jpcenografia.local`. Sem SMS, sem custo, funciona já. O usuário digita só o celular na tela; convertemos internamente.
+Pontos a considerar:
+- Hoje `visualizador` ainda enxerga o app inteiro (rotas protegidas só por `RequireAuth`). Precisa redirecionar diaristas para uma rota dedicada e bloquear o resto.
+- Precisa vincular `colaborador.id` ↔ `auth.user.id` para saber qual extrato mostrar. Adicionar coluna `user_id` em `colaboradores`.
+- Criação do user precisa de service role → nova edge function `create-diarista-user` (similar à `admin-create-user`, mas só cria com role `visualizador` e devolve `user_id`).
+- Form de Colaboradores já tem campo `senha` e `gerarSenha()`. Reusar.
+- ExtratoDiarista existente é admin-style (escolhe diarista). Criar página nova `MeuExtrato` que força o `colaborador_id` do usuário logado, sem botões de criar lançamento, sem trocar de pessoa.
 
-### Mudanças
+## Plano
 
-**1. `src/hooks/useAuth.tsx` (novo)**
-Provider com `session`, `user`, `role`, `signIn(phone, password)`, `signOut()`. Usa `onAuthStateChange` + `getSession` (listener antes do getSession). Busca role em `user_roles` após login.
+### 1. Banco
+- Migration: adicionar `colaboradores.user_id uuid` (nullable, único quando não nulo).
+- Index único parcial em `user_id`.
 
-**2. `src/pages/Login.tsx`**
-- Campo único "Celular" com máscara `(11) 99999-8888` + senha
-- Normaliza para E.164 → vira `<digits>@jpcenografia.local`
-- Chama `supabase.auth.signInWithPassword({ email, password })`
-- Toast de erro em PT-BR; redireciona para `/` no sucesso
+### 2. Edge function nova: `create-diarista-user`
+- Recebe `{ phone, password, nome, colaborador_id }`.
+- Valida chamador admin/gerente.
+- Cria user no Auth (`email_confirm: true`), insere em `user_roles` com role `visualizador`, atualiza `colaboradores.user_id`.
+- Rollback se qualquer passo falhar.
 
-**3. `src/App.tsx`**
-- Envolver com `<AuthProvider>`
-- Componente `<RequireAuth>` que redireciona para `/login` se sem sessão
-- Aplicar em todas as rotas exceto `/login`
+### 3. Cadastro de diarista (`src/pages/Colaboradores.tsx`)
+- Tornar Celular + Senha obrigatórios na criação.
+- Após `createColaborador` bem-sucedido, invocar `create-diarista-user` passando o `colaborador_id` retornado.
+- Mostrar toast com credenciais (celular + senha) para o admin repassar.
+- Na edição, se ainda não houver `user_id`, oferecer botão "Criar acesso".
 
-**4. `src/components/AppSidebar.tsx`**
-- Mostrar nome/celular do usuário logado no rodapé
-- Botão "Sair" que chama `signOut()` e redireciona para `/login`
+### 4. Nova página `src/pages/MeuExtrato.tsx`
+- Busca `colaboradores` pelo `user_id = auth.uid()`.
+- Reusa a lógica de quinzena/listagem do `ExtratoDiarista` mas **somente leitura** (sem botão "Novo lançamento", sem combobox de diarista).
+- Mostra saldo, créditos, débitos, lista de lançamentos, exportar PDF.
 
-**5. `src/pages/Configuracoes.tsx` — aba "Usuários e papéis"**
-Substituir tabela read-only por gestão real:
-- Form "Cadastrar usuário": nome, celular, senha inicial, papel (admin/gerente/visualizador)
-- Edge function `admin-create-user` (necessária — `auth.admin.createUser` só funciona com service role)
-- Lista de usuários com papel atual e botões "Alterar papel" / "Remover acesso"
-- Visível só para admin
+### 5. Roteamento e gating (`src/App.tsx`, novo `RequireRole`)
+- Componente `<RequireRole roles={[...]}>` que redireciona se papel não permitido.
+- Rota nova `/meu-extrato` protegida só por auth.
+- Aplicar `<RequireRole roles={['admin','gerente']}>` em todas as rotas atuais (exceto `/meu-extrato` e `/minha-conta`).
+- Em `RequireAuth` (ou no `Index`), se `role === 'visualizador'`, redirecionar para `/meu-extrato`.
 
-**6. Edge function `supabase/functions/admin-create-user/index.ts` (nova)**
-- Recebe: `{ phone, password, nome, role }`
-- Valida que o chamador é admin (via JWT + has_role)
-- Cria usuário com `supabase.auth.admin.createUser({ email: phoneToEmail(phone), password, email_confirm: true, user_metadata: { nome, phone } })`
-- Insere em `user_roles`
-- Usa `SUPABASE_SERVICE_ROLE_KEY` (já configurado)
+### 6. Sidebar (`src/components/AppSidebar.tsx`)
+- Para `visualizador`: mostrar só "Meu Extrato" e "Minha Conta".
+- Para admin/gerente: menu atual.
 
-**7. Migration: primeiro admin**
-Como hoje não há nenhum usuário, preciso criar o primeiro admin manualmente. Duas opções (vou usar a 2):
-- Você cria pelo painel Supabase e me passa o user_id
-- **Crio uma edge function `bootstrap-first-admin`** que só funciona se `user_roles` estiver vazia, cria um admin com celular/senha que você definir no primeiro acesso à tela de login (ou via um botão único "Configurar primeiro acesso")
+### 7. Login
+- Sem mudanças — mesmo formulário (celular + senha) serve para diaristas. Após login, o gating redireciona para `/meu-extrato`.
 
-### Pontos importantes
-- Painel Supabase → Auth → Providers → Email: deixar **"Confirm email" desativado** (sem isso, usuários criados ficariam pendentes). A edge function usa `email_confirm: true` para já criar confirmado, então não precisa mexer no painel.
-- Primeiro login: tela de login mostra link "Configurar primeiro acesso" só enquanto `user_roles` estiver vazia (chamada à edge `bootstrap-first-admin`).
-- Depois que houver admin, esse link some e só admin cria novos usuários pela aba Configurações → Usuários.
-
-### Diagrama do fluxo
+### Diagrama
 ```text
-Login.tsx
-  celular + senha
-        │
-        ▼
-  phoneToEmail()  ──►  signInWithPassword({ email, password })
-        │
-        ▼
-  AuthProvider (session + role)
-        │
-        ▼
-  RequireAuth ──► rotas protegidas
+Admin cria Colaborador
+   │  nome, celular, senha
+   ▼
+INSERT colaboradores  ──►  edge: create-diarista-user
+                              │
+                              ├─► auth.admin.createUser(phone→email, senha)
+                              ├─► insert user_roles(visualizador)
+                              └─► update colaboradores.user_id
 
-Configurações → Usuários (admin)
-        │
-        ▼
-  edge: admin-create-user (service role)
-        │
-        ├─► auth.admin.createUser
-        └─► insert user_roles
+Diarista faz login (celular+senha)
+   │
+   ▼
+RequireRole detecta 'visualizador' → redirect /meu-extrato
+   │
+   ▼
+MeuExtrato lê colaboradores WHERE user_id = auth.uid()
+   └─► mostra extrato read-only do próprio
 ```
+
+### Observações
+- Quem já é colaborador sem `user_id` não terá acesso até admin clicar em "Criar acesso" na edição.
+- Se admin alterar o telefone do colaborador depois, o login continua o antigo (não sincroniza automaticamente — fora de escopo desta entrega; posso adicionar depois se quiser).

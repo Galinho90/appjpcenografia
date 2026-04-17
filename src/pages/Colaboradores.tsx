@@ -136,22 +136,75 @@ export default function Colaboradores() {
       const { senha, ...rest } = form;
       const payload: any = { ...rest };
       if (senha && senha.trim()) {
-        // hash leve no client (placeholder). Para produção, usar edge function com bcrypt.
         payload.senha_hash = btoa(unescape(encodeURIComponent(senha)));
       }
       if (!payload.data_nascimento) payload.data_nascimento = null;
+
       if (mode === "edit" && editingId) {
         await updateMutation.mutateAsync({ id: editingId, ...payload });
         toast({ title: "Diarista atualizado!" });
       } else {
-        await createMutation.mutateAsync(payload);
-        toast({ title: "Diarista cadastrado com sucesso!" });
+        if (!form.telefone?.trim()) {
+          toast({ title: "Celular obrigatório", description: "Informe o celular para criar o acesso do diarista.", variant: "destructive" });
+          return;
+        }
+        if (!senha || senha.length < 6) {
+          toast({ title: "Senha obrigatória", description: "Mínimo 6 caracteres.", variant: "destructive" });
+          return;
+        }
+        const novo: any = await createMutation.mutateAsync(payload);
+        try {
+          const { data: invokeData, error: invokeErr } = await supabase.functions.invoke("create-diarista-user", {
+            body: {
+              phone: form.telefone,
+              password: senha,
+              nome: form.nome,
+              colaborador_id: novo?.id,
+            },
+          });
+          if (invokeErr) throw invokeErr;
+          if ((invokeData as any)?.error) throw new Error((invokeData as any).error);
+          toast({
+            title: "Diarista cadastrado!",
+            description: `Acesso criado. Login: ${form.telefone} | Senha: ${senha}`,
+          });
+        } catch (e: any) {
+          toast({
+            title: "Diarista salvo, mas falhou criar acesso",
+            description: e.message ?? "Tente novamente em 'Criar acesso' ao editar.",
+            variant: "destructive",
+          });
+        }
       }
       setDialogOpen(false);
       setForm(emptyForm);
       setEditingId(null);
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleCriarAcesso = async () => {
+    if (!editingId) return;
+    if (!form.telefone?.trim()) {
+      toast({ title: "Celular obrigatório", variant: "destructive" });
+      return;
+    }
+    const senha = form.senha?.trim() || gerarSenha();
+    if (senha.length < 6) {
+      toast({ title: "Senha mínima 6 caracteres", variant: "destructive" });
+      return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke("create-diarista-user", {
+        body: { phone: form.telefone, password: senha, nome: form.nome, colaborador_id: editingId },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Acesso criado!", description: `Login: ${form.telefone} | Senha: ${senha}` });
+      setForm({ ...form, senha });
+    } catch (e: any) {
+      toast({ title: "Falha ao criar acesso", description: e.message, variant: "destructive" });
     }
   };
 

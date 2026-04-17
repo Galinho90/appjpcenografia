@@ -16,6 +16,7 @@ import ExtratoDiarista from "./pages/ExtratoDiarista";
 import Clientes from "./pages/Clientes";
 import Categorias from "./pages/Categorias";
 import Configuracoes from "./pages/Configuracoes";
+import MinhaConta from "./pages/MinhaConta";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 

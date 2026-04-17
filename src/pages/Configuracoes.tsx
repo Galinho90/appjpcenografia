@@ -116,6 +116,18 @@ export default function Configuracoes() {
     },
   });
 
+  type UserInfo = { id: string; email: string | null; nome: string | null; phone: string | null };
+  const { data: usersInfo } = useQuery({
+    queryKey: ["admin_users_list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("admin-list-users");
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return ((data as any)?.users ?? []) as UserInfo[];
+    },
+  });
+  const usersById = new Map((usersInfo ?? []).map((u) => [u.id, u]));
+
   // Cadastro de usuário
   const [novoNome, setNovoNome] = useState("");
   const [novoPhone, setNovoPhone] = useState("");

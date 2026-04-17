@@ -16,7 +16,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth, type AppRole } from "@/hooks/useAuth";
 import { maskPhoneBR, isValidPhoneBR } from "@/lib/phone";
-import { ImageCropDialog } from "@/components/ImageCropDialog";
+
 
 type Empresa = {
   id?: string;
@@ -44,8 +44,6 @@ export default function Configuracoes() {
   const [prefs, setPrefs] = useState<Preferencias>(defaultPrefs);
   const [savingEmpresa, setSavingEmpresa] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [logoCropFile, setLogoCropFile] = useState<File | null>(null);
-  const [logoCropOpen, setLogoCropOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: empresaData } = useQuery({

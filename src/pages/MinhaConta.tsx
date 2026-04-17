@@ -10,9 +10,11 @@ import { useMyProfile } from "@/hooks/useProfile";
 import { useQueryClient } from "@tanstack/react-query";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { Upload, Trash2 } from "lucide-react";
+import MinhaContaDiarista from "./MinhaContaDiarista";
 
 export default function MinhaConta() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
+  if (role === "visualizador") return <MinhaContaDiarista />;
   const meta = (user?.user_metadata ?? {}) as { nome?: string; phone?: string };
   const [nome, setNome] = useState(meta.nome ?? "");
   const [savingNome, setSavingNome] = useState(false);

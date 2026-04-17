@@ -373,7 +373,6 @@ export default function ExtratoDiarista() {
                 const horarios = l.hora_entrada || l.hora_saida
                   ? `ENTRADA: ${l.hora_entrada ?? "—"} / SAÍDA: ${l.hora_saida ?? "—"}`
                   : "";
-                const detalhe = [horarios, l.descricao].filter(Boolean).join(" • ");
                 return (
                   <Card key={l.id} className={cn("border-l-4 shadow-sm hover:shadow-md transition-shadow", accent)}>
                     <CardContent className="p-4">
@@ -390,8 +389,11 @@ export default function ExtratoDiarista() {
                           {isDeb ? "- " : ""}{fmtBRL(l.valor)}
                         </p>
                       </div>
-                      {detalhe && (
-                        <p className="text-xs text-muted-foreground mt-2 break-words">{detalhe}</p>
+                      {horarios && (
+                        <p className="text-xs text-muted-foreground mt-2 break-words">{horarios}</p>
+                      )}
+                      {l.descricao && (
+                        <p className="text-xs text-muted-foreground mt-1 break-words">{l.descricao}</p>
                       )}
                     </CardContent>
                   </Card>

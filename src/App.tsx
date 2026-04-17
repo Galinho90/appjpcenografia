@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
+import { AuthProvider } from "@/hooks/useAuth";
+import { RequireAuth } from "@/components/RequireAuth";
 import Index from "./pages/Index";
 import Colaboradores from "./pages/Colaboradores";
 import Diarias from "./pages/Diarias";
@@ -18,25 +20,31 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const Protected = ({ children }: { children: React.ReactNode }) => (
+  <RequireAuth><AppLayout>{children}</AppLayout></RequireAuth>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<AppLayout><Index /></AppLayout>} />
-          <Route path="/colaboradores" element={<AppLayout><Colaboradores /></AppLayout>} />
-          <Route path="/diarias" element={<AppLayout><Diarias /></AppLayout>} />
-          <Route path="/fechamentos" element={<AppLayout><Fechamentos /></AppLayout>} />
-          <Route path="/relatorios" element={<AppLayout><Relatorios /></AppLayout>} />
-          <Route path="/extrato" element={<AppLayout><ExtratoDiarista /></AppLayout>} />
-          <Route path="/clientes" element={<AppLayout><Clientes /></AppLayout>} />
-          <Route path="/categorias" element={<AppLayout><Categorias /></AppLayout>} />
-          <Route path="/configuracoes" element={<AppLayout><Configuracoes /></AppLayout>} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Protected><Index /></Protected>} />
+            <Route path="/colaboradores" element={<Protected><Colaboradores /></Protected>} />
+            <Route path="/diarias" element={<Protected><Diarias /></Protected>} />
+            <Route path="/fechamentos" element={<Protected><Fechamentos /></Protected>} />
+            <Route path="/relatorios" element={<Protected><Relatorios /></Protected>} />
+            <Route path="/extrato" element={<Protected><ExtratoDiarista /></Protected>} />
+            <Route path="/clientes" element={<Protected><Clientes /></Protected>} />
+            <Route path="/categorias" element={<Protected><Categorias /></Protected>} />
+            <Route path="/configuracoes" element={<Protected><Configuracoes /></Protected>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

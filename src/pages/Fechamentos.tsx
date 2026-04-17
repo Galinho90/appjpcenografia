@@ -1,11 +1,18 @@
 import { useMemo, useState } from "react";
-import { Calculator, DollarSign, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calculator, DollarSign, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, Trash2, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFechamentos } from "@/hooks/useSupabaseData";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import {
+  useFechamentos, useGerarFechamentos, useUpdateFechamentoStatus, useDeleteFechamento,
+} from "@/hooks/useSupabaseData";
 
 const statusConfig = {
   pendente: { label: "Pendente", variant: "outline" as const, icon: Clock },
@@ -30,9 +37,15 @@ function shiftQuinzena(q: { inicio: Date; fim: Date }, dir: -1 | 1) {
 
 const fmt = (d: Date) => d.toLocaleDateString("pt-BR");
 const toISO = (d: Date) => d.toISOString().slice(0, 10);
+const fmtBRL = (n: number) =>
+  `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function Fechamentos() {
+  const { toast } = useToast();
   const { data: fechamentos = [], isLoading } = useFechamentos();
+  const gerar = useGerarFechamentos();
+  const updateStatus = useUpdateFechamentoStatus();
+  const deleteFech = useDeleteFechamento();
 
   const [refDate, setRefDate] = useState<Date>(new Date());
   const selecionada = useMemo(() => getQuinzena(refDate), [refDate]);
@@ -55,6 +68,49 @@ export default function Fechamentos() {
 
   const totalPendente = fechamentosQ.filter(f => f.status === 'pendente').reduce((s, f) => s + f.valor_final, 0);
   const totalPago = fechamentosQ.filter(f => f.status === 'pago').reduce((s, f) => s + f.valor_final, 0);
+
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  const handleGerar = async () => {
+    try {
+      const res = await gerar.mutateAsync({ periodo_inicio: inicioISO, periodo_fim: fimISO });
+      toast({
+        title: "Fechamento gerado!",
+        description: `${res.criados} criado(s), ${res.atualizados} atualizado(s).`,
+      });
+    } catch (e: any) {
+      toast({ title: "Erro ao gerar", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleMarcarPago = async (id: string) => {
+    try {
+      await updateStatus.mutateAsync({ id, status: "pago" });
+      toast({ title: "Marcado como pago!" });
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleReabrir = async (id: string) => {
+    try {
+      await updateStatus.mutateAsync({ id, status: "pendente" });
+      toast({ title: "Fechamento reaberto" });
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    try {
+      await deleteFech.mutateAsync(confirmDelete);
+      toast({ title: "Fechamento excluído" });
+      setConfirmDelete(null);
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -84,7 +140,10 @@ export default function Fechamentos() {
       </div>
 
       <div className="flex justify-end">
-        <Button className="gap-2"><Calculator className="h-4 w-4" /> Gerar Fechamento</Button>
+        <Button className="gap-2" onClick={handleGerar} disabled={gerar.isPending}>
+          <Calculator className="h-4 w-4" />
+          {gerar.isPending ? "Gerando..." : "Gerar Fechamento"}
+        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -93,7 +152,7 @@ export default function Fechamentos() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-accent-foreground/80">Total Pendente</p>
-                <p className="text-2xl font-bold text-accent-foreground">R$ {totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                <p className="text-2xl font-bold text-accent-foreground">{fmtBRL(totalPendente)}</p>
               </div>
               <Clock className="h-10 w-10 text-accent-foreground/30" />
             </div>
@@ -104,7 +163,7 @@ export default function Fechamentos() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-secondary-foreground/80">Total Pago</p>
-                <p className="text-2xl font-bold text-secondary-foreground">R$ {totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                <p className="text-2xl font-bold text-secondary-foreground">{fmtBRL(totalPago)}</p>
               </div>
               <CheckCircle2 className="h-10 w-10 text-secondary-foreground/30" />
             </div>
@@ -120,51 +179,85 @@ export default function Fechamentos() {
           {isLoading ? (
             <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : fechamentosQ.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">Nenhum fechamento nesta quinzena.</p>
+            <div className="py-10 text-center space-y-3">
+              <p className="text-muted-foreground">Nenhum fechamento nesta quinzena.</p>
+              <p className="text-xs text-muted-foreground">
+                Clique em "Gerar Fechamento" para calcular automaticamente a partir dos lançamentos.
+              </p>
+            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Colaborador</TableHead>
-                  <TableHead>Diárias</TableHead>
-                  <TableHead>Vales</TableHead>
-                  <TableHead>Reembolsos</TableHead>
-                  <TableHead>Valor Final</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {fechamentosQ.map((f) => {
-                  const cfg = statusConfig[f.status] ?? statusConfig.pendente;
-                  return (
-                    <TableRow key={f.id}>
-                      <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
-                      <TableCell>R$ {f.total_diarias.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                      <TableCell className="text-destructive">- R$ {f.total_vales.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                      <TableCell className="text-success">+ R$ {f.total_reembolsos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                      <TableCell className="font-bold">R$ {f.valor_final.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                      <TableCell>
-                        <Badge variant={cfg.variant} className="gap-1">
-                          <cfg.icon className="h-3 w-3" />
-                          {cfg.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {f.status === "pendente" && (
-                          <Button size="sm" className="gap-1">
-                            <DollarSign className="h-3 w-3" /> Pagar via PIX
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Colaborador</TableHead>
+                    <TableHead>Diárias</TableHead>
+                    <TableHead>Vales</TableHead>
+                    <TableHead>Reembolsos</TableHead>
+                    <TableHead>Valor Final</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {fechamentosQ.map((f) => {
+                    const cfg = statusConfig[f.status] ?? statusConfig.pendente;
+                    return (
+                      <TableRow key={f.id}>
+                        <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
+                        <TableCell>{fmtBRL(f.total_diarias)}</TableCell>
+                        <TableCell className="text-destructive">- {fmtBRL(f.total_vales)}</TableCell>
+                        <TableCell className="text-success">+ {fmtBRL(f.total_reembolsos)}</TableCell>
+                        <TableCell className="font-bold">{fmtBRL(f.valor_final)}</TableCell>
+                        <TableCell>
+                          <Badge variant={cfg.variant} className="gap-1">
+                            <cfg.icon className="h-3 w-3" />
+                            {cfg.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {f.status === "pendente" && (
+                              <Button size="sm" className="gap-1" onClick={() => handleMarcarPago(f.id)} disabled={updateStatus.isPending}>
+                                <DollarSign className="h-3 w-3" /> Marcar Pago
+                              </Button>
+                            )}
+                            {f.status === "pago" && (
+                              <Button size="sm" variant="outline" className="gap-1" onClick={() => handleReabrir(f.id)} disabled={updateStatus.isPending}>
+                                <RotateCcw className="h-3 w-3" /> Reabrir
+                              </Button>
+                            )}
+                            <Button size="icon" variant="ghost" onClick={() => setConfirmDelete(f.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir fechamento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O fechamento será removido permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

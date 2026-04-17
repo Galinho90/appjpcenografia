@@ -260,6 +260,104 @@ export function useFechamentos() {
   });
 }
 
+export function useGerarFechamentos() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ periodo_inicio, periodo_fim }: { periodo_inicio: string; periodo_fim: string }) => {
+      const { data: lancs, error: lErr } = await supabase
+        .from("lancamentos")
+        .select("colaborador_id, valor, categorias(tipo, descricao)")
+        .gte("data", periodo_inicio)
+        .lte("data", periodo_fim);
+      if (lErr) throw lErr;
+
+      const map = new Map<string, { diarias: number; vales: number; reembolsos: number }>();
+      for (const l of lancs ?? []) {
+        const cat: any = (l as any).categorias;
+        const tipo = cat?.tipo as "C" | "D" | undefined;
+        const desc = (cat?.descricao ?? "").toUpperCase();
+        const valor = Number(l.valor);
+        const cur = map.get(l.colaborador_id) ?? { diarias: 0, vales: 0, reembolsos: 0 };
+        if (tipo === "C") {
+          if (desc.includes("REEMBOLSO")) cur.reembolsos += valor;
+          else cur.diarias += valor;
+        } else if (tipo === "D") {
+          cur.vales += valor;
+        }
+        map.set(l.colaborador_id, cur);
+      }
+
+      if (map.size === 0) {
+        throw new Error("Nenhum lançamento encontrado nesta quinzena.");
+      }
+
+      const { data: existentes, error: eErr } = await supabase
+        .from("fechamentos")
+        .select("id, colaborador_id, status")
+        .eq("periodo_inicio", periodo_inicio)
+        .eq("periodo_fim", periodo_fim);
+      if (eErr) throw eErr;
+
+      const existMap = new Map((existentes ?? []).map(e => [e.colaborador_id, e]));
+      const inserts: any[] = [];
+      const updates: { id: string; payload: any }[] = [];
+
+      for (const [colaborador_id, t] of map) {
+        const valor_final = t.diarias + t.reembolsos - t.vales;
+        const payload = {
+          colaborador_id,
+          periodo_inicio,
+          periodo_fim,
+          total_diarias: t.diarias,
+          total_vales: t.vales,
+          total_reembolsos: t.reembolsos,
+          valor_final,
+        };
+        const ex = existMap.get(colaborador_id);
+        if (ex) {
+          if (ex.status !== "pago") updates.push({ id: ex.id, payload });
+        } else {
+          inserts.push({ ...payload, status: "pendente" });
+        }
+      }
+
+      if (inserts.length) {
+        const { error } = await supabase.from("fechamentos").insert(inserts);
+        if (error) throw error;
+      }
+      for (const u of updates) {
+        const { error } = await supabase.from("fechamentos").update(u.payload).eq("id", u.id);
+        if (error) throw error;
+      }
+
+      return { criados: inserts.length, atualizados: updates.length };
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["fechamentos"] }),
+  });
+}
+
+export function useUpdateFechamentoStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "pendente" | "pago" | "erro" }) => {
+      const { error } = await supabase.from("fechamentos").update({ status }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["fechamentos"] }),
+  });
+}
+
+export function useDeleteFechamento() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("fechamentos").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["fechamentos"] }),
+  });
+}
+
 // ── Clientes ──
 export function useClientes() {
   return useQuery({

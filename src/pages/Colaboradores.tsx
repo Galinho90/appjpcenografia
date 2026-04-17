@@ -381,6 +381,7 @@ export default function Colaboradores() {
                       <div className="flex items-center justify-between gap-2 pt-2 border-t">
                         <Button
                           size="sm"
+                          disabled={!canEdit}
                           onClick={() => handleToggleAtivo(c)}
                           className={
                             c.ativo
@@ -436,13 +437,14 @@ export default function Colaboradores() {
                         <TableCell>
                           <Button
                             size="sm"
+                            disabled={!canEdit}
                             onClick={() => handleToggleAtivo(c)}
                             className={
                               c.ativo
                                 ? "bg-success text-success-foreground hover:bg-success/90 h-7 px-3"
                                 : "bg-muted text-muted-foreground hover:bg-muted/80 h-7 px-3"
                             }
-                            title={c.ativo ? "Clique para inativar" : "Clique para ativar"}
+                            title={canEdit ? (c.ativo ? "Clique para inativar" : "Clique para ativar") : undefined}
                           >
                             {c.ativo ? "ATIVO" : "INATIVO"}
                           </Button>

@@ -201,6 +201,7 @@ export default function Clientes() {
                       <div className="flex items-center justify-between gap-2 pt-2 border-t">
                         <Button
                           size="sm"
+                          disabled={!canEdit}
                           onClick={() => handleToggleAtivo(c)}
                           className={
                             c.ativo
@@ -252,6 +253,7 @@ export default function Clientes() {
                         <TableCell>
                           <Button
                             size="sm"
+                            disabled={!canEdit}
                             onClick={() => handleToggleAtivo(c)}
                             className={
                               c.ativo

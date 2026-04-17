@@ -157,7 +157,7 @@ export default function Categorias() {
                         )}
                       </div>
                       <div className="flex items-center gap-2 pt-2 border-t">
-                        <Switch checked={c.ativo} onCheckedChange={() => toggleAtivo(c)} />
+                        <Switch checked={c.ativo} disabled={!canEdit} onCheckedChange={() => toggleAtivo(c)} />
                         <span className="text-xs text-muted-foreground">
                           {c.ativo ? "Ativo" : "Inativo"}
                         </span>
@@ -189,7 +189,7 @@ export default function Categorias() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Switch checked={c.ativo} onCheckedChange={() => toggleAtivo(c)} />
+                            <Switch checked={c.ativo} disabled={!canEdit} onCheckedChange={() => toggleAtivo(c)} />
                             <span className="text-xs text-muted-foreground">
                               {c.ativo ? "Ativo" : "Inativo"}
                             </span>

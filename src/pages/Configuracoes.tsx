@@ -221,45 +221,103 @@ export default function Configuracoes() {
 
         {/* USUÁRIOS */}
         <TabsContent value="usuarios">
-          <Card>
-            <CardHeader>
-              <CardTitle>Usuários e papéis</CardTitle>
-              <CardDescription>Visualização dos papéis atribuídos. Para alterar, use o painel do Supabase.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User ID</TableHead>
-                    <TableHead>Papel</TableHead>
-                    <TableHead>Criado em</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(roles ?? []).length === 0 && (
+          <div className="space-y-6">
+            {isAdmin && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><UserPlus className="h-5 w-5" />Cadastrar usuário</CardTitle>
+                  <CardDescription>Cria um novo acesso ao sistema. O usuário entrará usando celular + senha.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="nu_nome">Nome</Label>
+                      <Input id="nu_nome" value={novoNome} onChange={(e) => setNovoNome(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="nu_phone">Celular</Label>
+                      <Input id="nu_phone" placeholder="(11) 99999-8888" value={novoPhone} onChange={(e) => setNovoPhone(maskPhoneBR(e.target.value))} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="nu_senha">Senha inicial</Label>
+                      <Input id="nu_senha" type="password" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Papel</Label>
+                      <Select value={novoRole} onValueChange={(v) => setNovoRole(v as AppRole)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="gerente">Gerente</SelectItem>
+                          <SelectItem value="visualizador">Visualizador</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <Button onClick={criarUsuario} disabled={criandoUser}>
+                    <UserPlus className="h-4 w-4 mr-2" />{criandoUser ? "Criando..." : "Criar usuário"}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Usuários e papéis</CardTitle>
+                <CardDescription>{isAdmin ? "Gerencie os papéis dos usuários do sistema." : "Visualização dos papéis cadastrados."}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center text-muted-foreground py-6">
-                        Nenhum papel cadastrado.
-                      </TableCell>
+                      <TableHead>User ID</TableHead>
+                      <TableHead>Papel</TableHead>
+                      <TableHead>Criado em</TableHead>
+                      {isAdmin && <TableHead className="text-right">Ações</TableHead>}
                     </TableRow>
-                  )}
-                  {(roles ?? []).map((r: any) => (
-                    <TableRow key={r.id}>
-                      <TableCell className="font-mono text-xs">{r.user_id}</TableCell>
-                      <TableCell>
-                        <Badge variant={r.role === "admin" ? "default" : r.role === "gerente" ? "secondary" : "outline"}>
-                          {r.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {new Date(r.created_at).toLocaleDateString("pt-BR")}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {(roles ?? []).length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={isAdmin ? 4 : 3} className="text-center text-muted-foreground py-6">
+                          Nenhum papel cadastrado.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {(roles ?? []).map((r: any) => (
+                      <TableRow key={r.id}>
+                        <TableCell className="font-mono text-xs">{r.user_id}</TableCell>
+                        <TableCell>
+                          {isAdmin ? (
+                            <Select value={r.role} onValueChange={(v) => alterarRole(r.id, v as AppRole)}>
+                              <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="gerente">Gerente</SelectItem>
+                                <SelectItem value="visualizador">Visualizador</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Badge variant={r.role === "admin" ? "default" : r.role === "gerente" ? "secondary" : "outline"}>{r.role}</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {new Date(r.created_at).toLocaleDateString("pt-BR")}
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="sm" onClick={() => removerRole(r.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* PREFERÊNCIAS */}

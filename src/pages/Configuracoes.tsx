@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound } from "lucide-react";
+import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ type Empresa = {
   cnpj: string;
   email: string;
   telefone: string;
+  logo_url?: string | null;
 };
 
 type Preferencias = {
@@ -34,13 +35,14 @@ type Preferencias = {
 
 const PREFS_KEY = "config:preferencias";
 
-const defaultEmpresa: Empresa = { razao_social: "JP Eventos e Cenografia", cnpj: "", email: "", telefone: "" };
+const defaultEmpresa: Empresa = { razao_social: "JP Eventos e Cenografia", cnpj: "", email: "", telefone: "", logo_url: null };
 const defaultPrefs: Preferencias = { valor_diaria_padrao: 150, tema_escuro: false, formato_data: "dd/MM/yyyy" };
 
 export default function Configuracoes() {
   const [empresa, setEmpresa] = useState<Empresa>(defaultEmpresa);
   const [prefs, setPrefs] = useState<Preferencias>(defaultPrefs);
   const [savingEmpresa, setSavingEmpresa] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: empresaData } = useQuery({
@@ -66,6 +68,7 @@ export default function Configuracoes() {
         cnpj: empresaData.cnpj ?? "",
         email: empresaData.email ?? "",
         telefone: empresaData.telefone ?? "",
+        logo_url: empresaData.logo_url ?? null,
       });
     }
     try {
@@ -82,6 +85,7 @@ export default function Configuracoes() {
         cnpj: empresa.cnpj || null,
         email: empresa.email || null,
         telefone: empresa.telefone || null,
+        logo_url: empresa.logo_url || null,
       };
       if (empresa.id) {
         const { error } = await supabase.from("configuracoes_empresa").update(payload).eq("id", empresa.id);
@@ -102,6 +106,59 @@ export default function Configuracoes() {
   const salvarPrefs = () => {
     localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
     toast({ title: "Preferências salvas", description: "Configurações aplicadas." });
+  };
+
+  const handleLogoUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Arquivo inválido", description: "Selecione uma imagem.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 2MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("branding").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("branding").getPublicUrl(path);
+      const newUrl = pub.publicUrl;
+      const payload = { logo_url: newUrl };
+      if (empresa.id) {
+        const { error } = await supabase.from("configuracoes_empresa").update(payload).eq("id", empresa.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("configuracoes_empresa").insert({ razao_social: empresa.razao_social || "Empresa", ...payload });
+        if (error) throw error;
+      }
+      setEmpresa((e) => ({ ...e, logo_url: newUrl }));
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["configuracoes_empresa"] }),
+        queryClient.invalidateQueries({ queryKey: ["company_logo"] }),
+      ]);
+      toast({ title: "Logo atualizado", description: "Já aparece no menu e no login." });
+    } catch (e: any) {
+      toast({ title: "Erro no upload", description: e.message, variant: "destructive" });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const removerLogo = async () => {
+    if (!empresa.id) return;
+    const { error } = await supabase.from("configuracoes_empresa").update({ logo_url: null }).eq("id", empresa.id);
+    if (error) {
+      toast({ title: "Erro ao remover", description: error.message, variant: "destructive" });
+      return;
+    }
+    setEmpresa((e) => ({ ...e, logo_url: null }));
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["configuracoes_empresa"] }),
+      queryClient.invalidateQueries({ queryKey: ["company_logo"] }),
+    ]);
+    toast({ title: "Logo removido" });
   };
 
   const { role: currentRole } = useAuth();
@@ -236,7 +293,45 @@ export default function Configuracoes() {
               <CardTitle>Perfil da empresa</CardTitle>
               <CardDescription>Dados que aparecem em relatórios e recibos.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Logo da empresa</Label>
+                <div className="flex items-center gap-4">
+                  <div className="h-20 w-20 rounded-lg bg-white border flex items-center justify-center overflow-hidden shadow-sm">
+                    {empresa.logo_url ? (
+                      <img src={empresa.logo_url} alt="Logo" className="h-full w-full object-contain p-1" />
+                    ) : (
+                      <ImageOff className="h-8 w-8 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <Button asChild variant="outline" size="sm" disabled={uploadingLogo}>
+                        <label className="cursor-pointer">
+                          <Upload className="h-4 w-4 mr-2" />
+                          {uploadingLogo ? "Enviando..." : "Enviar logo"}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) handleLogoUpload(f);
+                              e.target.value = "";
+                            }}
+                          />
+                        </label>
+                      </Button>
+                      {empresa.logo_url && (
+                        <Button variant="ghost" size="sm" onClick={removerLogo}>
+                          <Trash2 className="h-4 w-4 mr-2" />Remover
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">PNG, JPG ou SVG até 2MB. Aparecerá no menu e na tela de login.</p>
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="razao">Razão social</Label>

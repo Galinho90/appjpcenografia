@@ -13,6 +13,7 @@ import {
   SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
 import logoJpEventos from "@/assets/logo-jp-eventos.png";
+import { useCompanyLogo } from "@/hooks/useCompanyLogo";
 
 const menuItems = [
   { title: "Home", url: "/", icon: LayoutDashboard },
@@ -32,6 +33,8 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { user, role, signOut } = useAuth();
   const { canManageSettings } = usePermissions();
+  const { data: empresa } = useCompanyLogo();
+  const logoSrc = empresa?.logo_url || logoJpEventos;
   const displayName = (user?.user_metadata as any)?.nome || (user?.user_metadata as any)?.phone || user?.email?.split("@")[0] || "Usuário";
 
   const handleSignOut = async () => {
@@ -44,12 +47,12 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         {!collapsed && (
           <div className="rounded-lg bg-white px-3 py-2 flex items-center justify-center">
-            <img src={logoJpEventos} alt="JP Eventos e Cenografia" className="h-12 w-auto object-contain" />
+            <img src={logoSrc} alt="Logo da empresa" className="h-12 w-auto object-contain" />
           </div>
         )}
         {collapsed && (
           <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center mx-auto">
-            <img src={logoJpEventos} alt="JP" className="h-6 w-6 object-contain" />
+            <img src={logoSrc} alt="Logo" className="h-6 w-6 object-contain" />
           </div>
         )}
       </SidebarHeader>

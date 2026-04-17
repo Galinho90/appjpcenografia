@@ -8,6 +8,8 @@ import { LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { isValidPhoneBR, maskPhoneBR } from "@/lib/phone";
 import { toast } from "@/hooks/use-toast";
+import { useCompanyLogo } from "@/hooks/useCompanyLogo";
+import logoJpEventos from "@/assets/logo-jp-eventos.png";
 
 export default function Login() {
   const [phone, setPhone] = useState("");
@@ -15,6 +17,8 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const { signIn, session } = useAuth();
   const navigate = useNavigate();
+  const { data: empresa } = useCompanyLogo();
+  const logoSrc = empresa?.logo_url || logoJpEventos;
 
   useEffect(() => {
     if (session) navigate("/", { replace: true });
@@ -45,8 +49,8 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/20 p-4">
       <Card className="w-full max-w-md shadow-2xl border-none">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto h-14 w-14 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-2">
-            <span className="text-primary-foreground font-bold text-xl">JP</span>
+          <div className="mx-auto h-20 w-20 rounded-xl bg-white flex items-center justify-center mb-2 shadow-md p-2">
+            <img src={logoSrc} alt={empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"} className="h-full w-full object-contain" />
           </div>
           <CardTitle className="text-2xl">JP Eventos</CardTitle>
           <CardDescription>Acesse o sistema com seu celular</CardDescription>

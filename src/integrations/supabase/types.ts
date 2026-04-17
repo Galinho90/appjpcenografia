@@ -118,6 +118,7 @@ export type Database = {
           senha_hash: string | null
           telefone: string | null
           updated_at: string
+          user_id: string | null
           valor_diaria_padrao: number
         }
         Insert: {
@@ -139,6 +140,7 @@ export type Database = {
           senha_hash?: string | null
           telefone?: string | null
           updated_at?: string
+          user_id?: string | null
           valor_diaria_padrao?: number
         }
         Update: {
@@ -160,6 +162,7 @@ export type Database = {
           senha_hash?: string | null
           telefone?: string | null
           updated_at?: string
+          user_id?: string | null
           valor_diaria_padrao?: number
         }
         Relationships: []

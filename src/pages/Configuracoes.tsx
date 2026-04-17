@@ -150,7 +150,7 @@ export default function Configuracoes() {
                   <Input id="tel" value={empresa.telefone} onChange={(e) => setEmpresa({ ...empresa, telefone: e.target.value })} />
                 </div>
               </div>
-              <Button onClick={salvarEmpresa}><Save className="h-4 w-4 mr-2" />Salvar</Button>
+              <Button onClick={salvarEmpresa} disabled={savingEmpresa}><Save className="h-4 w-4 mr-2" />{savingEmpresa ? "Salvando..." : "Salvar"}</Button>
             </CardContent>
           </Card>
         </TabsContent>

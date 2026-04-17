@@ -16,6 +16,7 @@ import {
 } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
 import type { Cliente } from "@/types";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const emptyForm = {
   cnpj: "", razao_social: "", nome_fantasia: "", email: "", telefone: "",
@@ -40,6 +41,7 @@ export default function Clientes() {
   const [form, setForm] = useState<any>(emptyForm);
   const [buscando, setBuscando] = useState(false);
   const { toast } = useToast();
+  const { canEdit } = usePermissions();
 
   const { data: clientes = [], isLoading } = useClientes();
   const createMutation = useCreateCliente();
@@ -151,9 +153,11 @@ export default function Clientes() {
             </h1>
             <p className="text-sm text-muted-foreground">Home › Lista de Clientes</p>
           </div>
-          <Button onClick={openCreate} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4" /> Novo Cliente
-          </Button>
+          {canEdit && (
+            <Button onClick={openCreate} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" /> Novo Cliente
+            </Button>
+          )}
         </CardContent>
       </Card>
 
@@ -206,14 +210,16 @@ export default function Clientes() {
                         >
                           {c.ativo ? "ATIVO" : "INATIVO"}
                         </Button>
-                        <div className="flex gap-1.5">
-                          <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        {canEdit && (
+                          <div className="flex gap-1.5">
+                            <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -257,14 +263,16 @@ export default function Clientes() {
                           </Button>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1.5">
-                            <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          {canEdit && (
+                            <div className="flex justify-end gap-1.5">
+                              <Button variant="ghost" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 w-8" onClick={() => openEdit(c)} title="Editar">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-8 w-8" onClick={() => setDeleteId(c.id)} title="Excluir">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

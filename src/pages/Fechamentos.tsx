@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   useFechamentos, useGerarFechamentos, useUpdateFechamentoStatus, useDeleteFechamento,
 } from "@/hooks/useSupabaseData";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const statusConfig = {
   pendente: { label: "Pendente", variant: "outline" as const, icon: Clock },
@@ -42,6 +43,7 @@ const fmtBRL = (n: number) =>
 
 export default function Fechamentos() {
   const { toast } = useToast();
+  const { canEdit } = usePermissions();
   const { data: fechamentos = [], isLoading } = useFechamentos();
   const gerar = useGerarFechamentos();
   const updateStatus = useUpdateFechamentoStatus();
@@ -139,12 +141,14 @@ export default function Fechamentos() {
         </Card>
       </div>
 
-      <div className="flex justify-end">
-        <Button className="gap-2" onClick={handleGerar} disabled={gerar.isPending}>
-          <Calculator className="h-4 w-4" />
-          {gerar.isPending ? "Gerando..." : "Gerar Fechamento"}
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="flex justify-end">
+          <Button className="gap-2" onClick={handleGerar} disabled={gerar.isPending}>
+            <Calculator className="h-4 w-4" />
+            {gerar.isPending ? "Gerando..." : "Gerar Fechamento"}
+          </Button>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Card className="border-none shadow-lg overflow-hidden">
@@ -217,19 +221,21 @@ export default function Fechamentos() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {f.status === "pendente" && (
+                            {canEdit && f.status === "pendente" && (
                               <Button size="sm" className="gap-1" onClick={() => handleMarcarPago(f.id)} disabled={updateStatus.isPending}>
                                 <DollarSign className="h-3 w-3" /> Marcar Pago
                               </Button>
                             )}
-                            {f.status === "pago" && (
+                            {canEdit && f.status === "pago" && (
                               <Button size="sm" variant="outline" className="gap-1" onClick={() => handleReabrir(f.id)} disabled={updateStatus.isPending}>
                                 <RotateCcw className="h-3 w-3" /> Reabrir
                               </Button>
                             )}
-                            <Button size="icon" variant="ghost" onClick={() => setConfirmDelete(f.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
+                            {canEdit && (
+                              <Button size="icon" variant="ghost" onClick={() => setConfirmDelete(f.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>

@@ -436,6 +436,34 @@ export default function Configuracoes() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!resetUserId} onOpenChange={(open) => { if (!open) { setResetUserId(null); setResetPassword(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resetar senha</DialogTitle>
+            <DialogDescription>
+              Defina uma nova senha para o usuário. Avise-o para trocar no próximo login.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="reset_pw">Nova senha</Label>
+            <Input
+              id="reset_pw"
+              type="password"
+              value={resetPassword}
+              onChange={(e) => setResetPassword(e.target.value)}
+              placeholder="Mínimo 6 caracteres"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetUserId(null)}>Cancelar</Button>
+            <Button onClick={submitReset} disabled={resetSubmitting}>
+              <KeyRound className="h-4 w-4 mr-2" />{resetSubmitting ? "Salvando..." : "Salvar nova senha"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -157,7 +157,7 @@ export default function Configuracoes() {
       if ((data as any)?.error) throw new Error((data as any).error);
       toast({ title: "Usuário criado", description: `${novoNome} adicionado como ${novoRole}.` });
       setNovoNome(""); setNovoPhone(""); setNovaSenha(""); setNovoRole("visualizador");
-      await refetchRoles();
+      await Promise.all([refetchRoles(), queryClient.invalidateQueries({ queryKey: ["admin_users_list"] })]);
     } catch (e: any) {
       toast({ title: "Erro ao criar usuário", description: e.message, variant: "destructive" });
     } finally {

@@ -369,14 +369,23 @@ export default function Colaboradores() {
                 {filtered.map((c) => (
                   <Card key={c.id} className="border shadow-sm">
                     <CardContent className="p-4 space-y-3">
-                      <div className="min-w-0">
-                        <p className="font-medium uppercase break-words">{c.nome}</p>
-                        <p className="text-xs text-muted-foreground">{c.funcao}</p>
-                        <p className="text-xs text-muted-foreground">CPF: {c.cpf}</p>
-                        {c.telefone && <p className="text-xs text-muted-foreground">Tel: {c.telefone}</p>}
-                        <p className="text-sm font-semibold mt-1">
-                          R$ {c.valor_diaria_padrao.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </p>
+                      <div className="flex items-start gap-3">
+                        {c.foto_url ? (
+                          <img src={c.foto_url} alt={c.nome} className="h-12 w-12 rounded-full object-cover border shrink-0" />
+                        ) : (
+                          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground shrink-0">
+                            {c.nome.split(" ").map(n => n[0]).slice(0,2).join("").toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium uppercase break-words">{c.nome}</p>
+                          <p className="text-xs text-muted-foreground">{c.funcao}</p>
+                          <p className="text-xs text-muted-foreground">CPF: {c.cpf}</p>
+                          {c.telefone && <p className="text-xs text-muted-foreground">Tel: {c.telefone}</p>}
+                          <p className="text-sm font-semibold mt-1">
+                            R$ {c.valor_diaria_padrao.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex items-center justify-between gap-2 pt-2 border-t">
                         <Button
@@ -429,7 +438,18 @@ export default function Colaboradores() {
                   <TableBody>
                     {filtered.map((c) => (
                       <TableRow key={c.id}>
-                        <TableCell className="font-medium uppercase">{c.nome}</TableCell>
+                        <TableCell className="font-medium uppercase">
+                          <div className="flex items-center gap-2">
+                            {c.foto_url ? (
+                              <img src={c.foto_url} alt={c.nome} className="h-8 w-8 rounded-full object-cover border" />
+                            ) : (
+                              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium text-muted-foreground">
+                                {c.nome.split(" ").map(n => n[0]).slice(0,2).join("").toUpperCase()}
+                              </div>
+                            )}
+                            <span>{c.nome}</span>
+                          </div>
+                        </TableCell>
                         <TableCell>{c.telefone}</TableCell>
                         <TableCell>{c.cpf}</TableCell>
                         <TableCell>{c.funcao}</TableCell>

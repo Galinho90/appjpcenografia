@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.admin-reset-password]
 verify_jwt = false
+
+[functions.admin-list-users]
+verify_jwt = false

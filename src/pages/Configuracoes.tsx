@@ -116,6 +116,18 @@ export default function Configuracoes() {
     },
   });
 
+  type UserInfo = { id: string; email: string | null; nome: string | null; phone: string | null };
+  const { data: usersInfo } = useQuery({
+    queryKey: ["admin_users_list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("admin-list-users");
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return ((data as any)?.users ?? []) as UserInfo[];
+    },
+  });
+  const usersById = new Map((usersInfo ?? []).map((u) => [u.id, u]));
+
   // Cadastro de usuário
   const [novoNome, setNovoNome] = useState("");
   const [novoPhone, setNovoPhone] = useState("");
@@ -145,7 +157,7 @@ export default function Configuracoes() {
       if ((data as any)?.error) throw new Error((data as any).error);
       toast({ title: "Usuário criado", description: `${novoNome} adicionado como ${novoRole}.` });
       setNovoNome(""); setNovoPhone(""); setNovaSenha(""); setNovoRole("visualizador");
-      await refetchRoles();
+      await Promise.all([refetchRoles(), queryClient.invalidateQueries({ queryKey: ["admin_users_list"] })]);
     } catch (e: any) {
       toast({ title: "Erro ao criar usuário", description: e.message, variant: "destructive" });
     } finally {
@@ -299,7 +311,7 @@ export default function Configuracoes() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>User ID</TableHead>
+                      <TableHead>Usuário</TableHead>
                       <TableHead>Papel</TableHead>
                       <TableHead>Criado em</TableHead>
                       {isAdmin && <TableHead className="text-right">Ações</TableHead>}
@@ -315,7 +327,19 @@ export default function Configuracoes() {
                     )}
                     {(roles ?? []).map((r: any) => (
                       <TableRow key={r.id}>
-                        <TableCell className="font-mono text-xs">{r.user_id}</TableCell>
+                        <TableCell>
+                          {(() => {
+                            const u = usersById.get(r.user_id);
+                            const nome = u?.nome?.trim() || "—";
+                            const phone = u?.phone || "";
+                            return (
+                              <div className="flex flex-col">
+                                <span className="font-medium">{nome}</span>
+                                {phone && <span className="text-xs text-muted-foreground">{phone}</span>}
+                              </div>
+                            );
+                          })()}
+                        </TableCell>
                         <TableCell>
                           {isAdmin ? (
                             <Select value={r.role} onValueChange={(v) => alterarRole(r.id, v as AppRole)}>

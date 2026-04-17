@@ -310,7 +310,10 @@ export default function Configuracoes() {
                             className="hidden"
                             onChange={(e) => {
                               const f = e.target.files?.[0];
-                              if (f) handleLogoUpload(f);
+                              if (f) {
+                                setLogoCropFile(f);
+                                setLogoCropOpen(true);
+                              }
                               e.target.value = "";
                             }}
                           />

@@ -19,6 +19,7 @@ import {
   useColaboradores, useFechamentos,
   useCategorias, useLancamentos, useCreateLancamento,
 } from "@/hooks/useSupabaseData";
+import { usePermissions } from "@/hooks/usePermissions";
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();
@@ -45,6 +46,7 @@ const fmtBRL = (n: number) =>
 
 export default function ExtratoDiarista() {
   const { toast } = useToast();
+  const { canEdit } = usePermissions();
   const { data: colaboradores = [], isLoading: loadingCol } = useColaboradores();
   const { data: categorias = [] } = useCategorias();
   const { data: lancamentos = [] } = useLancamentos();
@@ -200,11 +202,13 @@ export default function ExtratoDiarista() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
-        <Button className="gap-2 w-full sm:w-auto" onClick={abrirModal}>
-          <FileText className="h-4 w-4" /> Novo Lançamento
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+          <Button className="gap-2 w-full sm:w-auto" onClick={abrirModal}>
+            <FileText className="h-4 w-4" /> Novo Lançamento
+          </Button>
+        </div>
+      )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">

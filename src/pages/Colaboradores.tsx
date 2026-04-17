@@ -525,16 +525,6 @@ export default function Colaboradores() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <ImageCropDialog
-        file={cropFile}
-        open={cropOpen}
-        onOpenChange={(o) => { setCropOpen(o); if (!o) setCropFile(null); }}
-        aspect={1}
-        maxSize={512}
-        title="Ajustar foto do diarista"
-        onCropped={uploadCroppedFoto}
-      />
     </div>
   );
 }

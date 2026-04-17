@@ -340,10 +340,45 @@ export function useUpdateFechamentoStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: "pendente" | "pago" | "erro" }) => {
+      // Busca dados do fechamento para criar/remover lançamento espelho
+      const { data: fech, error: fErr } = await supabase
+        .from("fechamentos")
+        .select("id, colaborador_id, valor_final, periodo_fim, status")
+        .eq("id", id)
+        .single();
+      if (fErr) throw fErr;
+
       const { error } = await supabase.from("fechamentos").update({ status }).eq("id", id);
       if (error) throw error;
+
+      if (status === "pago" && fech.status !== "pago") {
+        // Localiza categoria "PAGAMENTO DE DIÁRIAS" (tipo D)
+        const { data: cat } = await supabase
+          .from("categorias")
+          .select("id")
+          .ilike("descricao", "PAGAMENTO%")
+          .eq("tipo", "D")
+          .limit(1)
+          .maybeSingle();
+        if (cat?.id) {
+          await supabase.from("lancamentos").insert({
+            colaborador_id: fech.colaborador_id,
+            categoria_id: cat.id,
+            data: fech.periodo_fim,
+            valor: Number(fech.valor_final),
+            descricao: "Pagamento de fechamento",
+            fechamento_id: fech.id,
+          } as any);
+        }
+      } else if (status !== "pago" && fech.status === "pago") {
+        // Remove lançamentos espelho ao reabrir
+        await (supabase.from("lancamentos") as any).delete().eq("fechamento_id", id);
+      }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["fechamentos"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["fechamentos"] });
+      qc.invalidateQueries({ queryKey: ["lancamentos"] });
+    },
   });
 }
 

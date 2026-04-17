@@ -1,0 +1,2 @@
+ALTER TABLE public.lancamentos ADD COLUMN fechamento_id uuid REFERENCES public.fechamentos(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_lancamentos_fechamento_id ON public.lancamentos(fechamento_id);

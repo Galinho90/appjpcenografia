@@ -76,10 +76,10 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === "/"}
-                      className="hover:bg-sidebar-accent"
+                      className={`hover:bg-sidebar-accent ${role === "visualizador" ? "justify-center" : ""}`}
                       activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     >
-                      <item.icon className="mr-2 h-4 w-4" />
+                      <item.icon className={`h-4 w-4 ${role === "visualizador" ? "" : "mr-2"}`} />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>

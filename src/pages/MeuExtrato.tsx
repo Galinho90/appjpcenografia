@@ -234,7 +234,7 @@ export default function MeuExtrato() {
         <Card className="border-none overflow-hidden shadow-lg">
           <div className="bg-primary p-4 sm:p-6 text-center">
             <p className="text-xl sm:text-2xl font-bold text-primary-foreground">{fmtBRL(totalCreditos)}</p>
-            <p className="text-sm text-primary-foreground/90">Créditos</p>
+            <p className="text-sm text-primary-foreground/90">Lançamentos</p>
           </div>
         </Card>
         <Card className="border-none overflow-hidden shadow-lg">

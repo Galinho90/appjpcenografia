@@ -228,7 +228,7 @@ export default function MeuExtrato() {
         <Card className="border-none overflow-hidden shadow-lg">
           <div className="bg-accent p-4 sm:p-6 text-center">
             <p className="text-xl sm:text-2xl font-bold text-accent-foreground">{fmtBRL(aPagar)}</p>
-            <p className="text-sm text-accent-foreground/90">A Pagar</p>
+            <p className="text-sm text-accent-foreground/90">A Receber</p>
           </div>
         </Card>
         <Card className="border-none overflow-hidden shadow-lg">

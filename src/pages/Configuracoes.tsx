@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound } from "lucide-react";
+import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ type Empresa = {
   cnpj: string;
   email: string;
   telefone: string;
+  logo_url?: string | null;
 };
 
 type Preferencias = {
@@ -34,13 +35,14 @@ type Preferencias = {
 
 const PREFS_KEY = "config:preferencias";
 
-const defaultEmpresa: Empresa = { razao_social: "JP Eventos e Cenografia", cnpj: "", email: "", telefone: "" };
+const defaultEmpresa: Empresa = { razao_social: "JP Eventos e Cenografia", cnpj: "", email: "", telefone: "", logo_url: null };
 const defaultPrefs: Preferencias = { valor_diaria_padrao: 150, tema_escuro: false, formato_data: "dd/MM/yyyy" };
 
 export default function Configuracoes() {
   const [empresa, setEmpresa] = useState<Empresa>(defaultEmpresa);
   const [prefs, setPrefs] = useState<Preferencias>(defaultPrefs);
   const [savingEmpresa, setSavingEmpresa] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: empresaData } = useQuery({
@@ -66,6 +68,7 @@ export default function Configuracoes() {
         cnpj: empresaData.cnpj ?? "",
         email: empresaData.email ?? "",
         telefone: empresaData.telefone ?? "",
+        logo_url: empresaData.logo_url ?? null,
       });
     }
     try {
@@ -82,6 +85,7 @@ export default function Configuracoes() {
         cnpj: empresa.cnpj || null,
         email: empresa.email || null,
         telefone: empresa.telefone || null,
+        logo_url: empresa.logo_url || null,
       };
       if (empresa.id) {
         const { error } = await supabase.from("configuracoes_empresa").update(payload).eq("id", empresa.id);

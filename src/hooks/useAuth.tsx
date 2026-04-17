@@ -49,11 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(newSession?.user ?? null);
       // Defer Supabase calls
       if (newSession?.user) {
+        setLoading(true);
         setTimeout(() => {
-          fetchRole(newSession.user.id);
+          fetchRole(newSession.user.id).finally(() => setLoading(false));
         }, 0);
       } else {
         setRole(null);
+        setLoading(false);
       }
     });
 

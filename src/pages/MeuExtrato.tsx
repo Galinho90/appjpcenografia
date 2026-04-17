@@ -39,7 +39,7 @@ export default function MeuExtrato() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("colaboradores")
-        .select("id, nome, valor_diaria_padrao")
+        .select("id, nome, valor_diaria_padrao, funcao, telefone, email, foto_url, pix, chave_pix, banco, agencia, conta")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;

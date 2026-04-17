@@ -135,7 +135,7 @@ export default function Diarias() {
 
   const filtered = [...lancamentos].sort((a, b) => {
     if (b.data !== a.data) return b.data.localeCompare(a.data);
-    return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+    return ((b as any).created_at ?? "").localeCompare((a as any).created_at ?? "");
   }).filter((l) => {
     const nome = l.colaborador?.nome?.toLowerCase() ?? "";
     const cat = l.categoria?.descricao?.toLowerCase() ?? "";

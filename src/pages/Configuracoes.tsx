@@ -584,16 +584,6 @@ export default function Configuracoes() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <ImageCropDialog
-        file={logoCropFile}
-        open={logoCropOpen}
-        onOpenChange={(o) => { setLogoCropOpen(o); if (!o) setLogoCropFile(null); }}
-        aspect={1}
-        maxSize={512}
-        title="Ajustar logo da empresa"
-        onCropped={handleLogoUpload}
-      />
     </div>
   );
 }

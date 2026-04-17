@@ -49,7 +49,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/20 p-4">
       <Card className="w-full max-w-md shadow-2xl border-none">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto h-20 w-20 rounded-xl bg-white flex items-center justify-center mb-2 shadow-md p-2">
+          <div className="mx-auto h-32 w-32 rounded-2xl bg-white flex items-center justify-center mb-3 shadow-md p-3">
             <img src={logoSrc} alt={empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"} className="h-full w-full object-contain" />
           </div>
           <CardDescription>Acesse o sistema com seu celular</CardDescription>

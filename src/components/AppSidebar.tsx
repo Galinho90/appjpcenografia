@@ -15,7 +15,7 @@ import {
 import logoJpEventos from "@/assets/logo-jp-eventos.png";
 import { useCompanyLogo } from "@/hooks/useCompanyLogo";
 
-const menuItems = [
+const staffMenuItems = [
   { title: "Home", url: "/", icon: LayoutDashboard },
   { title: "Lançamentos", url: "/diarias", icon: CalendarDays },
   { title: "Extrato do Diarista", url: "/extrato", icon: FileText },
@@ -26,6 +26,10 @@ const menuItems = [
   { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
 ];
 
+const diaristaMenuItems = [
+  { title: "Meu Extrato", url: "/meu-extrato", icon: FileText },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -33,6 +37,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { user, role, signOut } = useAuth();
   const { canManageSettings } = usePermissions();
+  const menuItems = role === "visualizador" ? diaristaMenuItems : staffMenuItems;
   const { data: empresa } = useCompanyLogo();
   const logoSrc = empresa?.logo_url || logoJpEventos;
   const displayName = (user?.user_metadata as any)?.nome || (user?.user_metadata as any)?.phone || user?.email?.split("@")[0] || "Usuário";

@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import type { Colaborador } from "@/types";
 import { usePermissions } from "@/hooks/usePermissions";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 const emptyForm = {
   nome: "", cpf: "", rg: "", data_nascimento: "", telefone: "", email: "",
@@ -55,17 +56,19 @@ export default function Colaboradores() {
   const [form, setForm] = useState<any>(emptyForm);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
 
-  const handleFotoUpload = async (file: File) => {
-    if (!file) return;
+  const uploadCroppedFoto = async (blob: Blob) => {
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("diaristas-fotos").upload(path, file, { upsert: true });
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const { error: upErr } = await supabase.storage
+        .from("diaristas-fotos")
+        .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("diaristas-fotos").getPublicUrl(path);
-      setForm({ ...form, foto_url: data.publicUrl });
+      setForm((f: any) => ({ ...f, foto_url: data.publicUrl }));
       toast({ title: "Foto enviada!" });
     } catch (e: any) {
       toast({ title: "Erro ao enviar foto", description: e.message, variant: "destructive" });
@@ -217,7 +220,14 @@ export default function Colaboradores() {
                         type="file"
                         accept="image/*"
                         className="hidden"
-                        onChange={(e) => e.target.files?.[0] && handleFotoUpload(e.target.files[0])}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) {
+                            setCropFile(f);
+                            setCropOpen(true);
+                          }
+                          e.target.value = "";
+                        }}
                       />
                       <Button
                         type="button"

@@ -139,15 +139,23 @@ Deno.serve(async (req) => {
       newUserId = created.user.id;
     }
 
-    const { error: roleInsertErr } = await admin.from("user_roles").insert({
-      user_id: newUserId,
-      role: "visualizador",
-    });
-    if (roleInsertErr) {
-      await admin.auth.admin.deleteUser(newUserId);
-      return new Response(JSON.stringify({ error: roleInsertErr.message }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Garante role visualizador (idempotente)
+    const { data: existingRole } = await admin
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", newUserId)
+      .eq("role", "visualizador")
+      .maybeSingle();
+    if (!existingRole) {
+      const { error: roleInsertErr } = await admin.from("user_roles").insert({
+        user_id: newUserId,
+        role: "visualizador",
       });
+      if (roleInsertErr) {
+        return new Response(JSON.stringify({ error: roleInsertErr.message }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const { error: linkErr } = await admin
@@ -155,8 +163,6 @@ Deno.serve(async (req) => {
       .update({ user_id: newUserId })
       .eq("id", colaborador_id);
     if (linkErr) {
-      await admin.from("user_roles").delete().eq("user_id", newUserId);
-      await admin.auth.admin.deleteUser(newUserId);
       return new Response(JSON.stringify({ error: linkErr.message }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

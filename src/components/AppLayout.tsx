@@ -1,6 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { useMyProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
 import { LogOut, User } from "lucide-react";
 import {
@@ -21,14 +22,17 @@ function getInitials(name: string) {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, role, signOut } = useAuth();
+  const { data: profile } = useMyProfile();
   const navigate = useNavigate();
   const meta = (user?.user_metadata ?? {}) as { nome?: string; phone?: string };
   const displayName =
+    profile?.nome ||
     meta.nome ||
     meta.phone ||
     user?.email?.split("@")[0] ||
     "Usuário";
   const initials = getInitials(displayName);
+  const avatarUrl = profile?.avatar_url;
 
   const handleSignOut = async () => {
     await signOut();
@@ -46,8 +50,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent transition-colors">
-                  <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                    <span className="text-primary-foreground text-xs font-bold">{initials}</span>
+                  <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-primary-foreground text-xs font-bold">{initials}</span>
+                    )}
                   </div>
                   <div className="hidden sm:flex flex-col leading-tight items-start">
                     <span className="text-sm font-medium text-foreground">{displayName}</span>

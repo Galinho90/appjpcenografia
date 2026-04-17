@@ -262,6 +262,7 @@ export type Database = {
           created_at: string
           data: string
           descricao: string | null
+          fechamento_id: string | null
           hora_entrada: string | null
           hora_saida: string | null
           id: string
@@ -274,6 +275,7 @@ export type Database = {
           created_at?: string
           data: string
           descricao?: string | null
+          fechamento_id?: string | null
           hora_entrada?: string | null
           hora_saida?: string | null
           id?: string
@@ -286,6 +288,7 @@ export type Database = {
           created_at?: string
           data?: string
           descricao?: string | null
+          fechamento_id?: string | null
           hora_entrada?: string | null
           hora_saida?: string | null
           id?: string
@@ -305,6 +308,13 @@ export type Database = {
             columns: ["colaborador_id"]
             isOneToOne: false
             referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_fechamento_id_fkey"
+            columns: ["fechamento_id"]
+            isOneToOne: false
+            referencedRelation: "fechamentos"
             referencedColumns: ["id"]
           },
         ]

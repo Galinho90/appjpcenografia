@@ -83,11 +83,9 @@ export default function ExtratoDiarista() {
     .filter(l => l.categoria?.tipo === "D")
     .reduce((s, l) => s + l.valor, 0);
 
-  const fechamentoSel = fechamentos.find(
-    (f: any) => f.colaborador_id === colaboradorId && f.periodo_inicio === inicioISO && f.periodo_fim === fimISO,
-  );
-  const totalFechamentoPago = fechamentoSel?.status === "pago" ? Number((fechamentoSel as any).valor_final) : 0;
-  const totalPago = totalDebitos + totalFechamentoPago;
+  // O pagamento de fechamento já é registrado como lançamento de débito (PAGAMENTO DE DIÁRIAS),
+  // então totalDebitos já reflete tudo que foi pago + vales.
+  const totalPago = totalDebitos;
   const aPagar = Math.max(totalCreditos - totalPago, 0);
 
   const colaboradorSel = colaboradores.find(c => c.id === colaboradorId);

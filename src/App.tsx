@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { AuthProvider } from "@/hooks/useAuth";
 import { RequireAuth } from "@/components/RequireAuth";
 import { RequireAdmin } from "@/components/RequireAdmin";
+import { RequireRole } from "@/components/RequireRole";
 import Index from "./pages/Index";
 import Colaboradores from "./pages/Colaboradores";
 import Diarias from "./pages/Diarias";
@@ -17,6 +18,7 @@ import Clientes from "./pages/Clientes";
 import Categorias from "./pages/Categorias";
 import Configuracoes from "./pages/Configuracoes";
 import MinhaConta from "./pages/MinhaConta";
+import MeuExtrato from "./pages/MeuExtrato";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -24,6 +26,11 @@ const queryClient = new QueryClient();
 
 const Protected = ({ children }: { children: React.ReactNode }) => (
   <RequireAuth><AppLayout>{children}</AppLayout></RequireAuth>
+);
+
+// Bloqueia rotas internas para visualizador (diarista) → redireciona p/ /meu-extrato
+const Staff = ({ children }: { children: React.ReactNode }) => (
+  <RequireRole roles={["admin", "gerente"]}>{children}</RequireRole>
 );
 
 const App = () => (
@@ -35,15 +42,16 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Protected><Index /></Protected>} />
-            <Route path="/colaboradores" element={<Protected><Colaboradores /></Protected>} />
-            <Route path="/diarias" element={<Protected><Diarias /></Protected>} />
-            <Route path="/fechamentos" element={<Protected><Fechamentos /></Protected>} />
-            <Route path="/relatorios" element={<Protected><Relatorios /></Protected>} />
-            <Route path="/extrato" element={<Protected><ExtratoDiarista /></Protected>} />
-            <Route path="/clientes" element={<Protected><Clientes /></Protected>} />
-            <Route path="/categorias" element={<Protected><Categorias /></Protected>} />
+            <Route path="/" element={<Protected><Staff><Index /></Staff></Protected>} />
+            <Route path="/colaboradores" element={<Protected><Staff><Colaboradores /></Staff></Protected>} />
+            <Route path="/diarias" element={<Protected><Staff><Diarias /></Staff></Protected>} />
+            <Route path="/fechamentos" element={<Protected><Staff><Fechamentos /></Staff></Protected>} />
+            <Route path="/relatorios" element={<Protected><Staff><Relatorios /></Staff></Protected>} />
+            <Route path="/extrato" element={<Protected><Staff><ExtratoDiarista /></Staff></Protected>} />
+            <Route path="/clientes" element={<Protected><Staff><Clientes /></Staff></Protected>} />
+            <Route path="/categorias" element={<Protected><Staff><Categorias /></Staff></Protected>} />
             <Route path="/configuracoes" element={<Protected><RequireAdmin><Configuracoes /></RequireAdmin></Protected>} />
+            <Route path="/meu-extrato" element={<Protected><MeuExtrato /></Protected>} />
             <Route path="/minha-conta" element={<Protected><MinhaConta /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

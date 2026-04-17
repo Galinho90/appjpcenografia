@@ -149,8 +149,13 @@ export function useCreateColaborador() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (data: Omit<Colaborador, "id" | "created_at" | "ativo">) => {
-      const { error } = await supabase.from("colaboradores").insert(data);
+      const { data: created, error } = await supabase
+        .from("colaboradores")
+        .insert(data)
+        .select("id")
+        .single();
       if (error) throw error;
+      return created;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["colaboradores"] }),
   });

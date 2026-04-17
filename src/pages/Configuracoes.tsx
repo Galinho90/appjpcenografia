@@ -311,7 +311,7 @@ export default function Configuracoes() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>User ID</TableHead>
+                      <TableHead>Usuário</TableHead>
                       <TableHead>Papel</TableHead>
                       <TableHead>Criado em</TableHead>
                       {isAdmin && <TableHead className="text-right">Ações</TableHead>}
@@ -327,7 +327,19 @@ export default function Configuracoes() {
                     )}
                     {(roles ?? []).map((r: any) => (
                       <TableRow key={r.id}>
-                        <TableCell className="font-mono text-xs">{r.user_id}</TableCell>
+                        <TableCell>
+                          {(() => {
+                            const u = usersById.get(r.user_id);
+                            const nome = u?.nome?.trim() || "—";
+                            const phone = u?.phone || "";
+                            return (
+                              <div className="flex flex-col">
+                                <span className="font-medium">{nome}</span>
+                                {phone && <span className="text-xs text-muted-foreground">{phone}</span>}
+                              </div>
+                            );
+                          })()}
+                        </TableCell>
                         <TableCell>
                           {isAdmin ? (
                             <Select value={r.role} onValueChange={(v) => alterarRole(r.id, v as AppRole)}>

@@ -262,7 +262,7 @@ export default function Colaboradores() {
                   </div>
                   <div className="space-y-2">
                     <Label>Celular</Label>
-                    <Input disabled={readOnly} value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(11) 99999-9999" />
+                    <Input disabled={readOnly} value={maskPhoneBR(form.telefone || "")} onChange={(e) => setForm({ ...form, telefone: maskPhoneBR(e.target.value) })} placeholder="(11) 99999-9999" inputMode="numeric" maxLength={15} />
                   </div>
                 </div>
                 <div className="space-y-2 flex flex-col items-center">
@@ -305,7 +305,7 @@ export default function Colaboradores() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>CPF</Label>
-                  <Input disabled={readOnly} value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} placeholder="000.000.000-00" />
+                  <Input disabled={readOnly} value={maskCPF(form.cpf || "")} onChange={(e) => setForm({ ...form, cpf: maskCPF(e.target.value) })} placeholder="000.000.000-00" inputMode="numeric" maxLength={14} />
                 </div>
                 <div className="space-y-2">
                   <Label>RG</Label>

@@ -228,10 +228,7 @@ export default function Colaboradores() {
                         className="hidden"
                         onChange={(e) => {
                           const f = e.target.files?.[0];
-                          if (f) {
-                            setCropFile(f);
-                            setCropOpen(true);
-                          }
+                          if (f) uploadFoto(f);
                           e.target.value = "";
                         }}
                       />

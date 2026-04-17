@@ -373,25 +373,13 @@ export default function ExtratoDiarista() {
                 const horarios = l.hora_entrada || l.hora_saida
                   ? `ENTRADA: ${l.hora_entrada ?? "—"} / SAÍDA: ${l.hora_saida ?? "—"}`
                   : "";
-                const detalhe = [horarios, l.descricao].filter(Boolean).join(" • ");
                 return (
-                  <Card key={l.id} className={cn("border-l-4 shadow-sm hover:shadow-md transition-shadow", accent)}>
-                    <CardContent className="p-4">
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0">
-                          <p className="text-xs text-muted-foreground whitespace-nowrap">
-                            {new Date(l.data).toLocaleDateString("pt-BR")}
-                          </p>
-                          <p className="text-sm font-bold text-foreground break-words">
-                            {l.categoria?.descricao ?? "—"}
-                          </p>
-                        </div>
-                        <p className={cn("text-base font-bold whitespace-nowrap", colorValue)}>
-                          {isDeb ? "- " : ""}{fmtBRL(l.valor)}
-                        </p>
-                      </div>
-                      {detalhe && (
-                        <p className="text-xs text-muted-foreground mt-2 break-words">{detalhe}</p>
+...
+                      {horarios && (
+                        <p className="text-xs text-muted-foreground mt-2 break-words">{horarios}</p>
+                      )}
+                      {l.descricao && (
+                        <p className="text-xs text-muted-foreground mt-1 break-words">{l.descricao}</p>
                       )}
                     </CardContent>
                   </Card>

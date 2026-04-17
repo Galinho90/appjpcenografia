@@ -22,7 +22,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import type { Colaborador } from "@/types";
 import { usePermissions } from "@/hooks/usePermissions";
-import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 const emptyForm = {
   nome: "", cpf: "", rg: "", data_nascimento: "", telefone: "", email: "",

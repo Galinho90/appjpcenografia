@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2 } from "lucide-react";
+import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -173,6 +174,34 @@ export default function Configuracoes() {
     await refetchRoles();
   };
 
+  // Reset de senha
+  const [resetUserId, setResetUserId] = useState<string | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+
+  const submitReset = async () => {
+    if (!resetUserId) return;
+    if (resetPassword.length < 6) {
+      toast({ title: "Senha muito curta", description: "Mínimo 6 caracteres.", variant: "destructive" });
+      return;
+    }
+    setResetSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-reset-password", {
+        body: { user_id: resetUserId, new_password: resetPassword },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Senha redefinida", description: "A nova senha já está ativa." });
+      setResetUserId(null);
+      setResetPassword("");
+    } catch (e: any) {
+      toast({ title: "Erro ao resetar senha", description: e.message, variant: "destructive" });
+    } finally {
+      setResetSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -306,7 +335,10 @@ export default function Configuracoes() {
                         </TableCell>
                         {isAdmin && (
                           <TableCell className="text-right">
-                            <Button variant="ghost" size="sm" onClick={() => removerRole(r.id)}>
+                            <Button variant="ghost" size="sm" onClick={() => { setResetUserId(r.user_id); setResetPassword(""); }} title="Resetar senha">
+                              <KeyRound className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => removerRole(r.id)} title="Remover acesso">
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </TableCell>
@@ -404,6 +436,34 @@ export default function Configuracoes() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!resetUserId} onOpenChange={(open) => { if (!open) { setResetUserId(null); setResetPassword(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resetar senha</DialogTitle>
+            <DialogDescription>
+              Defina uma nova senha para o usuário. Avise-o para trocar no próximo login.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="reset_pw">Nova senha</Label>
+            <Input
+              id="reset_pw"
+              type="password"
+              value={resetPassword}
+              onChange={(e) => setResetPassword(e.target.value)}
+              placeholder="Mínimo 6 caracteres"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetUserId(null)}>Cancelar</Button>
+            <Button onClick={submitReset} disabled={resetSubmitting}>
+              <KeyRound className="h-4 w-4 mr-2" />{resetSubmitting ? "Salvando..." : "Salvar nova senha"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

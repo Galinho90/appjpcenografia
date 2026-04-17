@@ -108,20 +108,11 @@ export default function Configuracoes() {
     toast({ title: "Preferências salvas", description: "Configurações aplicadas." });
   };
 
-  const handleLogoUpload = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast({ title: "Arquivo inválido", description: "Selecione uma imagem.", variant: "destructive" });
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: "Arquivo muito grande", description: "Máximo 2MB.", variant: "destructive" });
-      return;
-    }
+  const handleLogoUpload = async (blob: Blob) => {
     setUploadingLogo(true);
     try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `logo-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("branding").upload(path, file, { upsert: true, contentType: file.type });
+      const path = `logo-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage.from("branding").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("branding").getPublicUrl(path);
       const newUrl = pub.publicUrl;

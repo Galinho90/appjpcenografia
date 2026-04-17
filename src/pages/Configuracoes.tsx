@@ -108,6 +108,59 @@ export default function Configuracoes() {
     toast({ title: "Preferências salvas", description: "Configurações aplicadas." });
   };
 
+  const handleLogoUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Arquivo inválido", description: "Selecione uma imagem.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 2MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("branding").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("branding").getPublicUrl(path);
+      const newUrl = pub.publicUrl;
+      const payload = { logo_url: newUrl };
+      if (empresa.id) {
+        const { error } = await supabase.from("configuracoes_empresa").update(payload).eq("id", empresa.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("configuracoes_empresa").insert({ razao_social: empresa.razao_social || "Empresa", ...payload });
+        if (error) throw error;
+      }
+      setEmpresa((e) => ({ ...e, logo_url: newUrl }));
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["configuracoes_empresa"] }),
+        queryClient.invalidateQueries({ queryKey: ["company_logo"] }),
+      ]);
+      toast({ title: "Logo atualizado", description: "Já aparece no menu e no login." });
+    } catch (e: any) {
+      toast({ title: "Erro no upload", description: e.message, variant: "destructive" });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const removerLogo = async () => {
+    if (!empresa.id) return;
+    const { error } = await supabase.from("configuracoes_empresa").update({ logo_url: null }).eq("id", empresa.id);
+    if (error) {
+      toast({ title: "Erro ao remover", description: error.message, variant: "destructive" });
+      return;
+    }
+    setEmpresa((e) => ({ ...e, logo_url: null }));
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["configuracoes_empresa"] }),
+      queryClient.invalidateQueries({ queryKey: ["company_logo"] }),
+    ]);
+    toast({ title: "Logo removido" });
+  };
+
   const { role: currentRole } = useAuth();
   const isAdmin = currentRole === "admin";
 

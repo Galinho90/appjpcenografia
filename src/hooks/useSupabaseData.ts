@@ -372,7 +372,7 @@ export function useUpdateFechamentoStatus() {
         }
       } else if (status !== "pago" && fech.status === "pago") {
         // Remove lançamentos espelho ao reabrir
-        await supabase.from("lancamentos").delete().eq("fechamento_id" as any, id);
+        await (supabase.from("lancamentos") as any).delete().eq("fechamento_id", id);
       }
     },
     onSuccess: () => {

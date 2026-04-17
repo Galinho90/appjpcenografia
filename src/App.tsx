@@ -16,6 +16,7 @@ import ExtratoDiarista from "./pages/ExtratoDiarista";
 import Clientes from "./pages/Clientes";
 import Categorias from "./pages/Categorias";
 import Configuracoes from "./pages/Configuracoes";
+import MinhaConta from "./pages/MinhaConta";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/clientes" element={<Protected><Clientes /></Protected>} />
             <Route path="/categorias" element={<Protected><Categorias /></Protected>} />
             <Route path="/configuracoes" element={<Protected><RequireAdmin><Configuracoes /></RequireAdmin></Protected>} />
+            <Route path="/minha-conta" element={<Protected><MinhaConta /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

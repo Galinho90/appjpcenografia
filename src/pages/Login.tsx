@@ -73,6 +73,8 @@ export default function Login() {
               <Input
                 id="password"
                 type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

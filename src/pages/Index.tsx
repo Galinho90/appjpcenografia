@@ -59,13 +59,11 @@ export default function Dashboard() {
     .reduce((s, l) => s + l.valor, 0);
   const saldoLancamentos = totalCreditos - totalDebitos;
 
-  // Pagamentos já realizados: vales/débitos já entregues + fechamentos pagos
-  const totalFechamentosPagos = fechamentosQ
-    .filter(f => f.status === 'pago')
-    .reduce((s, f) => s + Number(f.valor_final), 0);
-  const totalPagoQ = totalDebitos + totalFechamentosPagos;
+  // Pagamentos de fechamento já são registrados como lançamentos de débito,
+  // então totalDebitos já reflete tudo que foi pago + vales.
+  const totalPagoQ = totalDebitos;
 
-  // Total pendente = créditos − (débitos já pagos + fechamentos pagos)
+  // Total pendente = créditos − débitos
   const totalPendente = Math.max(totalCreditos - totalPagoQ, 0);
 
   const fmtBRL = (n: number) =>

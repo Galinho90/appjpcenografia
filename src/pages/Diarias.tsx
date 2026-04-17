@@ -90,13 +90,16 @@ export default function Diarias() {
   const colaboradoresAtivos = useMemo(() => colaboradores.filter((c) => c.ativo), [colaboradores]);
   const categoriaSelecionada = categorias.find((c) => c.id === form.categoria_id);
   const descCat = (categoriaSelecionada?.descricao || "").toUpperCase();
-  // Mesmo formulário (com hora entrada/saída) para Diária, Dobra e Hora Extra
-  const usaHorario =
+  // Mesmo formulário (com hora entrada/saída) para Diária, Dobra e Hora Extra,
+  // exceto quando for "Pagamento de ..." (ex.: Pagamento de Diárias).
+  const isPagamento = descCat.includes("PAGAMENTO");
+  const usaHorario = !isPagamento && (
     descCat.includes("DIÁRIA") ||
     descCat.includes("DIARIA") ||
     descCat.includes("DOBRA") ||
     descCat.includes("HORA EXTRA") ||
-    descCat.includes("HORAS EXTRA");
+    descCat.includes("HORAS EXTRA")
+  );
   const isDiaria = usaHorario;
 
   const openCreate = () => {

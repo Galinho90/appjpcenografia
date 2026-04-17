@@ -293,7 +293,45 @@ export default function Configuracoes() {
               <CardTitle>Perfil da empresa</CardTitle>
               <CardDescription>Dados que aparecem em relatórios e recibos.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Logo da empresa</Label>
+                <div className="flex items-center gap-4">
+                  <div className="h-20 w-20 rounded-lg bg-white border flex items-center justify-center overflow-hidden shadow-sm">
+                    {empresa.logo_url ? (
+                      <img src={empresa.logo_url} alt="Logo" className="h-full w-full object-contain p-1" />
+                    ) : (
+                      <ImageOff className="h-8 w-8 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <Button asChild variant="outline" size="sm" disabled={uploadingLogo}>
+                        <label className="cursor-pointer">
+                          <Upload className="h-4 w-4 mr-2" />
+                          {uploadingLogo ? "Enviando..." : "Enviar logo"}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) handleLogoUpload(f);
+                              e.target.value = "";
+                            }}
+                          />
+                        </label>
+                      </Button>
+                      {empresa.logo_url && (
+                        <Button variant="ghost" size="sm" onClick={removerLogo}>
+                          <Trash2 className="h-4 w-4 mr-2" />Remover
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">PNG, JPG ou SVG até 2MB. Aparecerá no menu e na tela de login.</p>
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="razao">Razão social</Label>

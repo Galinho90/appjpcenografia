@@ -103,7 +103,10 @@ export default function Configuracoes() {
     toast({ title: "Preferências salvas", description: "Configurações aplicadas." });
   };
 
-  const { data: roles } = useQuery({
+  const { role: currentRole } = useAuth();
+  const isAdmin = currentRole === "admin";
+
+  const { data: roles, refetch: refetchRoles } = useQuery({
     queryKey: ["user_roles_all"],
     queryFn: async () => {
       const { data, error } = await supabase.from("user_roles").select("id, user_id, role, created_at");
@@ -111,6 +114,64 @@ export default function Configuracoes() {
       return data ?? [];
     },
   });
+
+  // Cadastro de usuário
+  const [novoNome, setNovoNome] = useState("");
+  const [novoPhone, setNovoPhone] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [novoRole, setNovoRole] = useState<AppRole>("visualizador");
+  const [criandoUser, setCriandoUser] = useState(false);
+
+  const criarUsuario = async () => {
+    if (!novoNome.trim()) {
+      toast({ title: "Nome obrigatório", variant: "destructive" });
+      return;
+    }
+    if (!isValidPhoneBR(novoPhone)) {
+      toast({ title: "Celular inválido", variant: "destructive" });
+      return;
+    }
+    if (novaSenha.length < 6) {
+      toast({ title: "Senha muito curta", description: "Mínimo 6 caracteres.", variant: "destructive" });
+      return;
+    }
+    setCriandoUser(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-create-user", {
+        body: { nome: novoNome, phone: novoPhone, password: novaSenha, role: novoRole },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast({ title: "Usuário criado", description: `${novoNome} adicionado como ${novoRole}.` });
+      setNovoNome(""); setNovoPhone(""); setNovaSenha(""); setNovoRole("visualizador");
+      await refetchRoles();
+    } catch (e: any) {
+      toast({ title: "Erro ao criar usuário", description: e.message, variant: "destructive" });
+    } finally {
+      setCriandoUser(false);
+    }
+  };
+
+  const alterarRole = async (id: string, role: AppRole) => {
+    const { error } = await supabase.from("user_roles").update({ role }).eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao alterar papel", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Papel atualizado" });
+    await refetchRoles();
+  };
+
+  const removerRole = async (id: string) => {
+    if (!confirm("Remover acesso deste usuário?")) return;
+    const { error } = await supabase.from("user_roles").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao remover", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Acesso removido" });
+    await refetchRoles();
+  };
 
   return (
     <div className="space-y-6">

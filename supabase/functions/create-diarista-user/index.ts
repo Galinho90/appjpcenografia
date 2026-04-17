@@ -87,27 +87,57 @@ Deno.serve(async (req) => {
       });
     }
     if (colab.user_id) {
-      return new Response(JSON.stringify({ error: "Diarista já possui acesso criado" }), {
-        status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // idempotente: já está linkado, apenas atualiza a senha e retorna ok
+      const { error: pwErr } = await admin.auth.admin.updateUserById(colab.user_id, { password });
+      if (pwErr) {
+        return new Response(JSON.stringify({ error: pwErr.message }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({
+        ok: true, user_id: colab.user_id, login: normalizePhoneBR(phone), reused: true,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const email = phoneToEmail(phone);
     const e164 = normalizePhoneBR(phone);
 
+    // Tenta criar; se já existir auth user com esse email, faz lookup e linka
+    let newUserId: string | null = null;
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
       user_metadata: { nome, phone: e164, colaborador_id },
     });
-    if (createErr || !created.user) {
-      return new Response(JSON.stringify({ error: createErr?.message ?? "Falha ao criar usuário" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (createErr || !created?.user) {
+      const msg = (createErr?.message ?? "").toLowerCase();
+      const alreadyExists = msg.includes("already") || msg.includes("registered") || msg.includes("exists");
+      if (!alreadyExists) {
+        return new Response(JSON.stringify({ error: createErr?.message ?? "Falha ao criar usuário" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // procurar usuário existente pelo email
+      let found: { id: string } | null = null;
+      for (let page = 1; page <= 10 && !found; page++) {
+        const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+        if (listErr) break;
+        const u = list.users.find((x) => (x.email ?? "").toLowerCase() === email.toLowerCase());
+        if (u) found = { id: u.id };
+        if (list.users.length < 200) break;
+      }
+      if (!found) {
+        return new Response(JSON.stringify({ error: "Usuário já existe mas não foi possível localizá-lo" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // atualiza senha do existente
+      await admin.auth.admin.updateUserById(found.id, { password });
+      newUserId = found.id;
+    } else {
+      newUserId = created.user.id;
     }
-
-    const newUserId = created.user.id;
 
     const { error: roleInsertErr } = await admin.from("user_roles").insert({
       user_id: newUserId,

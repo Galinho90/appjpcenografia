@@ -135,12 +135,63 @@ export default function MeuExtrato() {
     );
   }
 
+  const initials = (colaboradorNome || "U").split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
+  const pixDisplay = meuColaborador?.pix || meuColaborador?.chave_pix || "—";
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Meu Extrato</h1>
-        <p className="text-sm text-muted-foreground">Olá, {colaboradorNome} — visualize seus lançamentos por quinzena.</p>
+        <p className="text-sm text-muted-foreground">Visualize seus lançamentos por quinzena.</p>
       </div>
+
+      <Card className="shadow-md overflow-hidden">
+        <div className="bg-gradient-to-r from-primary to-primary/80 p-4 sm:p-6">
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center overflow-hidden shrink-0">
+              {meuColaborador?.foto_url ? (
+                <img src={meuColaborador.foto_url} alt={colaboradorNome ?? "Foto"} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-primary-foreground text-xl font-bold">{initials}</span>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-primary-foreground text-lg sm:text-xl font-bold truncate">{colaboradorNome}</p>
+              {meuColaborador?.funcao && (
+                <p className="text-primary-foreground/90 text-sm truncate">{meuColaborador.funcao}</p>
+              )}
+              {meuColaborador?.telefone && (
+                <p className="text-primary-foreground/80 text-xs truncate">{meuColaborador.telefone}</p>
+              )}
+            </div>
+          </div>
+        </div>
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+            <div>
+              <p className="text-xs text-muted-foreground">Diária</p>
+              <p className="font-semibold">{fmtBRL(Number(meuColaborador?.valor_diaria_padrao ?? 0))}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">Chave PIX</p>
+              <p className="font-semibold truncate">{pixDisplay}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">Banco</p>
+              <p className="font-semibold truncate">{meuColaborador?.banco || "—"}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">Ag / Conta</p>
+              <p className="font-semibold truncate">
+                {meuColaborador?.agencia || meuColaborador?.conta
+                  ? `${meuColaborador?.agencia ?? "—"} / ${meuColaborador?.conta ?? "—"}`
+                  : "—"}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
 
       <Card className="shadow-md">
         <CardHeader>

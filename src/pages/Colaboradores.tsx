@@ -55,16 +55,23 @@ export default function Colaboradores() {
   const [form, setForm] = useState<any>(emptyForm);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [cropFile, setCropFile] = useState<File | null>(null);
-  const [cropOpen, setCropOpen] = useState(false);
 
-  const uploadCroppedFoto = async (blob: Blob) => {
+  const uploadFoto = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Arquivo inválido", description: "Envie uma imagem.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Imagem muito grande", description: "Máximo 5MB.", variant: "destructive" });
+      return;
+    }
     setUploading(true);
     try {
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("diaristas-fotos")
-        .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+        .upload(path, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("diaristas-fotos").getPublicUrl(path);
       setForm((f: any) => ({ ...f, foto_url: data.publicUrl }));

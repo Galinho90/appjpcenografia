@@ -17,6 +17,7 @@ const menuItems = [
   { title: "Home", url: "/", icon: LayoutDashboard },
   { title: "Lançamentos", url: "/diarias", icon: CalendarDays },
   { title: "Extrato do Diarista", url: "/extrato", icon: FileText },
+  { title: "Fechamento", url: "/fechamentos", icon: FileBarChart },
   { title: "Diaristas", url: "/colaboradores", icon: Users },
   { title: "Clientes", url: "/clientes", icon: Building2 },
   { title: "Categorias", url: "/categorias", icon: Tags },

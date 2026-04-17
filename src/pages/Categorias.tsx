@@ -16,11 +16,13 @@ import {
   useCategorias, useCreateCategoria, useUpdateCategoria, useDeleteCategoria,
   type Categoria,
 } from "@/hooks/useSupabaseData";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const emptyForm = { descricao: "", tipo: "C" as "C" | "D", ativo: true };
 
 export default function Categorias() {
   const { toast } = useToast();
+  const { canEdit } = usePermissions();
   const { data: categorias = [], isLoading } = useCategorias();
   const createMutation = useCreateCategoria();
   const updateMutation = useUpdateCategoria();
@@ -98,9 +100,11 @@ export default function Categorias() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Categorias</h1>
           <p className="text-sm text-muted-foreground">Categorias usadas nos lançamentos do extrato</p>
         </div>
-        <Button onClick={openCreate} className="gap-2 w-full sm:w-auto">
-          <Plus className="h-4 w-4" /> Nova Categoria
-        </Button>
+        {canEdit && (
+          <Button onClick={openCreate} className="gap-2 w-full sm:w-auto">
+            <Plus className="h-4 w-4" /> Nova Categoria
+          </Button>
+        )}
       </div>
 
       <Card className="shadow-md overflow-hidden">
@@ -141,14 +145,16 @@ export default function Categorias() {
                             {c.tipo === "C" ? "Crédito" : "Débito"}
                           </Badge>
                         </div>
-                        <div className="flex gap-1 shrink-0">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
+                        {canEdit && (
+                          <div className="flex gap-1 shrink-0">
+                            <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 pt-2 border-t">
                         <Switch checked={c.ativo} onCheckedChange={() => toggleAtivo(c)} />
@@ -190,14 +196,16 @@ export default function Categorias() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                          {canEdit && (
+                            <div className="flex justify-end gap-2">
+                              <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

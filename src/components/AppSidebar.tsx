@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, CalendarDays, FileBarChart, FileText,
-  Settings, Building2, Tags, LogOut, Wallet,
+  Settings, Building2, Tags, LogOut, Wallet, BarChart3,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -22,7 +22,7 @@ const menuItems = [
   { title: "Diaristas", url: "/colaboradores", icon: Users },
   { title: "Clientes", url: "/clientes", icon: Building2 },
   { title: "Categorias", url: "/categorias", icon: Tags },
-  { title: "Relatórios", url: "/relatorios", icon: FileBarChart },
+  { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
 ];
 
 export function AppSidebar() {

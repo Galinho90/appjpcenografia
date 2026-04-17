@@ -23,6 +23,7 @@ import {
 } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const emptyForm = {
   colaborador_id: "",
@@ -69,6 +70,7 @@ export default function Diarias() {
   const [colabPopoverOpen, setColabPopoverOpen] = useState(false);
   const [catPopoverOpen, setCatPopoverOpen] = useState(false);
   const { toast } = useToast();
+  const { canEdit } = usePermissions();
 
   const { inicio: qInicio, fim: qFim } = useMemo(() => getQuinzena(quinzenaRef), [quinzenaRef]);
   const qInicioISO = toISO(qInicio);
@@ -207,7 +209,9 @@ export default function Diarias() {
               )}
             </CardContent>
           </Card>
-          <Button className="gap-2 w-full sm:w-auto" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Lançamento</Button>
+          {canEdit && (
+            <Button className="gap-2 w-full sm:w-auto" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Lançamento</Button>
+          )}
         </div>
       </div>
 
@@ -402,14 +406,16 @@ export default function Diarias() {
 
                       {l.descricao && <p className="text-sm text-muted-foreground break-words">{l.descricao}</p>}
 
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(l.id)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {canEdit && (
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteId(l.id)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -446,14 +452,16 @@ export default function Diarias() {
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm max-w-[200px] truncate">{l.descricao || "—"}</TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(l.id)} className="text-destructive hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          {canEdit && (
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => setDeleteId(l.id)} className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

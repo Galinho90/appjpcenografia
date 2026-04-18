@@ -190,9 +190,11 @@ export default function ExtratoDiarista() {
       return [
         formatDateBR(l.data),
         l.categoria?.descricao ?? "—",
+        l.hora_entrada ? String(l.hora_entrada).slice(0, 5) : "—",
+        l.hora_saida ? String(l.hora_saida).slice(0, 5) : "—",
         l.descricao || "—",
         `${isDeb ? "- " : ""}${fmtBRL(l.valor)}`,
-      ] as [string, string, string, string];
+      ] as [string, string, string, string, string, string];
     });
 
     const totC = list.filter(l => l.categoria?.tipo === "C").reduce((s, l) => s + l.valor, 0);
@@ -276,8 +278,8 @@ export default function ExtratoDiarista() {
     // ── TABELA ──
     autoTable(doc, {
       startY: y + 28,
-      head: [["Data", "Categoria", "Descrição", "Valor"]],
-      body: linhas.length ? linhas : [["—", "—", "Sem lançamentos no período", "—"]],
+      head: [["Data", "Categoria", "Entrada", "Saída", "Descrição", "Valor"]],
+      body: linhas.length ? linhas : [["—", "—", "—", "—", "Sem lançamentos no período", "—"]],
       theme: "grid",
       headStyles: {
         fillColor: PRIMARY,
@@ -294,13 +296,15 @@ export default function ExtratoDiarista() {
       },
       alternateRowStyles: { fillColor: [250, 250, 252] },
       columnStyles: {
-        0: { cellWidth: 26 },
-        1: { cellWidth: 50 },
-        2: { cellWidth: "auto" as any },
-        3: { cellWidth: 32, halign: "right", fontStyle: "bold" },
+        0: { cellWidth: 22 },
+        1: { cellWidth: 42 },
+        2: { cellWidth: 18, halign: "center" },
+        3: { cellWidth: 18, halign: "center" },
+        4: { cellWidth: "auto" as any },
+        5: { cellWidth: 28, halign: "right", fontStyle: "bold" },
       },
       didParseCell: (data) => {
-        if (data.section === "body" && data.column.index === 3) {
+        if (data.section === "body" && data.column.index === 5) {
           const raw = String(data.cell.raw ?? "");
           if (raw.trim().startsWith("-")) {
             data.cell.styles.textColor = DANGER;

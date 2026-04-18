@@ -20,6 +20,29 @@ import {
   useCategorias, useLancamentos, useCreateLancamento,
 } from "@/hooks/useSupabaseData";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useCompanyLogo } from "@/hooks/useCompanyLogo";
+
+async function loadImageAsDataURL(url: string): Promise<{ dataUrl: string; w: number; h: number } | null> {
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    const blob = await res.blob();
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result as string);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+    const dims: { w: number; h: number } = await new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      img.onerror = () => resolve({ w: 0, h: 0 });
+      img.src = dataUrl;
+    });
+    return { dataUrl, w: dims.w, h: dims.h };
+  } catch {
+    return null;
+  }
+}
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();

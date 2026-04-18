@@ -54,7 +54,7 @@ function MinhaContaAdmin() {
   };
 
   const salvarSenha = async () => {
-    if (novaSenha.length < 6) return toast.error("A senha deve ter pelo menos 6 caracteres");
+    if (!/^\d{6,}$/.test(novaSenha)) return toast.error("A senha deve ter no mínimo 6 números");
     if (novaSenha !== confirmar) return toast.error("As senhas não coincidem");
     setSavingSenha(true);
     const { error } = await supabase.auth.updateUser({ password: novaSenha });

@@ -190,9 +190,11 @@ export default function ExtratoDiarista() {
       return [
         formatDateBR(l.data),
         l.categoria?.descricao ?? "—",
+        l.hora_entrada ? String(l.hora_entrada).slice(0, 5) : "—",
+        l.hora_saida ? String(l.hora_saida).slice(0, 5) : "—",
         l.descricao || "—",
         `${isDeb ? "- " : ""}${fmtBRL(l.valor)}`,
-      ] as [string, string, string, string];
+      ] as [string, string, string, string, string, string];
     });
 
     const totC = list.filter(l => l.categoria?.tipo === "C").reduce((s, l) => s + l.valor, 0);

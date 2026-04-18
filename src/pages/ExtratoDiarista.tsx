@@ -300,12 +300,12 @@ export default function ExtratoDiarista() {
       },
       alternateRowStyles: { fillColor: [250, 250, 252] },
       columnStyles: {
-        0: { cellWidth: 20 },
-        1: { cellWidth: 40, overflow: "linebreak" },
-        2: { cellWidth: 16, halign: "center" },
-        3: { cellWidth: 16, halign: "center" },
+        0: { cellWidth: 24 },
+        1: { cellWidth: 38, overflow: "linebreak" },
+        2: { cellWidth: 20, halign: "center" },
+        3: { cellWidth: 20, halign: "center" },
         4: { cellWidth: "auto" as any, overflow: "linebreak" },
-        5: { cellWidth: 26, halign: "right", fontStyle: "bold" },
+        5: { cellWidth: 28, halign: "right", fontStyle: "bold" },
       },
       didParseCell: (data) => {
         if (data.section === "body" && data.column.index === 5) {

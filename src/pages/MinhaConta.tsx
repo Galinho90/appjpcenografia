@@ -169,16 +169,34 @@ function MinhaContaAdmin() {
       <Card>
         <CardHeader>
           <CardTitle>Trocar senha</CardTitle>
-          <CardDescription>Mínimo de 6 caracteres.</CardDescription>
+          <CardDescription>Apenas números, mínimo de 6 dígitos.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="nova">Nova senha</Label>
-            <Input id="nova" type="password" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} />
+            <Input
+              id="nova"
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="new-password"
+              maxLength={20}
+              value={novaSenha}
+              onChange={(e) => setNovaSenha(e.target.value.replace(/\D/g, ""))}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="conf">Confirmar nova senha</Label>
-            <Input id="conf" type="password" value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
+            <Input
+              id="conf"
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="new-password"
+              maxLength={20}
+              value={confirmar}
+              onChange={(e) => setConfirmar(e.target.value.replace(/\D/g, ""))}
+            />
           </div>
           <Button onClick={salvarSenha} disabled={savingSenha}>
             {savingSenha ? "Salvando..." : "Atualizar senha"}

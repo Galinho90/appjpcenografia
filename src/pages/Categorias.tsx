@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import {
   useCategorias, useCreateCategoria, useUpdateCategoria, useDeleteCategoria,
   type Categoria,
@@ -141,7 +142,12 @@ export default function Categorias() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <p className="font-medium break-words">{c.descricao}</p>
-                          <Badge variant={c.tipo === "C" ? "default" : "secondary"} className="mt-1">
+                          <Badge
+                            className={cn(
+                              "mt-1 border-transparent text-white hover:opacity-90",
+                              c.tipo === "C" ? "bg-success" : "bg-destructive"
+                            )}
+                          >
                             {c.tipo === "C" ? "Crédito" : "Débito"}
                           </Badge>
                         </div>
@@ -183,7 +189,12 @@ export default function Categorias() {
                       <TableRow key={c.id}>
                         <TableCell className="font-medium">{c.descricao}</TableCell>
                         <TableCell>
-                          <Badge variant={c.tipo === "C" ? "default" : "secondary"}>
+                          <Badge
+                            className={cn(
+                              "border-transparent text-white hover:opacity-90",
+                              c.tipo === "C" ? "bg-success" : "bg-destructive"
+                            )}
+                          >
                             {c.tipo === "C" ? "Crédito" : "Débito"}
                           </Badge>
                         </TableCell>

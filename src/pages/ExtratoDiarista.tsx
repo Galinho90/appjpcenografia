@@ -11,7 +11,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, formatDateBR } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -163,7 +163,7 @@ export default function ExtratoDiarista() {
     const linhas = list.map(l => {
       const isDeb = l.categoria?.tipo === "D";
       return [
-        new Date(l.data).toLocaleDateString("pt-BR"),
+        formatDateBR(l.data),
         l.categoria?.descricao ?? "—",
         l.descricao || "",
         `${isDeb ? "- " : ""}${fmtBRL(l.valor)}`,
@@ -379,7 +379,7 @@ export default function ExtratoDiarista() {
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0">
                           <p className="text-xs text-muted-foreground whitespace-nowrap">
-                            {new Date(l.data).toLocaleDateString("pt-BR")}
+                            {formatDateBR(l.data)}
                           </p>
                           <p className="text-sm font-bold text-foreground break-words">
                             {l.categoria?.descricao ?? "—"}

@@ -221,16 +221,18 @@ export default function ExtratoDiarista() {
     if (empresa?.logo_url) {
       const img = await loadImageAsDataURL(empresa.logo_url);
       if (img && img.w && img.h) {
-        const maxH = 18;
+        const maxH = 11;
+        const maxW = 22;
         const ratio = img.w / img.h;
-        const h = maxH;
-        const w = h * ratio;
-        // fundo branco arredondado para o logo
+        let h = maxH;
+        let w = h * ratio;
+        if (w > maxW) { w = maxW; h = w / ratio; }
+        const padX = 3, padY = 2.5;
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(margin, 8, w + 6, h + 6, 2, 2, "F");
+        doc.roundedRect(margin, 11, w + padX * 2, h + padY * 2, 1.5, 1.5, "F");
         const fmt = img.dataUrl.includes("image/png") ? "PNG" : "JPEG";
-        try { doc.addImage(img.dataUrl, fmt, margin + 3, 11, w, h); } catch {}
-        textX = margin + w + 14;
+        try { doc.addImage(img.dataUrl, fmt, margin + padX, 11 + padY, w, h); } catch {}
+        textX = margin + w + padX * 2 + 6;
       }
     }
 

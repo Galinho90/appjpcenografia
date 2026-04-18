@@ -87,6 +87,8 @@ export default function ExtratoDiarista() {
   const inicioISO = toISO(selecionada.inicio);
   const fimISO = toISO(selecionada.fim);
 
+  const { data: empresa } = useCompanyLogo();
+
   const shiftRef = (dir: -1 | 1) => {
     const next = shiftQuinzena(selecionada, dir);
     setRefDate(next.inicio);

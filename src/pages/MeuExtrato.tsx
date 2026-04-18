@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { FileText, FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react";
+import { FileText, FileSpreadsheet, ChevronLeft, ChevronRight, DollarSign, CalendarDays, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -226,21 +226,36 @@ export default function MeuExtrato() {
 
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-none overflow-hidden shadow-lg">
-          <div className="bg-accent p-4 sm:p-6 text-center">
-            <p className="text-xl sm:text-2xl font-bold text-accent-foreground">{fmtBRL(aPagar)}</p>
-            <p className="text-sm text-accent-foreground/90">A Receber</p>
+          <div className="bg-accent p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xl sm:text-2xl font-bold text-accent-foreground">{fmtBRL(aPagar)}</p>
+                <p className="text-sm text-accent-foreground/90">A Receber</p>
+              </div>
+              <DollarSign className="h-10 w-10 text-accent-foreground/30" />
+            </div>
           </div>
         </Card>
         <Card className="border-none overflow-hidden shadow-lg">
-          <div className="bg-primary p-4 sm:p-6 text-center">
-            <p className="text-xl sm:text-2xl font-bold text-primary-foreground">{fmtBRL(totalCreditos)}</p>
-            <p className="text-sm text-primary-foreground/90">Lançamentos</p>
+          <div className="bg-primary p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xl sm:text-2xl font-bold text-primary-foreground">{fmtBRL(totalCreditos)}</p>
+                <p className="text-sm text-primary-foreground/90">Lançamentos</p>
+              </div>
+              <CalendarDays className="h-10 w-10 text-primary-foreground/30" />
+            </div>
           </div>
         </Card>
         <Card className="border-none overflow-hidden shadow-lg">
-          <div className="bg-destructive p-4 sm:p-6 text-center">
-            <p className="text-xl sm:text-2xl font-bold text-destructive-foreground">{fmtBRL(totalDebitos)}</p>
-            <p className="text-sm text-destructive-foreground/90">Pagos</p>
+          <div className="bg-destructive p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xl sm:text-2xl font-bold text-destructive-foreground">{fmtBRL(totalDebitos)}</p>
+                <p className="text-sm text-destructive-foreground/90">Pagos</p>
+              </div>
+              <CheckCircle2 className="h-10 w-10 text-destructive-foreground/30" />
+            </div>
           </div>
         </Card>
       </div>

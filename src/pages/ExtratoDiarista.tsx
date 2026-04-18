@@ -278,8 +278,8 @@ export default function ExtratoDiarista() {
     // ── TABELA ──
     autoTable(doc, {
       startY: y + 28,
-      head: [["Data", "Categoria", "Descrição", "Valor"]],
-      body: linhas.length ? linhas : [["—", "—", "Sem lançamentos no período", "—"]],
+      head: [["Data", "Categoria", "Entrada", "Saída", "Descrição", "Valor"]],
+      body: linhas.length ? linhas : [["—", "—", "—", "—", "Sem lançamentos no período", "—"]],
       theme: "grid",
       headStyles: {
         fillColor: PRIMARY,
@@ -296,13 +296,15 @@ export default function ExtratoDiarista() {
       },
       alternateRowStyles: { fillColor: [250, 250, 252] },
       columnStyles: {
-        0: { cellWidth: 26 },
-        1: { cellWidth: 50 },
-        2: { cellWidth: "auto" as any },
-        3: { cellWidth: 32, halign: "right", fontStyle: "bold" },
+        0: { cellWidth: 22 },
+        1: { cellWidth: 42 },
+        2: { cellWidth: 18, halign: "center" },
+        3: { cellWidth: 18, halign: "center" },
+        4: { cellWidth: "auto" as any },
+        5: { cellWidth: 28, halign: "right", fontStyle: "bold" },
       },
       didParseCell: (data) => {
-        if (data.section === "body" && data.column.index === 3) {
+        if (data.section === "body" && data.column.index === 5) {
           const raw = String(data.cell.raw ?? "");
           if (raw.trim().startsWith("-")) {
             data.cell.styles.textColor = DANGER;

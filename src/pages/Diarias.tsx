@@ -331,15 +331,15 @@ export default function Diarias() {
           </div>
         </Card>
         <Card className="border-none shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-br from-destructive to-destructive/70 p-4">
-            <p className="text-sm text-destructive-foreground/80">Total Pagos</p>
-            <p className="text-2xl font-bold text-destructive-foreground">R$ {totalDebitos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <div className="bg-gradient-to-br from-info to-info/70 p-4">
+            <p className="text-sm text-info-foreground/80">Total Pagos</p>
+            <p className="text-2xl font-bold text-info-foreground">R$ {totalDebitos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
         </Card>
         <Card className="border-none shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-br from-secondary to-secondary/70 p-4">
-            <p className="text-sm text-secondary-foreground/80">Saldo a Pagar</p>
-            <p className="text-2xl font-bold text-secondary-foreground">R$ {saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <div className="bg-gradient-to-br from-accent to-accent/70 p-4">
+            <p className="text-sm text-accent-foreground/80">Saldo a Pagar</p>
+            <p className="text-2xl font-bold text-accent-foreground">R$ {saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
         </Card>
       </div>

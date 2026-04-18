@@ -387,31 +387,33 @@ export default function ExtratoDiarista() {
                 const isDeb = l.categoria?.tipo === "D";
                 const accent = isDeb ? "border-l-destructive" : "border-l-success";
                 const colorValue = isDeb ? "text-destructive" : "text-success";
-                const horarios = l.hora_entrada || l.hora_saida
-                  ? `ENTRADA: ${l.hora_entrada ?? "—"} / SAÍDA: ${l.hora_saida ?? "—"}`
-                  : "";
+                const hasHorarios = !!(l.hora_entrada || l.hora_saida);
                 return (
                   <Card key={l.id} className={cn("border-l-4 shadow-sm hover:shadow-md transition-shadow", accent)}>
-                    <CardContent className="p-4">
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0">
-                          <p className="text-xs text-muted-foreground whitespace-nowrap">
-                            {formatDateBR(l.data)}
-                          </p>
-                          <p className="text-sm font-bold text-foreground break-words">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground whitespace-nowrap">
+                              {formatDateBR(l.data)}
+                            </span>
+                          </div>
+                          <p className="text-sm font-bold text-foreground break-words leading-tight">
                             {l.categoria?.descricao ?? "—"}
                           </p>
+                          {hasHorarios && (
+                            <p className="text-[11px] text-muted-foreground">
+                              Entrada: {l.hora_entrada ?? "—"} • Saída: {l.hora_saida ?? "—"}
+                            </p>
+                          )}
+                          {l.descricao && (
+                            <p className="text-xs text-muted-foreground break-words">{l.descricao}</p>
+                          )}
                         </div>
-                        <p className={cn("text-base font-bold whitespace-nowrap", colorValue)}>
+                        <p className={cn("text-base sm:text-lg font-bold whitespace-nowrap shrink-0", colorValue)}>
                           {isDeb ? "- " : ""}{fmtBRL(l.valor)}
                         </p>
                       </div>
-                      {horarios && (
-                        <p className="text-xs text-muted-foreground mt-2 break-words">{horarios}</p>
-                      )}
-                      {l.descricao && (
-                        <p className="text-xs text-muted-foreground mt-1 break-words">{l.descricao}</p>
-                      )}
                     </CardContent>
                   </Card>
                 );

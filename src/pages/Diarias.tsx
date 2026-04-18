@@ -326,20 +326,35 @@ export default function Diarias() {
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-none shadow-lg overflow-hidden">
           <div className="bg-gradient-to-br from-primary to-primary/70 p-4">
-            <p className="text-sm text-primary-foreground/80">Total de Lançamentos</p>
-            <p className="text-2xl font-bold text-primary-foreground">R$ {totalCreditos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-primary-foreground/80">Total de Lançamentos</p>
+                <p className="text-2xl font-bold text-primary-foreground">R$ {totalCreditos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              </div>
+              <CalendarDays className="h-10 w-10 text-primary-foreground/30" />
+            </div>
           </div>
         </Card>
         <Card className="border-none shadow-lg overflow-hidden">
           <div className="bg-gradient-to-br from-accent to-accent/70 p-4">
-            <p className="text-sm text-accent-foreground/80">Saldo a Pagar</p>
-            <p className="text-2xl font-bold text-accent-foreground">R$ {saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-accent-foreground/80">Saldo a Pagar</p>
+                <p className="text-2xl font-bold text-accent-foreground">R$ {saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              </div>
+              <DollarSign className="h-10 w-10 text-accent-foreground/30" />
+            </div>
           </div>
         </Card>
         <Card className="border-none shadow-lg overflow-hidden">
           <div className="bg-gradient-to-br from-info to-info/70 p-4">
-            <p className="text-sm text-info-foreground/80">Total Pagos</p>
-            <p className="text-2xl font-bold text-info-foreground">R$ {totalDebitos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-info-foreground/80">Total Pagos</p>
+                <p className="text-2xl font-bold text-info-foreground">R$ {totalDebitos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              </div>
+              <CheckCircle2 className="h-10 w-10 text-info-foreground/30" />
+            </div>
           </div>
         </Card>
       </div>

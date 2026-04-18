@@ -22,7 +22,7 @@ import {
   useDeleteLancamento,
 } from "@/hooks/useSupabaseData";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { cn, formatDateBR } from "@/lib/utils";
 import { usePermissions } from "@/hooks/usePermissions";
 
 const emptyForm = {
@@ -397,7 +397,7 @@ export default function Diarias() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="font-medium text-sm break-words">{l.colaborador?.nome ?? "—"}</p>
-                          <p className="text-xs text-muted-foreground">{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</p>
+                          <p className="text-xs text-muted-foreground">{formatDateBR(l.data)}</p>
                         </div>
                         <Badge variant={l.categoria?.tipo === "C" ? "default" : "destructive"} className="shrink-0 whitespace-nowrap">
                           {l.categoria?.descricao ?? "—"}
@@ -457,7 +457,7 @@ export default function Diarias() {
                             {l.categoria?.descricao ?? "—"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">{new Date(l.data + "T00:00:00").toLocaleDateString("pt-BR")}</TableCell>
+                        <TableCell className="whitespace-nowrap">{formatDateBR(l.data)}</TableCell>
                         <TableCell>{l.hora_entrada || "—"}</TableCell>
                         <TableCell>{l.hora_saida || "—"}</TableCell>
                         <TableCell className={`whitespace-nowrap ${l.categoria?.tipo === "D" ? "text-destructive font-medium" : "text-primary font-medium"}`}>

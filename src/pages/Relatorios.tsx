@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useColaboradores, useFechamentos } from "@/hooks/useSupabaseData";
+import { formatDateBR } from "@/lib/utils";
 
 export default function Relatorios() {
   const { data: colaboradores = [] } = useColaboradores();
@@ -46,7 +47,7 @@ export default function Relatorios() {
                 <SelectContent>
                   {fechamentos.map((f) => (
                     <SelectItem key={f.id} value={f.id}>
-                      {new Date(f.periodo_inicio).toLocaleDateString("pt-BR")} — {new Date(f.periodo_fim).toLocaleDateString("pt-BR")}
+                      {formatDateBR(f.periodo_inicio)} — {formatDateBR(f.periodo_fim)}
                     </SelectItem>
                   ))}
                 </SelectContent>

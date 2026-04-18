@@ -173,7 +173,7 @@ export default function ExtratoDiarista() {
     }
   };
 
-  const gerarPDF = (q: { inicio: Date; fim: Date }, labelPeriodo: string) => {
+  const gerarPDF = async (q: { inicio: Date; fim: Date }, labelPeriodo: string) => {
     if (!colaboradorId) {
       toast({ title: "Selecione um diarista", variant: "destructive" });
       return;
@@ -190,7 +190,7 @@ export default function ExtratoDiarista() {
       return [
         formatDateBR(l.data),
         l.categoria?.descricao ?? "—",
-        l.descricao || "",
+        l.descricao || "—",
         `${isDeb ? "- " : ""}${fmtBRL(l.valor)}`,
       ] as [string, string, string, string];
     });
@@ -199,29 +199,154 @@ export default function ExtratoDiarista() {
     const totD = list.filter(l => l.categoria?.tipo === "D").reduce((s, l) => s + l.valor, 0);
     const total = totC - totD;
 
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text("Extrato do Diarista", 14, 18);
-    doc.setFontSize(11);
-    doc.text(`Diarista: ${colaboradorNome ?? "—"}`, 14, 28);
-    doc.text(`${labelPeriodo}: ${fmtDate(q.inicio)} a ${fmtDate(q.fim)}`, 14, 35);
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 14;
 
+    // Paleta (alinhada ao app: violet primary, green success, red destructive)
+    const PRIMARY: [number, number, number] = [124, 58, 237];
+    const SUCCESS: [number, number, number] = [16, 185, 129];
+    const DANGER: [number, number, number] = [239, 68, 68];
+    const MUTED: [number, number, number] = [100, 116, 139];
+    const SOFT: [number, number, number] = [243, 244, 246];
+    const DARK: [number, number, number] = [17, 24, 39];
+
+    // ── HEADER ──
+    doc.setFillColor(...PRIMARY);
+    doc.rect(0, 0, pageW, 34, "F");
+
+    // Logo (se existir)
+    let textX = margin;
+    if (empresa?.logo_url) {
+      const img = await loadImageAsDataURL(empresa.logo_url);
+      if (img && img.w && img.h) {
+        const maxH = 18;
+        const ratio = img.w / img.h;
+        const h = maxH;
+        const w = h * ratio;
+        // fundo branco arredondado para o logo
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(margin, 8, w + 6, h + 6, 2, 2, "F");
+        const fmt = img.dataUrl.includes("image/png") ? "PNG" : "JPEG";
+        try { doc.addImage(img.dataUrl, fmt, margin + 3, 11, w, h); } catch {}
+        textX = margin + w + 14;
+      }
+    }
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("EXTRATO DO DIARISTA", textX, 17);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const empresaNome = empresa?.nome_fantasia || empresa?.razao_social || "";
+    if (empresaNome) doc.text(empresaNome, textX, 24);
+    doc.setFontSize(9);
+    doc.text(`Emitido em ${new Date().toLocaleDateString("pt-BR")} ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`, textX, 30);
+
+    // ── INFO CARD ──
+    let y = 44;
+    doc.setDrawColor(229, 231, 235);
+    doc.setFillColor(...SOFT);
+    doc.roundedRect(margin, y, pageW - margin * 2, 22, 2, 2, "F");
+
+    doc.setTextColor(...MUTED);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.text("DIARISTA", margin + 4, y + 6);
+    doc.text(labelPeriodo.toUpperCase(), pageW / 2 + 2, y + 6);
+
+    doc.setTextColor(...DARK);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(colaboradorNome ?? "—", margin + 4, y + 14);
+    doc.setFontSize(11);
+    doc.text(`${fmtDate(q.inicio)}  —  ${fmtDate(q.fim)}`, pageW / 2 + 2, y + 14);
+
+    if (colaboradorSel?.funcao) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text(colaboradorSel.funcao, margin + 4, y + 19);
+    }
+
+    // ── TABELA ──
     autoTable(doc, {
+      startY: y + 28,
       head: [["Data", "Categoria", "Descrição", "Valor"]],
-      body: linhas.length ? linhas : [["—", "—", "Sem lançamentos", "—"]],
-      startY: 42,
-      headStyles: { fillColor: [124, 58, 237] },
-      styles: { fontSize: 10 },
+      body: linhas.length ? linhas : [["—", "—", "Sem lançamentos no período", "—"]],
+      theme: "grid",
+      headStyles: {
+        fillColor: PRIMARY,
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        fontSize: 10,
+        halign: "left",
+        cellPadding: { top: 3, bottom: 3, left: 4, right: 4 },
+      },
+      bodyStyles: {
+        fontSize: 9.5,
+        textColor: DARK,
+        cellPadding: { top: 3, bottom: 3, left: 4, right: 4 },
+      },
+      alternateRowStyles: { fillColor: [250, 250, 252] },
+      columnStyles: {
+        0: { cellWidth: 26 },
+        1: { cellWidth: 50 },
+        2: { cellWidth: "auto" as any },
+        3: { cellWidth: 32, halign: "right", fontStyle: "bold" },
+      },
+      didParseCell: (data) => {
+        if (data.section === "body" && data.column.index === 3) {
+          const raw = String(data.cell.raw ?? "");
+          if (raw.trim().startsWith("-")) {
+            data.cell.styles.textColor = DANGER;
+          } else if (raw.includes("R$")) {
+            data.cell.styles.textColor = SUCCESS;
+          }
+        }
+      },
+      margin: { left: margin, right: margin },
     });
 
-    const finalY = (doc as any).lastAutoTable.finalY + 8;
-    doc.setFontSize(11);
-    doc.text(`Total Créditos: ${fmtBRL(totC)}`, 14, finalY);
-    doc.text(`Total Débitos: -${fmtBRL(totD)}`, 14, finalY + 6);
-    doc.setFontSize(13);
-    doc.text(`TOTAL A PAGAR: ${fmtBRL(total)}`, 14, finalY + 16);
+    let finalY = (doc as any).lastAutoTable.finalY + 8;
 
-    const slug = (colaboradorNome ?? "diarista").toLowerCase().replace(/\s+/g, "-");
+    // ── RESUMO (3 cards lado a lado) ──
+    const cardW = (pageW - margin * 2 - 8) / 3;
+    const cardH = 22;
+    if (finalY + cardH + 30 > pageH - 20) { doc.addPage(); finalY = 20; }
+
+    const drawSummaryCard = (x: number, label: string, value: string, color: [number, number, number]) => {
+      doc.setFillColor(...color);
+      doc.roundedRect(x, finalY, cardW, cardH, 2, 2, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text(label.toUpperCase(), x + 4, finalY + 7);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text(value, x + 4, finalY + 17);
+    };
+
+    drawSummaryCard(margin, "Créditos", fmtBRL(totC), SUCCESS);
+    drawSummaryCard(margin + cardW + 4, "Débitos / Pagos", `- ${fmtBRL(totD)}`, DANGER);
+    drawSummaryCard(margin + (cardW + 4) * 2, "Total a Pagar", fmtBRL(Math.max(total, 0)), PRIMARY);
+
+    // ── FOOTER ──
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setDrawColor(229, 231, 235);
+      doc.line(margin, pageH - 14, pageW - margin, pageH - 14);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...MUTED);
+      doc.text(empresaNome || "Extrato", margin, pageH - 8);
+      doc.text(`Página ${i} de ${pageCount}`, pageW - margin, pageH - 8, { align: "right" });
+    }
+
+    const slug = (colaboradorNome ?? "diarista").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "-");
     doc.save(`extrato-${slug}-${ini}-${fim}.pdf`);
   };
 

@@ -221,8 +221,8 @@ export default function ExtratoDiarista() {
     if (empresa?.logo_url) {
       const img = await loadImageAsDataURL(empresa.logo_url);
       if (img && img.w && img.h) {
-        const maxH = 11;
-        const maxW = 22;
+        const maxH = 16;
+        const maxW = 30;
         const ratio = img.w / img.h;
         let h = maxH;
         let w = h * ratio;

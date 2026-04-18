@@ -299,34 +299,36 @@ export default function ExtratoDiarista() {
             )}
           </div>
 
-          <div className="rounded-lg border-2 border-border bg-card p-4">
+          <div className="rounded-lg border-2 border-border bg-card p-3 sm:p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => shiftRef(-1)} aria-label="Quinzena anterior">
+              <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto">
+                <Button variant="ghost" size="icon" className="shrink-0" onClick={() => shiftRef(-1)} aria-label="Quinzena anterior">
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <div className="px-2 text-center flex-1 sm:min-w-[200px]">
+                <div className="px-1 text-center flex-1 sm:min-w-[200px] min-w-0">
                   <p className="text-xs text-muted-foreground">Quinzena</p>
-                  <p className="text-sm font-semibold whitespace-nowrap">
+                  <p className="text-xs sm:text-sm font-semibold whitespace-nowrap">
                     {fmtDate(selecionada.inicio)} — {fmtDate(selecionada.fim)}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => shiftRef(1)} aria-label="Próxima quinzena">
+                <Button variant="ghost" size="icon" className="shrink-0" onClick={() => shiftRef(1)} aria-label="Próxima quinzena">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-                {!isQuinzenaAtual && (
-                  <Button variant="outline" size="sm" onClick={() => setRefDate(new Date())}>Hoje</Button>
-                )}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={() => gerarPDF(selecionada, "Período")}
-              >
-                <FileSpreadsheet className="h-4 w-4" />
-                Baixar PDF
-              </Button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                {!isQuinzenaAtual && (
+                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => setRefDate(new Date())}>Hoje</Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 flex-1 sm:flex-none"
+                  onClick={() => gerarPDF(selecionada, "Período")}
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Baixar PDF
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>

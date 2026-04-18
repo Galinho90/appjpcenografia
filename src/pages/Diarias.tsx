@@ -332,7 +332,7 @@ export default function Diarias() {
         </Card>
         <Card className="border-none shadow-lg overflow-hidden">
           <div className="bg-gradient-to-br from-destructive to-destructive/70 p-4">
-            <p className="text-sm text-destructive-foreground/80">Total de Débitos</p>
+            <p className="text-sm text-destructive-foreground/80">Total Pagos</p>
             <p className="text-2xl font-bold text-destructive-foreground">R$ {totalDebitos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
         </Card>

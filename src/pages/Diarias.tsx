@@ -270,7 +270,7 @@ export default function Diarias() {
                   <Button variant="outline" role="combobox" className="w-full justify-between font-normal min-w-0">
                     {categoriaSelecionada ? (
                       <span className="flex min-w-0 items-center gap-2 overflow-hidden">
-                        <Badge variant={categoriaSelecionada.tipo === "C" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 shrink-0">
+                        <Badge className={cn("text-[10px] px-1.5 py-0 shrink-0 border-transparent text-white hover:opacity-90", categoriaSelecionada.tipo === "C" ? "bg-success" : "bg-destructive")}>
                           {categoriaSelecionada.tipo === "C" ? "Crédito" : "Débito"}
                         </Badge>
                         <span className="truncate">{categoriaSelecionada.descricao}</span>
@@ -291,7 +291,7 @@ export default function Diarias() {
                             setCatPopoverOpen(false);
                           }}>
                             <Check className={cn("mr-2 h-4 w-4", form.categoria_id === c.id ? "opacity-100" : "opacity-0")} />
-                            <Badge variant={c.tipo === "C" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 mr-2 shrink-0">
+                            <Badge className={cn("text-[10px] px-1.5 py-0 mr-2 shrink-0 border-transparent text-white hover:opacity-90", c.tipo === "C" ? "bg-success" : "bg-destructive")}>
                               {c.tipo === "C" ? "Crédito" : "Débito"}
                             </Badge>
                             <span className="truncate">{c.descricao}</span>
@@ -414,7 +414,7 @@ export default function Diarias() {
                           <p className="font-medium text-sm break-words">{l.colaborador?.nome ?? "—"}</p>
                           <p className="text-xs text-muted-foreground">{formatDateBR(l.data)}</p>
                         </div>
-                        <Badge variant={l.categoria?.tipo === "C" ? "default" : "destructive"} className="shrink-0 whitespace-nowrap">
+                        <Badge className={cn("shrink-0 whitespace-nowrap border-transparent text-white hover:opacity-90", l.categoria?.tipo === "C" ? "bg-success" : "bg-destructive")}>
                           {l.categoria?.descricao ?? "—"}
                         </Badge>
                       </div>
@@ -468,7 +468,7 @@ export default function Diarias() {
                       <TableRow key={l.id}>
                         <TableCell className="font-medium whitespace-nowrap">{l.colaborador?.nome ?? "—"}</TableCell>
                         <TableCell>
-                          <Badge variant={l.categoria?.tipo === "C" ? "default" : "destructive"} className="whitespace-nowrap">
+                          <Badge className={cn("whitespace-nowrap border-transparent text-white hover:opacity-90", l.categoria?.tipo === "C" ? "bg-success" : "bg-destructive")}>
                             {l.categoria?.descricao ?? "—"}
                           </Badge>
                         </TableCell>

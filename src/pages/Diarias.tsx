@@ -326,7 +326,7 @@ export default function Diarias() {
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-none shadow-lg overflow-hidden">
           <div className="bg-gradient-to-br from-primary to-primary/70 p-4">
-            <p className="text-sm text-primary-foreground/80">Total de Créditos</p>
+            <p className="text-sm text-primary-foreground/80">Total de Lançamentos</p>
             <p className="text-2xl font-bold text-primary-foreground">R$ {totalCreditos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           </div>
         </Card>

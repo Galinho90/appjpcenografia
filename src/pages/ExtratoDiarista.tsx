@@ -110,10 +110,10 @@ export default function ExtratoDiarista() {
     .filter(l => l.categoria?.tipo === "D")
     .reduce((s, l) => s + l.valor, 0);
 
-  // "Pagos" só pode refletir o que efetivamente saiu como pagamento dentro do saldo disponível.
-  // Se não há crédito suficiente, o débito (ex.: vale adiantado) não conta como "pago".
-  const totalPago = Math.min(totalDebitos, totalCreditos);
-  const aPagar = Math.max(totalCreditos - totalDebitos, 0);
+  // Débitos / Pagos = soma de todos os débitos (vales + pagamentos).
+  // A Pagar = créditos - débitos. Pode ficar negativo quando há vales sem cobertura de crédito.
+  const totalPago = totalDebitos;
+  const aPagar = totalCreditos - totalDebitos;
 
   const colaboradorSel = colaboradores.find(c => c.id === colaboradorId);
   const colaboradorNome = colaboradorSel?.nome;
@@ -341,7 +341,7 @@ export default function ExtratoDiarista() {
 
     drawSummaryCard(margin, "Créditos", fmtBRL(totC), SUCCESS);
     drawSummaryCard(margin + cardW + 4, "Débitos / Pagos", `- ${fmtBRL(totD)}`, DANGER);
-    drawSummaryCard(margin + (cardW + 4) * 2, "Total a Pagar", fmtBRL(Math.max(total, 0)), PRIMARY);
+    drawSummaryCard(margin + (cardW + 4) * 2, "Total a Pagar", `${total < 0 ? "- " : ""}${fmtBRL(Math.abs(total))}`, PRIMARY);
 
     // ── FOOTER ──
     const pageCount = (doc as any).internal.getNumberOfPages();

@@ -110,10 +110,10 @@ export default function ExtratoDiarista() {
     .filter(l => l.categoria?.tipo === "D")
     .reduce((s, l) => s + l.valor, 0);
 
-  // O pagamento de fechamento já é registrado como lançamento de débito (PAGAMENTO DE DIÁRIAS),
-  // então totalDebitos já reflete tudo que foi pago + vales.
-  const totalPago = totalDebitos;
-  const aPagar = Math.max(totalCreditos - totalPago, 0);
+  // "Pagos" só pode refletir o que efetivamente saiu como pagamento dentro do saldo disponível.
+  // Se não há crédito suficiente, o débito (ex.: vale adiantado) não conta como "pago".
+  const totalPago = Math.min(totalDebitos, totalCreditos);
+  const aPagar = Math.max(totalCreditos - totalDebitos, 0);
 
   const colaboradorSel = colaboradores.find(c => c.id === colaboradorId);
   const colaboradorNome = colaboradorSel?.nome;

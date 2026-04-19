@@ -341,7 +341,7 @@ export default function ExtratoDiarista() {
 
     drawSummaryCard(margin, "Créditos", fmtBRL(totC), SUCCESS);
     drawSummaryCard(margin + cardW + 4, "Débitos / Pagos", `- ${fmtBRL(totD)}`, DANGER);
-    drawSummaryCard(margin + (cardW + 4) * 2, "Total a Pagar", fmtBRL(Math.max(total, 0)), PRIMARY);
+    drawSummaryCard(margin + (cardW + 4) * 2, "Total a Pagar", `${total < 0 ? "- " : ""}${fmtBRL(Math.abs(total))}`, PRIMARY);
 
     // ── FOOTER ──
     const pageCount = (doc as any).internal.getNumberOfPages();

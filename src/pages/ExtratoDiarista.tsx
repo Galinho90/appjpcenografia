@@ -496,13 +496,13 @@ export default function ExtratoDiarista() {
 
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-none overflow-hidden shadow-lg">
-          <div className="bg-accent p-4 sm:p-6">
+          <div className={`p-4 sm:p-6 ${aPagar < 0 ? "bg-destructive" : "bg-accent"}`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xl sm:text-2xl font-bold text-accent-foreground">{fmtBRL(aPagar)}</p>
-                <p className="text-sm text-accent-foreground/90">A Pagar</p>
+                <p className={`text-xl sm:text-2xl font-bold ${aPagar < 0 ? "text-destructive-foreground" : "text-accent-foreground"}`}>{fmtBRL(aPagar)}</p>
+                <p className={`text-sm ${aPagar < 0 ? "text-destructive-foreground/90" : "text-accent-foreground/90"}`}>A Pagar</p>
               </div>
-              <DollarSign className="h-10 w-10 text-accent-foreground/30" />
+              <DollarSign className={`h-10 w-10 ${aPagar < 0 ? "text-destructive-foreground/30" : "text-accent-foreground/30"}`} />
             </div>
           </div>
         </Card>

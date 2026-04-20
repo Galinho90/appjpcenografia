@@ -393,11 +393,16 @@ export default function Colaboradores() {
                   ✓ Acesso ao painel já criado para este diarista.
                 </div>
               )}
-              {!readOnly && (
-                <Button className="w-full mt-2" onClick={handleSave} disabled={saving}>
-                  {saving ? "Salvando..." : mode === "edit" ? "Atualizar" : "Salvar Diarista"}
+              <div className="flex flex-col-reverse sm:flex-row gap-2 mt-2">
+                <Button variant="outline" className="w-full sm:w-auto" onClick={() => setDialogOpen(false)}>
+                  Fechar
                 </Button>
-              )}
+                {!readOnly && (
+                  <Button className="w-full sm:flex-1" onClick={handleSave} disabled={saving}>
+                    {saving ? "Salvando..." : mode === "edit" ? "Atualizar" : "Salvar Diarista"}
+                  </Button>
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>

@@ -23,8 +23,10 @@ Deno.serve(async (req) => {
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData?.user) {
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: userErr } = await userClient.auth.getClaims(token);
+    const userId = claimsData?.claims?.sub as string | undefined;
+    if (userErr || !userId) {
       return new Response(JSON.stringify({ error: "Token inválido" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -33,8 +35,8 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
 
     // Apenas admin ou gerente podem listar
-    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
-    const { data: isGerente } = await admin.rpc("has_role", { _user_id: userData.user.id, _role: "gerente" });
+    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: userId, _role: "admin" });
+    const { data: isGerente } = await admin.rpc("has_role", { _user_id: userId, _role: "gerente" });
     if (!isAdmin && !isGerente) {
       return new Response(JSON.stringify({ error: "Sem permissão" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },

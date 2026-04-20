@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode, useCallback } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { phoneToEmail } from "@/lib/phone";
@@ -22,6 +22,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const initializedRef = useRef(false);
+  const userIdRef = useRef<string | null>(null);
 
   const fetchRole = useCallback(async (uid: string | undefined) => {
     if (!uid) {
@@ -44,28 +46,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // 1) Listener primeiro
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+      const nextUserId = newSession?.user?.id ?? null;
+      const previousUserId = userIdRef.current;
+      const shouldBlockUi =
+        !initializedRef.current ||
+        (event === "SIGNED_IN" && previousUserId !== nextUserId) ||
+        (previousUserId === null && nextUserId !== null);
+
       setSession(newSession);
       setUser(newSession?.user ?? null);
-      // Defer Supabase calls
-      if (newSession?.user) {
-        setLoading(true);
+      userIdRef.current = nextUserId;
+
+      if (nextUserId) {
+        if (shouldBlockUi) setLoading(true);
         setTimeout(() => {
-          fetchRole(newSession.user.id).finally(() => setLoading(false));
+          fetchRole(nextUserId).finally(() => {
+            initializedRef.current = true;
+            if (shouldBlockUi) setLoading(false);
+          });
         }, 0);
       } else {
         setRole(null);
+        initializedRef.current = true;
         setLoading(false);
       }
     });
 
     // 2) Depois lê sessão atual
     supabase.auth.getSession().then(({ data: { session: existing } }) => {
+      const existingUserId = existing?.user?.id ?? null;
       setSession(existing);
       setUser(existing?.user ?? null);
-      if (existing?.user) {
-        fetchRole(existing.user.id).finally(() => setLoading(false));
+      userIdRef.current = existingUserId;
+
+      if (existingUserId) {
+        fetchRole(existingUserId).finally(() => {
+          initializedRef.current = true;
+          setLoading(false);
+        });
       } else {
+        initializedRef.current = true;
         setLoading(false);
       }
     });

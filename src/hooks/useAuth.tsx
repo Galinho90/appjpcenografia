@@ -24,6 +24,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const initializedRef = useRef(false);
   const userIdRef = useRef<string | null>(null);
+  const roleRef = useRef<AppRole | null>(null);
+
+  useEffect(() => {
+    roleRef.current = role;
+  }, [role]);
 
   const fetchRole = useCallback(async (uid: string | undefined) => {
     if (!uid) {
@@ -49,25 +54,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       const nextUserId = newSession?.user?.id ?? null;
       const previousUserId = userIdRef.current;
-      const shouldBlockUi =
-        !initializedRef.current ||
-        (event === "SIGNED_IN" && previousUserId !== nextUserId) ||
-        (previousUserId === null && nextUserId !== null);
+
+      if (!nextUserId) {
+        const isRealSignOut = event === "SIGNED_OUT" || previousUserId === null;
+
+        if (!isRealSignOut) {
+          return;
+        }
+
+        setSession(null);
+        setUser(null);
+        setRole(null);
+        userIdRef.current = null;
+        initializedRef.current = true;
+        setLoading(false);
+        return;
+      }
+
+      const userChanged = previousUserId !== nextUserId;
+      const shouldFetchRole = !initializedRef.current || userChanged || roleRef.current === null;
 
       setSession(newSession);
-      setUser(newSession?.user ?? null);
+      setUser(newSession.user);
       userIdRef.current = nextUserId;
 
-      if (nextUserId) {
-        if (shouldBlockUi) setLoading(true);
+      if (shouldFetchRole) {
+        if (!initializedRef.current) setLoading(true);
         setTimeout(() => {
           fetchRole(nextUserId).finally(() => {
             initializedRef.current = true;
-            if (shouldBlockUi) setLoading(false);
+            setLoading(false);
           });
         }, 0);
       } else {
-        setRole(null);
         initializedRef.current = true;
         setLoading(false);
       }

@@ -529,31 +529,60 @@ export default function Configuracoes() {
 
         {/* INTEGRAÇÕES */}
         <TabsContent value="integracoes">
-          <Card>
-            <CardHeader>
-              <CardTitle>Banco Inter — PIX</CardTitle>
-              <CardDescription>Status da integração para pagamentos automáticos de fechamentos.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <XCircle className="h-5 w-5 text-destructive" />
-                <span className="font-medium">Não configurada</span>
-                <Badge variant="outline" className="ml-2">Pendente</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Para ativar pagamentos PIX automáticos é necessário cadastrar as credenciais do Banco Inter PJ
-                (client id, client secret, certificado mTLS e conta corrente).
-              </p>
-              <div className="rounded-lg border p-4 space-y-2 bg-muted/40">
-                <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> INTER_CLIENT_ID</div>
-                <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> INTER_CLIENT_SECRET</div>
-                <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> INTER_CERT_PEM</div>
-                <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> INTER_KEY_PEM</div>
-                <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> INTER_CONTA_CORRENTE</div>
-              </div>
-              <Button variant="outline" disabled>Configurar (em breve)</Button>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Banco Inter — PIX</CardTitle>
+                <CardDescription>Status da integração para pagamentos automáticos de fechamentos.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <XCircle className="h-5 w-5 text-destructive" />
+                  <span className="font-medium">Não configurada</span>
+                  <Badge variant="outline" className="ml-2">Pendente</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Para ativar pagamentos PIX automáticos é necessário cadastrar as credenciais do Banco Inter PJ
+                  (client id, client secret, certificado mTLS e conta corrente).
+                </p>
+                <div className="rounded-lg border p-4 space-y-2 bg-muted/40">
+                  <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> INTER_CLIENT_ID</div>
+                  <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> INTER_CLIENT_SECRET</div>
+                  <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> INTER_CERT_PEM</div>
+                  <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> INTER_KEY_PEM</div>
+                  <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> INTER_CONTA_CORRENTE</div>
+                </div>
+                <Button variant="outline" disabled>Configurar (em breve)</Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>C6 Bank — PIX</CardTitle>
+                <CardDescription>Integração alternativa para pagamentos PIX via C6 Bank PJ.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <XCircle className="h-5 w-5 text-muted-foreground" />
+                  <span className="font-medium">Em desenvolvimento</span>
+                  <Badge variant="secondary" className="ml-2">Beta</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  A integração com a API do C6 Bank está em fase de desenvolvimento. Quando concluída, permitirá
+                  cadastrar credenciais (client id, client secret, certificado mTLS e conta corrente) para pagamentos
+                  PIX automáticos dos fechamentos.
+                </p>
+                <div className="rounded-lg border p-4 space-y-2 bg-muted/40">
+                  <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> C6_CLIENT_ID</div>
+                  <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> C6_CLIENT_SECRET</div>
+                  <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> C6_CERT_PEM</div>
+                  <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> C6_KEY_PEM</div>
+                  <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-muted-foreground" /> C6_CONTA_CORRENTE</div>
+                </div>
+                <Button variant="outline" disabled>Configurar (em desenvolvimento)</Button>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

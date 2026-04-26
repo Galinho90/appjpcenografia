@@ -8,6 +8,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { encryptSecret, decryptSecret } from "../_shared/crypto.ts";
+import { loadAndRenderTemplate, renderTemplateString } from "../_shared/templates.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,6 +38,8 @@ const bodySchema = z.discriminatedUnion("action", [
     action: z.literal("send_test"),
     to: z.string().email(),
     smtp: smtpFieldsSchema.optional(),
+    subject: z.string().optional(),
+    html: z.string().optional(),
   }),
   z.object({
     action: z.literal("send"),
@@ -161,19 +164,35 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      // Resolve assunto/HTML: usa override se enviado, senão template "test_email", senão fallback
+      let subject = body.subject;
+      let html = body.html;
+      if (!subject || !html) {
+        const { data: empresa } = await admin
+          .from("configuracoes_empresa")
+          .select("razao_social, nome_fantasia")
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        const empresaNome = empresa?.nome_fantasia || empresa?.razao_social || "Sistema";
+        const vars = { empresa: empresaNome, data: new Date().toLocaleString("pt-BR") };
+        const rendered = await loadAndRenderTemplate(admin, "test_email", vars);
+        subject = subject ?? rendered?.subject ?? renderTemplateString("E-mail de teste — {{empresa}}", vars);
+        html = html ?? rendered?.html ?? `<p>Teste de envio do sistema ${empresaNome}.</p>`;
+      }
       const client = await buildClient(smtp);
       try {
         await client.send({
           from: `${smtp.from_name ?? ""} <${smtp.from_email}>`.trim(),
           to: body.to,
-          subject: "E-mail de teste — Sistema JP Cenografia",
+          subject,
           content: "auto",
-          html: `<div style="font-family:Arial,sans-serif;padding:20px;"><h2>Funcionou! 🎉</h2><p>Este é um e-mail de teste enviado pelo sistema.</p><p>Se você recebeu, sua configuração SMTP está correta.</p></div>`,
+          html,
         });
         try { await client.close(); } catch { /* ignore */ }
         await logEmail(admin, {
           to_email: body.to,
-          subject: "E-mail de teste",
+          subject,
           status: "sent",
           triggered_by: userId,
           context: "send_test",
@@ -185,7 +204,7 @@ Deno.serve(async (req) => {
         const msg = e instanceof Error ? e.message : String(e);
         await logEmail(admin, {
           to_email: body.to,
-          subject: "E-mail de teste",
+          subject,
           status: "failed",
           error_message: msg,
           triggered_by: userId,

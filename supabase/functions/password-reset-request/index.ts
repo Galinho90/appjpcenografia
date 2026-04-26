@@ -4,6 +4,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { z } from "https://esm.sh/zod@3.23.8";
+import { loadAndRenderTemplate, renderTemplateString } from "../_shared/templates.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -66,18 +67,24 @@ Deno.serve(async (req) => {
     }
     const link = `${APP_URL}/redefinir-senha?token=${token}`;
 
-    const html = `
-      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
-        <h2 style="margin:0 0 12px">Olá, ${escapeHtml(colab.nome ?? "")}</h2>
-        <p>Recebemos uma solicitação para redefinir sua senha de acesso ao sistema.</p>
-        <p>Clique no botão abaixo para criar uma nova senha. O link expira em 1 hora.</p>
-        <p style="margin:28px 0">
-          <a href="${link}" style="background:#111;color:#fff;text-decoration:none;padding:12px 20px;border-radius:6px;display:inline-block">Redefinir senha</a>
-        </p>
-        <p style="font-size:12px;color:#666">Se o botão não funcionar, copie e cole este endereço no navegador:<br>${link}</p>
-        <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
-        <p style="font-size:12px;color:#999">Se você não solicitou esta redefinição, ignore este e-mail.</p>
-      </div>`;
+    // Carrega nome da empresa para variáveis
+    const { data: empresa } = await admin
+      .from("configuracoes_empresa")
+      .select("razao_social, nome_fantasia")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    const empresaNome = empresa?.nome_fantasia || empresa?.razao_social || "Sistema";
+
+    const vars = {
+      nome: colab.nome ?? "",
+      empresa: empresaNome,
+      link,
+    };
+
+    const rendered = await loadAndRenderTemplate(admin, "password_reset", vars);
+    const subject = rendered?.subject ?? renderTemplateString("Redefinição de senha — {{empresa}}", vars);
+    const html = rendered?.html ?? `<p>Olá ${escapeHtml(colab.nome ?? "")}, redefina sua senha: <a href="${link}">${link}</a></p>`;
 
     const sendRes = await fetch(`${SUPABASE_URL}/functions/v1/smtp-send`, {
       method: "POST",
@@ -88,7 +95,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         action: "send",
         to: colab.email,
-        subject: "Redefinição de senha — Sistema JP Cenografia",
+        subject,
         html,
         context: "password_reset",
       }),

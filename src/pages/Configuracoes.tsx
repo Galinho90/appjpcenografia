@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff, Mail } from "lucide-react";
 import SmtpSettings from "@/components/SmtpSettings";
+import EmailTemplatesSettings from "@/components/EmailTemplatesSettings";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -286,6 +287,7 @@ export default function Configuracoes() {
           <TabsTrigger value="usuarios"><Users className="h-4 w-4 mr-2" />Usuários</TabsTrigger>
           <TabsTrigger value="prefs"><SlidersHorizontal className="h-4 w-4 mr-2" />Preferências</TabsTrigger>
           <TabsTrigger value="smtp"><Mail className="h-4 w-4 mr-2" />SMTP</TabsTrigger>
+          <TabsTrigger value="templates"><Mail className="h-4 w-4 mr-2" />Templates</TabsTrigger>
           <TabsTrigger value="integracoes"><Plug className="h-4 w-4 mr-2" />Integrações</TabsTrigger>
         </TabsList>
 
@@ -532,6 +534,10 @@ export default function Configuracoes() {
         {/* SMTP */}
         <TabsContent value="smtp">
           <SmtpSettings />
+        </TabsContent>
+
+        <TabsContent value="templates">
+          <EmailTemplatesSettings />
         </TabsContent>
 
         {/* INTEGRAÇÕES */}

@@ -111,12 +111,17 @@ export default function MinhasNotasFiscais() {
     }
   };
 
-  const visualizar = async (path: string) => {
+  const visualizar = async (nota: NotaFiscal, fechamento: any) => {
     try {
-      const url = await getNotaFiscalSignedUrl(path);
-      window.open(url, "_blank");
+      setLoadingView(true);
+      setViewNota({ nota, fechamento, url: "" });
+      const url = await getNotaFiscalSignedUrl(nota.arquivo_url);
+      setViewNota({ nota, fechamento, url });
     } catch (e: any) {
       toast({ title: "Erro ao abrir", description: e.message, variant: "destructive" });
+      setViewNota(null);
+    } finally {
+      setLoadingView(false);
     }
   };
 

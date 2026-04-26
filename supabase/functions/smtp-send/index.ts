@@ -204,7 +204,7 @@ Deno.serve(async (req) => {
         const msg = e instanceof Error ? e.message : String(e);
         await logEmail(admin, {
           to_email: body.to,
-          subject: "E-mail de teste",
+          subject,
           status: "failed",
           error_message: msg,
           triggered_by: userId,

@@ -5,16 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
   useNotasFiscais, useUpdateStatusNotaFiscal, useDeleteNotaFiscal,
-  getNotaFiscalSignedUrl, useFechamentos,
+  getNotaFiscalSignedUrl, useFechamentos, useColaboradores,
 } from "@/hooks/useSupabaseData";
-import { useColaboradores } from "@/hooks/useSupabaseData";
 
 const statusConfig = {
   pendente: { label: "Pendente", variant: "outline" as const, icon: Clock },

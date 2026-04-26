@@ -70,6 +70,8 @@ export default function MinhasNotasFiscais() {
   const [numero, setNumero] = useState("");
   const [valor, setValor] = useState("");
   const [dataEmissao, setDataEmissao] = useState("");
+  const [viewNota, setViewNota] = useState<{ nota: NotaFiscal; fechamento: any; url: string } | null>(null);
+  const [loadingView, setLoadingView] = useState(false);
 
   const openEnvio = (fechamento: any, nota?: NotaFiscal) => {
     setFile(null);

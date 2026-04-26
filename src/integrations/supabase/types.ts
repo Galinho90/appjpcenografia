@@ -487,6 +487,48 @@ export type Database = {
         }
         Relationships: []
       }
+      notificacao_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          evento: string
+          id: string
+          nota_fiscal_id: string | null
+          payload: Json | null
+          recipient_email: string | null
+          status: string
+          subject: string | null
+          template_key: string | null
+          triggered_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          evento: string
+          id?: string
+          nota_fiscal_id?: string | null
+          payload?: Json | null
+          recipient_email?: string | null
+          status: string
+          subject?: string | null
+          template_key?: string | null
+          triggered_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          evento?: string
+          id?: string
+          nota_fiscal_id?: string | null
+          payload?: Json | null
+          recipient_email?: string | null
+          status?: string
+          subject?: string | null
+          template_key?: string | null
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
       notificacoes: {
         Row: {
           created_at: string

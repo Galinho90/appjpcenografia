@@ -16,11 +16,7 @@ import {
 } from "@/hooks/useSupabaseData";
 import { usePermissions } from "@/hooks/usePermissions";
 
-const statusConfig = {
-  pendente: { label: "Pendente", variant: "outline" as const, icon: Clock },
-  pago: { label: "Pago", variant: "default" as const, icon: CheckCircle2 },
-  erro: { label: "Erro", variant: "destructive" as const, icon: AlertCircle },
-};
+// Configuração de status agora vem de @/lib/statusBadge (padrão visual unificado).
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();

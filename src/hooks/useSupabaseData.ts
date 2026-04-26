@@ -535,6 +535,7 @@ export function useUploadNotaFiscal() {
         arquivo_nome: input.file.name,
         observacoes: input.observacoes ?? null,
         status: "pendente" as const,
+        rejeitada_em: null as string | null,
       };
 
       if (input.existingId) {

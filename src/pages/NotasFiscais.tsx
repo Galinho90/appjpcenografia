@@ -83,12 +83,15 @@ export default function NotasFiscais() {
 
   const colNome = (id: string) => colaboradores.find((c: any) => c.id === id)?.nome ?? "—";
 
-  const visualizar = async (path: string) => {
+  const visualizar = async (nota: any) => {
     try {
-      const url = await getNotaFiscalSignedUrl(path);
-      window.open(url, "_blank");
+      setViewerLoading(true);
+      const url = await getNotaFiscalSignedUrl(nota.arquivo_url);
+      setViewer({ nota, url });
     } catch (e: any) {
       toast({ title: "Erro ao abrir arquivo", description: e.message, variant: "destructive" });
+    } finally {
+      setViewerLoading(false);
     }
   };
 

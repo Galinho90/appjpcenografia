@@ -475,7 +475,7 @@ export function useNotasFiscais(periodo?: { inicio: string; fim: string }) {
     queryFn: async (): Promise<NotaFiscal[]> => {
       let q = supabase
         .from("notas_fiscais")
-        .select("*, colaborador:colaboradores(id, nome)")
+        .select("*")
         .order("created_at", { ascending: false });
       if (periodo) {
         q = q.eq("periodo_inicio", periodo.inicio).eq("periodo_fim", periodo.fim);

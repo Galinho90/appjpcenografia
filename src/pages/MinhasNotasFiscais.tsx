@@ -21,11 +21,7 @@ import {
   type NotaFiscal,
 } from "@/hooks/useSupabaseData";
 
-const statusConfig = {
-  pendente: { label: "Pendente", variant: "outline" as const, icon: Clock },
-  aprovada: { label: "Aprovada", variant: "default" as const, icon: CheckCircle2 },
-  rejeitada: { label: "Rejeitada", variant: "destructive" as const, icon: AlertCircle },
-};
+// Configuração de status agora vem de @/lib/statusBadge (padrão visual unificado).
 
 const fmtBRL = (n: number) =>
   `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

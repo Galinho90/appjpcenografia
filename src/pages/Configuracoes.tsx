@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff, Mail } from "lucide-react";
+import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff, Mail, FileText, Settings2 } from "lucide-react";
 import SmtpSettings from "@/components/SmtpSettings";
 import EmailTemplatesSettings from "@/components/EmailTemplatesSettings";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";

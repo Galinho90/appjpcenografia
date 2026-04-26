@@ -19,6 +19,8 @@ import Categorias from "./pages/Categorias";
 import Configuracoes from "./pages/Configuracoes";
 import MinhaConta from "./pages/MinhaConta";
 import MeuExtrato from "./pages/MeuExtrato";
+import NotasFiscais from "./pages/NotasFiscais";
+import MinhasNotasFiscais from "./pages/MinhasNotasFiscais";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 

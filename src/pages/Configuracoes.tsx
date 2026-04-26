@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff, Mail, FileText, Settings2 } from "lucide-react";
+import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff, Mail, FileText, Settings2, Bell } from "lucide-react";
 import SmtpSettings from "@/components/SmtpSettings";
 import EmailTemplatesSettings from "@/components/EmailTemplatesSettings";
+import NotificacaoLogsSettings from "@/components/NotificacaoLogsSettings";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -289,7 +290,7 @@ export default function Configuracoes() {
       </div>
 
       <Tabs defaultValue="empresa" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto gap-1 p-1">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 h-auto gap-1 p-1">
           <TabsTrigger value="empresa" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <Building2 className="h-4 w-4 mr-2" />Empresa
           </TabsTrigger>
@@ -304,6 +305,9 @@ export default function Configuracoes() {
           </TabsTrigger>
           <TabsTrigger value="templates" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <FileText className="h-4 w-4 mr-2" />Templates
+          </TabsTrigger>
+          <TabsTrigger value="logs" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Bell className="h-4 w-4 mr-2" />Logs
           </TabsTrigger>
           <TabsTrigger value="integracoes" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <Plug className="h-4 w-4 mr-2" />Integrações
@@ -557,6 +561,10 @@ export default function Configuracoes() {
 
         <TabsContent value="templates">
           <EmailTemplatesSettings />
+        </TabsContent>
+
+        <TabsContent value="logs">
+          <NotificacaoLogsSettings />
         </TabsContent>
 
         {/* INTEGRAÇÕES */}

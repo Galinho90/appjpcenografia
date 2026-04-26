@@ -170,7 +170,7 @@ Deno.serve(async (req) => {
           content: "auto",
           html: `<div style="font-family:Arial,sans-serif;padding:20px;"><h2>Funcionou! 🎉</h2><p>Este é um e-mail de teste enviado pelo sistema.</p><p>Se você recebeu, sua configuração SMTP está correta.</p></div>`,
         });
-        await client.close();
+        try { await client.close(); } catch { /* ignore */ }
         await logEmail(admin, {
           to_email: body.to,
           subject: "E-mail de teste",

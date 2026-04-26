@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
           content: body.text ?? "auto",
           html: body.html,
         });
-        await client.close();
+        try { await client.close(); } catch { /* ignore */ }
         await logEmail(admin, {
           to_email: body.to,
           subject: body.subject,

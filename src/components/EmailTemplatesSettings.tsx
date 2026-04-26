@@ -158,6 +158,8 @@ export default function EmailTemplatesSettings() {
             <SelectContent>
               <SelectItem value="password_reset">Redefinição de senha</SelectItem>
               <SelectItem value="test_email">E-mail de teste</SelectItem>
+              <SelectItem value="nota_fiscal_solicitacao">Nota Fiscal — Solicitação</SelectItem>
+              <SelectItem value="nota_fiscal_recebida">Nota Fiscal — Recebida</SelectItem>
             </SelectContent>
           </Select>
           {draft?.description && (

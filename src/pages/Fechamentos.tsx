@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Calculator, DollarSign, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, Trash2, RotateCcw } from "lucide-react";
+import { Calculator, DollarSign, ChevronLeft, ChevronRight, Trash2, RotateCcw } from "lucide-react";
+import { getStatusBadge } from "@/lib/statusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";

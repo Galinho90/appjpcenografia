@@ -48,12 +48,14 @@ const App = () => (
             <Route path="/colaboradores" element={<Protected><Staff><Colaboradores /></Staff></Protected>} />
             <Route path="/diarias" element={<Protected><Staff><Diarias /></Staff></Protected>} />
             <Route path="/fechamentos" element={<Protected><Staff><Fechamentos /></Staff></Protected>} />
+            <Route path="/notas-fiscais" element={<Protected><Staff><NotasFiscais /></Staff></Protected>} />
             <Route path="/relatorios" element={<Protected><Staff><Relatorios /></Staff></Protected>} />
             <Route path="/extrato" element={<Protected><Staff><ExtratoDiarista /></Staff></Protected>} />
             <Route path="/clientes" element={<Protected><Staff><Clientes /></Staff></Protected>} />
             <Route path="/categorias" element={<Protected><Staff><Categorias /></Staff></Protected>} />
             <Route path="/configuracoes" element={<Protected><RequireAdmin><Configuracoes /></RequireAdmin></Protected>} />
             <Route path="/meu-extrato" element={<Protected><MeuExtrato /></Protected>} />
+            <Route path="/minhas-notas" element={<Protected><MinhasNotasFiscais /></Protected>} />
             <Route path="/minha-conta" element={<Protected><MinhaConta /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

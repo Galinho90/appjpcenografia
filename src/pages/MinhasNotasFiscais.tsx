@@ -174,9 +174,14 @@ export default function MinhasNotasFiscais() {
                             <FileText className="h-3 w-3" />Não enviada
                           </Badge>
                         )}
-                        {nota?.status === "rejeitada" && nota.observacoes && (
-                          <div className="text-xs text-destructive mt-1 max-w-[280px]">
-                            <span className="font-medium">Motivo:</span> {nota.observacoes}
+                        {nota?.status === "rejeitada" && (nota.observacoes || nota.rejeitada_em) && (
+                          <div className="text-xs text-destructive mt-1 max-w-[280px] space-y-0.5">
+                            {nota.rejeitada_em && (
+                              <div><span className="font-medium">Rejeitada em:</span> {new Date(nota.rejeitada_em).toLocaleString("pt-BR")}</div>
+                            )}
+                            {nota.observacoes && (
+                              <div><span className="font-medium">Motivo:</span> {nota.observacoes}</div>
+                            )}
                           </div>
                         )}
                       </TableCell>

@@ -445,3 +445,148 @@ export function useDeleteCliente() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["clientes"] }),
   });
 }
+
+// ── Notas Fiscais ──
+export type NotaFiscal = {
+  id: string;
+  fechamento_id: string;
+  colaborador_id: string;
+  periodo_inicio: string;
+  periodo_fim: string;
+  numero?: string | null;
+  valor: number;
+  data_emissao?: string | null;
+  arquivo_url: string;
+  arquivo_nome?: string | null;
+  status: "pendente" | "aprovada" | "rejeitada";
+  observacoes?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  colaborador?: { id: string; nome: string };
+};
+
+export function useNotasFiscais(periodo?: { inicio: string; fim: string }) {
+  return useQuery({
+    queryKey: ["notas_fiscais", periodo?.inicio, periodo?.fim],
+    queryFn: async (): Promise<NotaFiscal[]> => {
+      let q = supabase
+        .from("notas_fiscais")
+        .select("*, colaborador:colaboradores(id, nome)")
+        .order("created_at", { ascending: false });
+      if (periodo) {
+        q = q.eq("periodo_inicio", periodo.inicio).eq("periodo_fim", periodo.fim);
+      }
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as any;
+    },
+  });
+}
+
+export function useMinhasNotasFiscais(colaboradorId?: string) {
+  return useQuery({
+    queryKey: ["minhas_notas_fiscais", colaboradorId],
+    enabled: !!colaboradorId,
+    queryFn: async (): Promise<NotaFiscal[]> => {
+      const { data, error } = await supabase
+        .from("notas_fiscais")
+        .select("*")
+        .eq("colaborador_id", colaboradorId!)
+        .order("periodo_inicio", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as any;
+    },
+  });
+}
+
+export function useUploadNotaFiscal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      file: File;
+      fechamento_id: string;
+      colaborador_id: string;
+      periodo_inicio: string;
+      periodo_fim: string;
+      numero?: string;
+      valor: number;
+      data_emissao?: string;
+      observacoes?: string;
+      user_id: string;
+      existingId?: string;
+    }) => {
+      const ext = input.file.name.split(".").pop() || "bin";
+      const path = `${input.user_id}/${input.fechamento_id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("notas-fiscais")
+        .upload(path, input.file, { upsert: false, contentType: input.file.type });
+      if (upErr) throw upErr;
+
+      const payload = {
+        fechamento_id: input.fechamento_id,
+        colaborador_id: input.colaborador_id,
+        periodo_inicio: input.periodo_inicio,
+        periodo_fim: input.periodo_fim,
+        numero: input.numero ?? null,
+        valor: input.valor,
+        data_emissao: input.data_emissao ?? null,
+        arquivo_url: path,
+        arquivo_nome: input.file.name,
+        observacoes: input.observacoes ?? null,
+        status: "pendente" as const,
+      };
+
+      if (input.existingId) {
+        const { error } = await supabase
+          .from("notas_fiscais")
+          .update(payload)
+          .eq("id", input.existingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("notas_fiscais").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notas_fiscais"] });
+      qc.invalidateQueries({ queryKey: ["minhas_notas_fiscais"] });
+    },
+  });
+}
+
+export function useUpdateStatusNotaFiscal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, status, observacoes }: { id: string; status: "pendente" | "aprovada" | "rejeitada"; observacoes?: string }) => {
+      const { error } = await supabase
+        .from("notas_fiscais")
+        .update({ status, observacoes: observacoes ?? null })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notas_fiscais"] }),
+  });
+}
+
+export function useDeleteNotaFiscal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (nota: { id: string; arquivo_url: string }) => {
+      await supabase.storage.from("notas-fiscais").remove([nota.arquivo_url]);
+      const { error } = await supabase.from("notas_fiscais").delete().eq("id", nota.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notas_fiscais"] });
+      qc.invalidateQueries({ queryKey: ["minhas_notas_fiscais"] });
+    },
+  });
+}
+
+export async function getNotaFiscalSignedUrl(path: string) {
+  const { data, error } = await supabase.storage
+    .from("notas-fiscais")
+    .createSignedUrl(path, 60 * 10);
+  if (error) throw error;
+  return data.signedUrl;
+}

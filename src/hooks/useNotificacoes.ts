@@ -11,6 +11,8 @@ export interface Notificacao {
   tipo: string;
   link: string | null;
   lida: boolean;
+  lida_em: string | null;
+  status: "nova" | "lida" | "arquivada";
   metadata: any;
   created_at: string;
 }

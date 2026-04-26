@@ -117,6 +117,8 @@ export default function NotificacaoLogsSettings() {
     setStatus("all");
     setNotaId("");
     setSearchNota("");
+    setEmailFilter("");
+    setSearchEmail("");
     const d = new Date();
     d.setDate(d.getDate() - 7);
     setDateFrom(d);
@@ -126,6 +128,11 @@ export default function NotificacaoLogsSettings() {
 
   const aplicarBuscaNota = () => {
     setNotaId(searchNota.trim());
+    setPage(0);
+  };
+
+  const aplicarBuscaEmail = () => {
+    setEmailFilter(searchEmail.trim());
     setPage(0);
   };
 

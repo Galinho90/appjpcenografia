@@ -22,9 +22,9 @@ import {
 } from "@/hooks/useSupabaseData";
 
 const statusConfig = {
-  pendente: { label: "Pendente", variant: "outline" as const, icon: Clock },
-  aprovada: { label: "Aprovada", variant: "default" as const, icon: CheckCircle2 },
-  rejeitada: { label: "Rejeitada", variant: "destructive" as const, icon: AlertCircle },
+  pendente: { label: "Pendente", variant: "outline" as const, icon: Clock, className: "" },
+  aprovada: { label: "Aprovada", variant: "default" as const, icon: CheckCircle2, className: "bg-green-600 hover:bg-green-600 text-white border-transparent" },
+  rejeitada: { label: "Rejeitada", variant: "destructive" as const, icon: AlertCircle, className: "" },
 };
 
 function getQuinzena(ref: Date) {

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Receipt, ChevronLeft, ChevronRight, Eye, Check, X, Trash2, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Receipt, ChevronLeft, ChevronRight, Eye, Check, X, Trash2, AlertCircle, CheckCircle2, Clock, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -51,7 +52,14 @@ export default function NotasFiscais() {
   const inicioISO = toISO(selecionada.inicio);
   const fimISO = toISO(selecionada.fim);
 
-  const { data: notas = [], isLoading } = useNotasFiscais({ inicio: inicioISO, fim: fimISO });
+  const { data: notas = [], isLoading, isFetching, refetch } = useNotasFiscais({ inicio: inicioISO, fim: fimISO });
+  const qc = useQueryClient();
+  const atualizar = async () => {
+    await qc.invalidateQueries({ queryKey: ["notas_fiscais"] });
+    await qc.invalidateQueries({ queryKey: ["fechamentos"] });
+    await refetch();
+    toast({ title: "Lista atualizada" });
+  };
   const { data: fechamentos = [] } = useFechamentos();
   const { data: colaboradores = [] } = useColaboradores();
   const updateStatus = useUpdateStatusNotaFiscal();
@@ -158,6 +166,10 @@ export default function NotasFiscais() {
           <p className="text-muted-foreground">Recebimento de NF dos diaristas por quinzena.</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={atualizar} disabled={isFetching}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
+            Atualizar notas
+          </Button>
           <Button variant="outline" size="icon" onClick={() => shift(-1)}><ChevronLeft className="h-4 w-4" /></Button>
           <span className="text-sm font-medium px-3">
             {fmt(selecionada.inicio)} – {fmt(selecionada.fim)}

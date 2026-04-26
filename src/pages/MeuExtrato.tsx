@@ -65,7 +65,15 @@ export default function MeuExtrato() {
     if (!colaboradorId) return [];
     return lancamentos
       .filter(l => l.colaborador_id === colaboradorId && l.data >= inicioISO && l.data <= fimISO)
-      .sort((a, b) => a.data.localeCompare(b.data));
+      .sort((a, b) => {
+        const d = a.data.localeCompare(b.data);
+        if (d !== 0) return d;
+        const ca = (a as any).created_at ?? "";
+        const cb = (b as any).created_at ?? "";
+        const c = String(ca).localeCompare(String(cb));
+        if (c !== 0) return c;
+        return String(a.id).localeCompare(String(b.id));
+      });
   }, [lancamentos, colaboradorId, inicioISO, fimISO]);
 
   const totalCreditos = lancamentosFiltrados.filter(l => l.categoria?.tipo === "C").reduce((s, l) => s + l.valor, 0);

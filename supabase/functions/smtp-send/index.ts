@@ -131,21 +131,20 @@ Deno.serve(async (req) => {
     if (body.action === "test_connection") {
       const client = await buildClient(body.smtp);
       try {
-        // Tenta conectar e fechar — denomailer conecta on-demand, então faz um noop send simulado
-        await client.close();
-        // Reabrir e validar via verify-like: tenta enviar para o próprio remetente como verify
-        const verify = await buildClient(body.smtp);
-        await verify.send({
+        // denomailer conecta on-demand: enviamos um e-mail mínimo para o próprio remetente
+        // como forma de validar host/porta/credenciais.
+        await client.send({
           from: `${body.smtp.from_name ?? ""} <${body.smtp.from_email}>`.trim(),
           to: body.smtp.from_email,
           subject: "[Teste de conexão SMTP]",
           content: "Conexão validada.",
         });
-        await verify.close();
+        try { await client.close(); } catch { /* ignore */ }
         return new Response(JSON.stringify({ ok: true }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       } catch (e) {
+        try { await client.close(); } catch { /* ignore */ }
         return new Response(
           JSON.stringify({ ok: false, error: e instanceof Error ? e.message : String(e) }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

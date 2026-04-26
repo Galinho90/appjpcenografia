@@ -246,7 +246,7 @@ export default function NotasFiscais() {
                       <TableCell>{n.data_emissao ? new Date(n.data_emissao + "T00:00").toLocaleDateString("pt-BR") : "—"}</TableCell>
                       <TableCell>{fmtBRL(Number(n.valor))}</TableCell>
                       <TableCell>
-                        <Badge variant={cfg.variant} className="gap-1">
+                        <Badge variant={cfg.variant} className={`gap-1 ${cfg.className}`}>
                           <Icon className="h-3 w-3" />{cfg.label}
                         </Badge>
                         {n.status === "rejeitada" && (n.observacoes || n.rejeitada_em) && (

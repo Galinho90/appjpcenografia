@@ -62,7 +62,7 @@ export function useMarcarNotificacaoLida() {
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from("notificacoes")
-        .update({ lida: true })
+        .update({ lida: true, lida_em: new Date().toISOString(), status: "lida" })
         .eq("id", id);
       if (error) throw error;
     },
@@ -77,7 +77,7 @@ export function useMarcarTodasLidas() {
     mutationFn: async () => {
       const { error } = await supabase
         .from("notificacoes")
-        .update({ lida: true })
+        .update({ lida: true, lida_em: new Date().toISOString(), status: "lida" })
         .eq("user_id", user!.id)
         .eq("lida", false);
       if (error) throw error;

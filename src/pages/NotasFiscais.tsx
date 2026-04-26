@@ -243,7 +243,7 @@ export default function NotasFiscais() {
                         )}
                       </TableCell>
                       <TableCell className="text-right space-x-1">
-                        <Button size="icon" variant="ghost" onClick={() => visualizar(n.arquivo_url)} title="Visualizar">
+                        <Button size="icon" variant="ghost" onClick={() => visualizar(n)} title="Visualizar" disabled={viewerLoading}>
                           <Eye className="h-4 w-4" />
                         </Button>
                         {n.status !== "aprovada" && (

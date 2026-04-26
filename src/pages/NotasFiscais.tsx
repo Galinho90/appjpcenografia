@@ -86,6 +86,23 @@ export default function NotasFiscais() {
     try {
       await updateStatus.mutateAsync({ id, status: "aprovada" });
       toast({ title: "Nota aprovada" });
+      // Notifica colaborador por e-mail (best-effort)
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data, error } = await supabase.functions.invoke("notify-nota-fiscal", {
+          body: { nota_id: id, evento: "aprovada" },
+        });
+        if (error) throw error;
+        if (data?.ok) {
+          toast({ title: "E-mail enviado ao colaborador" });
+        } else if (data?.skipped) {
+          toast({ title: "E-mail não enviado", description: data.reason, variant: "destructive" });
+        } else if (data?.error) {
+          toast({ title: "Falha ao enviar e-mail", description: data.error, variant: "destructive" });
+        }
+      } catch (mailErr: any) {
+        toast({ title: "Falha ao enviar e-mail", description: mailErr.message, variant: "destructive" });
+      }
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }

@@ -538,6 +538,8 @@ export function useUploadNotaFiscal() {
         rejeitada_em: null as string | null,
       };
 
+      const isReenvio = !!input.existingId;
+
       if (input.existingId) {
         const { error } = await supabase
           .from("notas_fiscais")
@@ -547,6 +549,58 @@ export function useUploadNotaFiscal() {
       } else {
         const { error } = await supabase.from("notas_fiscais").insert(payload);
         if (error) throw error;
+      }
+
+      // Notificações
+      try {
+        const { criarNotificacao, criarNotificacaoParaAdmins } = await import(
+          "@/hooks/useNotificacoes"
+        );
+        const periodo = `${new Date(input.periodo_inicio + "T00:00:00").toLocaleDateString(
+          "pt-BR"
+        )} a ${new Date(input.periodo_fim + "T00:00:00").toLocaleDateString("pt-BR")}`;
+
+        // Buscar nome do colaborador
+        const { data: colab } = await supabase
+          .from("colaboradores")
+          .select("nome")
+          .eq("id", input.colaborador_id)
+          .maybeSingle();
+        const nomeColab = colab?.nome ?? "Diarista";
+
+        if (isReenvio) {
+          // Confirmação para o diarista
+          await criarNotificacao({
+            user_id: input.user_id,
+            titulo: "NF reenviada",
+            mensagem: `Sua nota fiscal da quinzena ${periodo} foi reenviada e está aguardando análise.`,
+            tipo: "success",
+            link: "/minhas-notas-fiscais",
+          });
+          // Aviso para admins
+          await criarNotificacaoParaAdmins({
+            titulo: "NF reenviada para análise",
+            mensagem: `${nomeColab} reenviou a NF da quinzena ${periodo}.`,
+            tipo: "info",
+            link: "/notas-fiscais",
+          });
+        } else {
+          await criarNotificacao({
+            user_id: input.user_id,
+            titulo: "NF enviada",
+            mensagem: `Sua nota fiscal da quinzena ${periodo} foi enviada e está aguardando análise.`,
+            tipo: "success",
+            link: "/minhas-notas-fiscais",
+          });
+          await criarNotificacaoParaAdmins({
+            titulo: "Nova NF para análise",
+            mensagem: `${nomeColab} enviou uma NF da quinzena ${periodo}.`,
+            tipo: "info",
+            link: "/notas-fiscais",
+          });
+        }
+      } catch (e) {
+        console.error("Falha ao enviar notificações de NF:", e);
       }
     },
     onSuccess: () => {
@@ -570,6 +624,48 @@ export function useUpdateStatusNotaFiscal() {
         .update(payload)
         .eq("id", id);
       if (error) throw error;
+
+      // Notificar diarista sobre rejeição/aprovação
+      try {
+        const { criarNotificacao } = await import("@/hooks/useNotificacoes");
+        const { data: nota } = await supabase
+          .from("notas_fiscais")
+          .select("colaborador_id, periodo_inicio, periodo_fim")
+          .eq("id", id)
+          .maybeSingle();
+        if (!nota) return;
+        const { data: colab } = await supabase
+          .from("colaboradores")
+          .select("user_id")
+          .eq("id", nota.colaborador_id)
+          .maybeSingle();
+        if (!colab?.user_id) return;
+        const periodo = `${new Date(nota.periodo_inicio + "T00:00:00").toLocaleDateString(
+          "pt-BR"
+        )} a ${new Date(nota.periodo_fim + "T00:00:00").toLocaleDateString("pt-BR")}`;
+
+        if (status === "rejeitada") {
+          await criarNotificacao({
+            user_id: colab.user_id,
+            titulo: "NF rejeitada",
+            mensagem: `Sua nota fiscal da quinzena ${periodo} foi rejeitada. Motivo: ${
+              observacoes ?? "não informado"
+            }`,
+            tipo: "error",
+            link: "/minhas-notas-fiscais",
+          });
+        } else if (status === "aprovada") {
+          await criarNotificacao({
+            user_id: colab.user_id,
+            titulo: "NF aprovada",
+            mensagem: `Sua nota fiscal da quinzena ${periodo} foi aprovada.`,
+            tipo: "success",
+            link: "/minhas-notas-fiscais",
+          });
+        }
+      } catch (e) {
+        console.error("Falha ao notificar status de NF:", e);
+      }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notas_fiscais"] }),
   });

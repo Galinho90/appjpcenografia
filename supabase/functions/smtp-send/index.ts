@@ -38,6 +38,8 @@ const bodySchema = z.discriminatedUnion("action", [
     action: z.literal("send_test"),
     to: z.string().email(),
     smtp: smtpFieldsSchema.optional(),
+    subject: z.string().optional(),
+    html: z.string().optional(),
   }),
   z.object({
     action: z.literal("send"),

@@ -325,6 +325,8 @@ export default function NotasFiscais() {
             </Button>
           </DialogFooter>
         </DialogContent>
+      </Dialog>
+
       <Dialog open={!!viewer} onOpenChange={(o) => !o && setViewer(null)}>
         <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
           <DialogHeader className="p-6 pb-3 border-b">

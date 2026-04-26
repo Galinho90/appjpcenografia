@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Receipt, ChevronLeft, ChevronRight, Eye, Check, X, Trash2, AlertCircle, CheckCircle2, Clock, RefreshCw } from "lucide-react";
+import { Receipt, ChevronLeft, ChevronRight, Eye, Check, X, Trash2, RefreshCw } from "lucide-react";
+import { getStatusBadge } from "@/lib/statusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,11 +22,7 @@ import {
   getNotaFiscalSignedUrl, useFechamentos, useColaboradores,
 } from "@/hooks/useSupabaseData";
 
-const statusConfig = {
-  pendente: { label: "Pendente", variant: "outline" as const, icon: Clock, className: "" },
-  aprovada: { label: "Aprovada", variant: "default" as const, icon: CheckCircle2, className: "bg-green-600 hover:bg-green-600 text-white border-transparent" },
-  rejeitada: { label: "Rejeitada", variant: "destructive" as const, icon: AlertCircle, className: "" },
-};
+// Configuração de status agora vem de @/lib/statusBadge (padrão visual unificado).
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();
@@ -237,7 +234,7 @@ export default function NotasFiscais() {
               </TableHeader>
               <TableBody>
                 {notas.map(n => {
-                  const cfg = statusConfig[n.status];
+                  const cfg = getStatusBadge(n.status);
                   const Icon = cfg.icon;
                   return (
                     <TableRow key={n.id}>
@@ -246,7 +243,7 @@ export default function NotasFiscais() {
                       <TableCell>{n.data_emissao ? new Date(n.data_emissao + "T00:00").toLocaleDateString("pt-BR") : "—"}</TableCell>
                       <TableCell>{fmtBRL(Number(n.valor))}</TableCell>
                       <TableCell>
-                        <Badge variant={cfg.variant} className={`gap-1 ${cfg.className}`}>
+                        <Badge className={`gap-1 ${cfg.className}`}>
                           <Icon className="h-3 w-3" />{cfg.label}
                         </Badge>
                         {n.status === "rejeitada" && (n.observacoes || n.rejeitada_em) && (
@@ -372,7 +369,7 @@ export default function NotasFiscais() {
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Status</div>
-                  <div className="font-medium">{statusConfig[viewer.nota.status as keyof typeof statusConfig]?.label}</div>
+                  <div className="font-medium">{getStatusBadge(viewer.nota.status).label}</div>
                 </div>
                 {viewer.nota.observacoes && (
                   <div className="col-span-2 md:col-span-4">

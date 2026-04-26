@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Receipt, Upload, Eye, AlertCircle, CheckCircle2, Clock, FileText } from "lucide-react";
+import { Receipt, Upload, Eye, FileText } from "lucide-react";
+import { getStatusBadge, statusBadgeMap } from "@/lib/statusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,11 +21,7 @@ import {
   type NotaFiscal,
 } from "@/hooks/useSupabaseData";
 
-const statusConfig = {
-  pendente: { label: "Pendente", variant: "outline" as const, icon: Clock },
-  aprovada: { label: "Aprovada", variant: "default" as const, icon: CheckCircle2 },
-  rejeitada: { label: "Rejeitada", variant: "destructive" as const, icon: AlertCircle },
-};
+// Configuração de status agora vem de @/lib/statusBadge (padrão visual unificado).
 
 const fmtBRL = (n: number) =>
   `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -163,8 +160,8 @@ export default function MinhasNotasFiscais() {
               <TableBody>
                 {meusFechamentos.map((f: any) => {
                   const nota = notaPorFechamento.get(f.id);
-                  const cfg = nota ? statusConfig[nota.status] : null;
-                  const Icon = cfg?.icon ?? FileText;
+                  const cfg = nota ? getStatusBadge(nota.status) : statusBadgeMap.nao_enviada;
+                  const Icon = cfg.icon;
                   return (
                     <TableRow key={f.id}>
                       <TableCell className="font-medium">
@@ -172,15 +169,9 @@ export default function MinhasNotasFiscais() {
                       </TableCell>
                       <TableCell>{fmtBRL(Number(f.valor_final))}</TableCell>
                       <TableCell>
-                        {nota && cfg ? (
-                          <Badge variant={cfg.variant} className="gap-1">
-                            <Icon className="h-3 w-3" />{cfg.label}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="gap-1">
-                            <FileText className="h-3 w-3" />Não enviada
-                          </Badge>
-                        )}
+                        <Badge className={`gap-1 ${cfg.className}`}>
+                          <Icon className="h-3 w-3" />{cfg.label}
+                        </Badge>
                         {nota?.status === "rejeitada" && (nota.observacoes || nota.rejeitada_em) && (
                           <div className="text-xs text-destructive mt-1 max-w-[280px] space-y-0.5">
                             {nota.rejeitada_em && (
@@ -285,10 +276,10 @@ export default function MinhasNotasFiscais() {
                   <div className="text-muted-foreground text-xs">Status</div>
                   <div>
                     {(() => {
-                      const cfg = statusConfig[viewNota.nota.status];
+                      const cfg = getStatusBadge(viewNota.nota.status);
                       const Icon = cfg.icon;
                       return (
-                        <Badge variant={cfg.variant} className="gap-1">
+                        <Badge className={`gap-1 ${cfg.className}`}>
                           <Icon className="h-3 w-3" />{cfg.label}
                         </Badge>
                       );

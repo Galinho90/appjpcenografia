@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Calculator, DollarSign, Clock, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight, Trash2, RotateCcw } from "lucide-react";
+import { Calculator, DollarSign, Clock, CheckCircle2, ChevronLeft, ChevronRight, Trash2, RotateCcw } from "lucide-react";
+import { getStatusBadge } from "@/lib/statusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,11 +16,7 @@ import {
 } from "@/hooks/useSupabaseData";
 import { usePermissions } from "@/hooks/usePermissions";
 
-const statusConfig = {
-  pendente: { label: "Pendente", variant: "outline" as const, icon: Clock },
-  pago: { label: "Pago", variant: "default" as const, icon: CheckCircle2 },
-  erro: { label: "Erro", variant: "destructive" as const, icon: AlertCircle },
-};
+// Configuração de status agora vem de @/lib/statusBadge (padrão visual unificado).
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();
@@ -205,7 +202,8 @@ export default function Fechamentos() {
                 </TableHeader>
                 <TableBody>
                   {fechamentosQ.map((f) => {
-                    const cfg = statusConfig[f.status] ?? statusConfig.pendente;
+                    const cfg = getStatusBadge(f.status);
+                    const Icon = cfg.icon;
                     return (
                       <TableRow key={f.id}>
                         <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
@@ -214,8 +212,8 @@ export default function Fechamentos() {
                         <TableCell className="text-success">+ {fmtBRL(f.total_reembolsos)}</TableCell>
                         <TableCell className="font-bold">{fmtBRL(f.valor_final)}</TableCell>
                         <TableCell>
-                          <Badge variant={cfg.variant} className="gap-1">
-                            <cfg.icon className="h-3 w-3" />
+                          <Badge className={`gap-1 ${cfg.className}`}>
+                            <Icon className="h-3 w-3" />
                             {cfg.label}
                           </Badge>
                         </TableCell>

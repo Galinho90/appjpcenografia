@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff, Mail } from "lucide-react";
 import SmtpSettings from "@/components/SmtpSettings";
+import EmailTemplatesSettings from "@/components/EmailTemplatesSettings";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";

@@ -48,6 +48,8 @@ export default function NotificacaoLogsSettings() {
   const [status, setStatus] = useState<string>("all");
   const [notaId, setNotaId] = useState<string>("");
   const [searchNota, setSearchNota] = useState<string>("");
+  const [emailFilter, setEmailFilter] = useState<string>("");
+  const [searchEmail, setSearchEmail] = useState<string>("");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(() => {
     const d = new Date();
     d.setDate(d.getDate() - 7);
@@ -71,7 +73,7 @@ export default function NotificacaoLogsSettings() {
     },
   });
 
-  const filters = { evento, status, notaId, dateFrom, dateTo, page };
+  const filters = { evento, status, notaId, emailFilter, dateFrom, dateTo, page };
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["notificacao_log", filters],
     queryFn: async () => {
@@ -83,6 +85,7 @@ export default function NotificacaoLogsSettings() {
       if (evento !== "all") q = q.eq("evento", evento);
       if (status !== "all") q = q.eq("status", status);
       if (notaId.trim()) q = q.eq("nota_fiscal_id", notaId.trim());
+      if (emailFilter.trim()) q = q.ilike("recipient_email", `%${emailFilter.trim()}%`);
       if (dateFrom) q = q.gte("created_at", new Date(dateFrom.setHours(0, 0, 0, 0)).toISOString());
       if (dateTo) {
         const t = new Date(dateTo);

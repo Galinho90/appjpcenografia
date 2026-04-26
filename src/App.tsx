@@ -22,6 +22,7 @@ import MeuExtrato from "./pages/MeuExtrato";
 import NotasFiscais from "./pages/NotasFiscais";
 import MinhasNotasFiscais from "./pages/MinhasNotasFiscais";
 import Login from "./pages/Login";
+import RedefinirSenha from "./pages/RedefinirSenha";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/redefinir-senha" element={<RedefinirSenha />} />
             <Route path="/" element={<Protected><Staff><Index /></Staff></Protected>} />
             <Route path="/colaboradores" element={<Protected><Staff><Colaboradores /></Staff></Protected>} />
             <Route path="/diarias" element={<Protected><Staff><Diarias /></Staff></Protected>} />

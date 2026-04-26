@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff } from "lucide-react";
+import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff, Mail } from "lucide-react";
+import SmtpSettings from "@/components/SmtpSettings";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -280,10 +281,11 @@ export default function Configuracoes() {
       </div>
 
       <Tabs defaultValue="empresa" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
           <TabsTrigger value="empresa"><Building2 className="h-4 w-4 mr-2" />Empresa</TabsTrigger>
           <TabsTrigger value="usuarios"><Users className="h-4 w-4 mr-2" />Usuários</TabsTrigger>
           <TabsTrigger value="prefs"><SlidersHorizontal className="h-4 w-4 mr-2" />Preferências</TabsTrigger>
+          <TabsTrigger value="smtp"><Mail className="h-4 w-4 mr-2" />SMTP</TabsTrigger>
           <TabsTrigger value="integracoes"><Plug className="h-4 w-4 mr-2" />Integrações</TabsTrigger>
         </TabsList>
 
@@ -525,6 +527,11 @@ export default function Configuracoes() {
               <Button onClick={salvarPrefs}><Save className="h-4 w-4 mr-2" />Salvar</Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* SMTP */}
+        <TabsContent value="smtp">
+          <SmtpSettings />
         </TabsContent>
 
         {/* INTEGRAÇÕES */}

@@ -90,10 +90,26 @@ export default function NotasFiscais() {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
   };
-  const rejeitar = async (id: string) => {
+  const abrirRejeitar = (id: string, nome: string) => {
+    setMotivoRejeicao("");
+    setRejectTarget({ id, nome });
+  };
+
+  const confirmarRejeicao = async () => {
+    if (!rejectTarget) return;
+    const motivo = motivoRejeicao.trim();
+    if (motivo.length < 3) {
+      toast({ title: "Informe o motivo", description: "O motivo deve ter pelo menos 3 caracteres.", variant: "destructive" });
+      return;
+    }
+    if (motivo.length > 500) {
+      toast({ title: "Motivo muito longo", description: "Máximo de 500 caracteres.", variant: "destructive" });
+      return;
+    }
     try {
-      await updateStatus.mutateAsync({ id, status: "rejeitada" });
+      await updateStatus.mutateAsync({ id: rejectTarget.id, status: "rejeitada", observacoes: motivo });
       toast({ title: "Nota rejeitada" });
+      setRejectTarget(null);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }

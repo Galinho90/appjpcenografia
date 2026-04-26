@@ -1,6 +1,7 @@
 // Edge Function: notify-nota-fiscal
 // Envia e-mail ao colaborador quando uma nota fiscal muda de status (aprovada / rejeitada).
 // Renderiza o template salvo em `email_templates` e chama a função `smtp-send` para envio real.
+// Registra cada tentativa em `notificacao_log` (sent / failed / skipped).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { z } from "https://esm.sh/zod@3.23.8";
@@ -36,21 +37,68 @@ const fmtDate = (iso?: string | null) => {
   return `${d}/${m}/${y}`;
 };
 
+// deno-lint-ignore no-explicit-any
+type Admin = any;
+
+async function logNotificacao(
+  admin: Admin,
+  row: {
+    evento: string;
+    template_key?: string | null;
+    nota_fiscal_id?: string | null;
+    recipient_email?: string | null;
+    subject?: string | null;
+    status: "sent" | "failed" | "skipped";
+    error_message?: string | null;
+    payload?: Record<string, unknown> | null;
+    triggered_by?: string | null;
+  },
+) {
+  try {
+    await admin.from("notificacao_log").insert(row);
+  } catch (_) {
+    // Log é best-effort, não deve quebrar o fluxo
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 
+  // Identifica usuário (se houver)
+  let userId: string | null = null;
+  const authHeader = req.headers.get("Authorization");
+  if (authHeader) {
+    const token = authHeader.replace("Bearer ", "");
+    try {
+      const { data: userData } = await admin.auth.getUser(token);
+      userId = userData.user?.id ?? null;
+    } catch (_) { /* ignore */ }
+  }
+
+  let evento = "desconhecido";
+  let nota_id: string | null = null;
+
   try {
     const json = await req.json();
     const parsed = bodySchema.safeParse(json);
     if (!parsed.success) {
+      await logNotificacao(admin, {
+        evento,
+        status: "failed",
+        error_message: "Payload inválido",
+        payload: { received: json, issues: parsed.error.flatten() },
+        triggered_by: userId,
+      });
       return new Response(
         JSON.stringify({ error: "Payload inválido", details: parsed.error.flatten() }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
-    const { nota_id, evento, motivo } = parsed.data;
+    evento = parsed.data.evento;
+    nota_id = parsed.data.nota_id;
+    const motivo = parsed.data.motivo;
 
     // Carrega nota
     const { data: nota, error: notaErr } = await admin
@@ -60,6 +108,13 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (notaErr) throw notaErr;
     if (!nota) {
+      await logNotificacao(admin, {
+        evento: `nota_fiscal_${evento}`,
+        nota_fiscal_id: nota_id,
+        status: "failed",
+        error_message: "Nota fiscal não encontrada",
+        triggered_by: userId,
+      });
       return new Response(JSON.stringify({ error: "Nota fiscal não encontrada" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -74,6 +129,14 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (colErr) throw colErr;
     if (!colaborador?.email) {
+      await logNotificacao(admin, {
+        evento: `nota_fiscal_${evento}`,
+        nota_fiscal_id: nota_id,
+        status: "skipped",
+        error_message: "Colaborador sem e-mail cadastrado",
+        payload: { colaborador_id: nota.colaborador_id, nome: colaborador?.nome ?? null },
+        triggered_by: userId,
+      });
       return new Response(
         JSON.stringify({ ok: false, skipped: true, reason: "Colaborador sem e-mail cadastrado" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -103,6 +166,16 @@ Deno.serve(async (req) => {
     const templateKey = TEMPLATE_KEYS[evento];
     const rendered = await loadAndRenderTemplate(admin, templateKey, vars);
     if (!rendered) {
+      await logNotificacao(admin, {
+        evento: `nota_fiscal_${evento}`,
+        template_key: templateKey,
+        nota_fiscal_id: nota_id,
+        recipient_email: colaborador.email,
+        status: "failed",
+        error_message: `Template '${templateKey}' não encontrado`,
+        payload: { vars },
+        triggered_by: userId,
+      });
       return new Response(
         JSON.stringify({ error: `Template '${templateKey}' não encontrado` }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -126,7 +199,25 @@ Deno.serve(async (req) => {
     });
 
     const sendJson = await sendRes.json().catch(() => ({}));
-    if (!sendRes.ok || sendJson?.ok === false) {
+    const ok = sendRes.ok && sendJson?.ok !== false;
+
+    await logNotificacao(admin, {
+      evento: `nota_fiscal_${evento}`,
+      template_key: templateKey,
+      nota_fiscal_id: nota_id,
+      recipient_email: colaborador.email,
+      subject: rendered.subject,
+      status: ok ? "sent" : "failed",
+      error_message: ok ? null : (sendJson?.error ?? `HTTP ${sendRes.status}`),
+      payload: {
+        vars,
+        smtp_response_status: sendRes.status,
+        smtp_response: sendJson,
+      },
+      triggered_by: userId,
+    });
+
+    if (!ok) {
       return new Response(
         JSON.stringify({ ok: false, error: sendJson?.error ?? "Falha ao enviar e-mail" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -137,8 +228,16 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    await logNotificacao(admin, {
+      evento: `nota_fiscal_${evento}`,
+      nota_fiscal_id: nota_id,
+      status: "failed",
+      error_message: msg,
+      triggered_by: userId,
+    });
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : String(e) }),
+      JSON.stringify({ error: msg }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

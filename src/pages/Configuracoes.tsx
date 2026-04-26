@@ -536,6 +536,10 @@ export default function Configuracoes() {
           <SmtpSettings />
         </TabsContent>
 
+        <TabsContent value="templates">
+          <EmailTemplatesSettings />
+        </TabsContent>
+
         {/* INTEGRAÇÕES */}
         <TabsContent value="integracoes">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -11,3 +11,15 @@ verify_jwt = false
 
 [functions.create-diarista-user]
 verify_jwt = false
+
+[functions.smtp-send]
+verify_jwt = false
+
+[functions.smtp-config]
+verify_jwt = false
+
+[functions.password-reset-request]
+verify_jwt = false
+
+[functions.password-reset-confirm]
+verify_jwt = false

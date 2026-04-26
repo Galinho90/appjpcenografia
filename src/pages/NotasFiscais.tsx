@@ -208,7 +208,7 @@ export default function NotasFiscais() {
                           </Button>
                         )}
                         {n.status !== "rejeitada" && (
-                          <Button size="icon" variant="ghost" onClick={() => rejeitar(n.id)} title="Rejeitar">
+                          <Button size="icon" variant="ghost" onClick={() => abrirRejeitar(n.id, n.colaborador?.nome ?? colNome(n.colaborador_id))} title="Rejeitar">
                             <X className="h-4 w-4 text-destructive" />
                           </Button>
                         )}

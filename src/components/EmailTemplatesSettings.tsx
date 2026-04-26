@@ -48,6 +48,14 @@ const SAMPLE_VARS: Record<string, Record<string, string>> = {
     periodo_inicio: "01/04/2026",
     periodo_fim: "15/04/2026",
   },
+  nota_fiscal_aprovada: {
+    nome: "João da Silva",
+    empresa: "JP Cenografia",
+    numero: "00012345",
+    valor: "1.450,00",
+    periodo_inicio: "01/04/2026",
+    periodo_fim: "15/04/2026",
+  },
   nota_fiscal_rejeitada: {
     nome: "João da Silva",
     empresa: "JP Cenografia",
@@ -170,6 +178,7 @@ export default function EmailTemplatesSettings() {
               <SelectItem value="test_email">E-mail de teste</SelectItem>
               <SelectItem value="nota_fiscal_solicitacao">Nota Fiscal — Solicitação</SelectItem>
               <SelectItem value="nota_fiscal_recebida">Nota Fiscal — Recebida</SelectItem>
+              <SelectItem value="nota_fiscal_aprovada">Nota Fiscal — Aprovada</SelectItem>
               <SelectItem value="nota_fiscal_rejeitada">Nota Fiscal — Rejeitada</SelectItem>
             </SelectContent>
           </Select>

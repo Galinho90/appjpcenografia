@@ -192,7 +192,7 @@ Deno.serve(async (req) => {
         try { await client.close(); } catch { /* ignore */ }
         await logEmail(admin, {
           to_email: body.to,
-          subject: "E-mail de teste",
+          subject,
           status: "sent",
           triggered_by: userId,
           context: "send_test",

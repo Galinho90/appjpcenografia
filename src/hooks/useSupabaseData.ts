@@ -469,6 +469,9 @@ export type NotaFiscal = {
 export function useNotasFiscais(periodo?: { inicio: string; fim: string }) {
   return useQuery({
     queryKey: ["notas_fiscais", periodo?.inicio, periodo?.fim],
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    staleTime: 0,
     queryFn: async (): Promise<NotaFiscal[]> => {
       let q = supabase
         .from("notas_fiscais")

@@ -38,7 +38,7 @@ const SAMPLE_VARS: Record<string, Record<string, string>> = {
     periodo_fim: "15/04/2026",
     total_diarias: "1.500,00",
     valor_final: "1.450,00",
-    link: "https://app.exemplo.com/minhas-notas-fiscais",
+    link: "https://app.exemplo.com/minhas-notas",
   },
   nota_fiscal_recebida: {
     nome: "João da Silva",
@@ -64,7 +64,7 @@ const SAMPLE_VARS: Record<string, Record<string, string>> = {
     valor: "1.450,00",
     periodo_inicio: "01/04/2026",
     periodo_fim: "15/04/2026",
-    link: "https://app.exemplo.com/minhas-notas-fiscais",
+    link: "https://app.exemplo.com/minhas-notas",
   },
 };
 

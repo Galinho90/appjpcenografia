@@ -460,6 +460,7 @@ export type NotaFiscal = {
   arquivo_nome?: string | null;
   status: "pendente" | "aprovada" | "rejeitada";
   observacoes?: string | null;
+  rejeitada_em?: string | null;
   created_at?: string;
   updated_at?: string;
   colaborador?: { id: string; nome: string };

@@ -254,6 +254,78 @@ export default function MinhasNotasFiscais() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!viewNota} onOpenChange={(o) => !o && setViewNota(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Nota Fiscal {viewNota?.nota.numero ? `Nº ${viewNota.nota.numero}` : ""}</DialogTitle>
+            <DialogDescription>
+              {viewNota && `Período ${fmtData(viewNota.fechamento.periodo_inicio)} – ${fmtData(viewNota.fechamento.periodo_fim)}`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {viewNota && (
+            <div className="space-y-3 overflow-auto">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div>
+                  <div className="text-muted-foreground text-xs">Número</div>
+                  <div className="font-medium">{viewNota.nota.numero || "—"}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs">Valor</div>
+                  <div className="font-medium">{fmtBRL(Number(viewNota.nota.valor))}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs">Emissão</div>
+                  <div className="font-medium">
+                    {viewNota.nota.data_emissao ? fmtData(viewNota.nota.data_emissao) : "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs">Status</div>
+                  <div>
+                    {(() => {
+                      const cfg = statusConfig[viewNota.nota.status];
+                      const Icon = cfg.icon;
+                      return (
+                        <Badge variant={cfg.variant} className="gap-1">
+                          <Icon className="h-3 w-3" />{cfg.label}
+                        </Badge>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              {viewNota.nota.observacoes && (
+                <div className="text-sm">
+                  <div className="text-muted-foreground text-xs">Observações</div>
+                  <div>{viewNota.nota.observacoes}</div>
+                </div>
+              )}
+
+              <div className="border rounded-md bg-muted/30 min-h-[60vh] flex items-center justify-center overflow-hidden">
+                {loadingView || !viewNota.url ? (
+                  <Skeleton className="w-full h-[60vh]" />
+                ) : /\.(pdf)(\?|$)/i.test(viewNota.nota.arquivo_url) ? (
+                  <iframe src={viewNota.url} className="w-full h-[70vh]" title="Nota Fiscal" />
+                ) : (
+                  <img src={viewNota.url} alt="Nota Fiscal" className="max-w-full max-h-[70vh] object-contain" />
+                )}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            {viewNota?.url && (
+              <Button variant="outline" asChild>
+                <a href={viewNota.url} target="_blank" rel="noreferrer">Abrir em nova aba</a>
+              </Button>
+            )}
+            <Button onClick={() => setViewNota(null)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

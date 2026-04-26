@@ -192,9 +192,13 @@ export default function MinhasNotasFiscais() {
                           </Button>
                         )}
                         {(!nota || nota.status === "rejeitada") && (
-                          <Button size="sm" onClick={() => openEnvio(f, nota)}>
+                          <Button
+                            size="sm"
+                            variant={nota?.status === "rejeitada" ? "destructive" : "default"}
+                            onClick={() => openEnvio(f, nota)}
+                          >
                             <Upload className="h-4 w-4 mr-1" />
-                            {nota ? "Reenviar" : "Enviar NF"}
+                            {nota ? "Reenviar NF" : "Enviar NF"}
                           </Button>
                         )}
                       </TableCell>

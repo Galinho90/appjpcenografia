@@ -325,6 +325,60 @@ export default function NotasFiscais() {
             </Button>
           </DialogFooter>
         </DialogContent>
+      <Dialog open={!!viewer} onOpenChange={(o) => !o && setViewer(null)}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-6 pb-3 border-b">
+            <DialogTitle>Detalhes da Nota Fiscal</DialogTitle>
+            <DialogDescription>
+              {viewer ? (viewer.nota.colaborador?.nome ?? colNome(viewer.nota.colaborador_id)) : ""}
+            </DialogDescription>
+          </DialogHeader>
+          {viewer && (
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 border-b bg-muted/30 text-sm">
+                <div>
+                  <div className="text-xs text-muted-foreground">Número</div>
+                  <div className="font-medium">{viewer.nota.numero ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Emissão</div>
+                  <div className="font-medium">
+                    {viewer.nota.data_emissao ? new Date(viewer.nota.data_emissao + "T00:00").toLocaleDateString("pt-BR") : "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Valor</div>
+                  <div className="font-medium">{fmtBRL(Number(viewer.nota.valor))}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Status</div>
+                  <div className="font-medium">{statusConfig[viewer.nota.status as keyof typeof statusConfig]?.label}</div>
+                </div>
+                {viewer.nota.observacoes && (
+                  <div className="col-span-2 md:col-span-4">
+                    <div className="text-xs text-muted-foreground">Observações</div>
+                    <div className="font-medium text-sm">{viewer.nota.observacoes}</div>
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 bg-muted">
+                <iframe
+                  src={viewer.url}
+                  title="Nota Fiscal"
+                  className="w-full h-full border-0"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="p-4 border-t">
+            {viewer && (
+              <Button variant="outline" asChild>
+                <a href={viewer.url} target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
+              </Button>
+            )}
+            <Button onClick={() => setViewer(null)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </div>
   );

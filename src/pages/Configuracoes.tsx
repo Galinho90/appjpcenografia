@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff, Mail } from "lucide-react";
+import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save, UserPlus, Trash2, KeyRound, Upload, ImageOff, Mail, FileText, Settings2 } from "lucide-react";
 import SmtpSettings from "@/components/SmtpSettings";
 import EmailTemplatesSettings from "@/components/EmailTemplatesSettings";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -276,19 +276,38 @@ export default function Configuracoes() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
-        <p className="text-muted-foreground">Ajustes gerais do sistema</p>
+      <div className="flex items-start gap-4 rounded-xl border bg-gradient-to-br from-card to-muted/40 p-6 shadow-sm">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Settings2 className="h-6 w-6" />
+        </div>
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Configurações</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Gerencie a empresa, usuários, preferências, envio de e-mails e integrações do sistema.
+          </p>
+        </div>
       </div>
 
       <Tabs defaultValue="empresa" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
-          <TabsTrigger value="empresa"><Building2 className="h-4 w-4 mr-2" />Empresa</TabsTrigger>
-          <TabsTrigger value="usuarios"><Users className="h-4 w-4 mr-2" />Usuários</TabsTrigger>
-          <TabsTrigger value="prefs"><SlidersHorizontal className="h-4 w-4 mr-2" />Preferências</TabsTrigger>
-          <TabsTrigger value="smtp"><Mail className="h-4 w-4 mr-2" />SMTP</TabsTrigger>
-          <TabsTrigger value="templates"><Mail className="h-4 w-4 mr-2" />Templates</TabsTrigger>
-          <TabsTrigger value="integracoes"><Plug className="h-4 w-4 mr-2" />Integrações</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto gap-1 p-1">
+          <TabsTrigger value="empresa" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Building2 className="h-4 w-4 mr-2" />Empresa
+          </TabsTrigger>
+          <TabsTrigger value="usuarios" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Users className="h-4 w-4 mr-2" />Usuários
+          </TabsTrigger>
+          <TabsTrigger value="prefs" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <SlidersHorizontal className="h-4 w-4 mr-2" />Preferências
+          </TabsTrigger>
+          <TabsTrigger value="smtp" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Mail className="h-4 w-4 mr-2" />SMTP
+          </TabsTrigger>
+          <TabsTrigger value="templates" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <FileText className="h-4 w-4 mr-2" />Templates
+          </TabsTrigger>
+          <TabsTrigger value="integracoes" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Plug className="h-4 w-4 mr-2" />Integrações
+          </TabsTrigger>
         </TabsList>
 
         {/* EMPRESA */}

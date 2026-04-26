@@ -197,9 +197,14 @@ export default function NotasFiscais() {
                         <Badge variant={cfg.variant} className="gap-1">
                           <Icon className="h-3 w-3" />{cfg.label}
                         </Badge>
-                        {n.status === "rejeitada" && n.observacoes && (
-                          <div className="text-xs text-muted-foreground mt-1 max-w-[260px]">
-                            <span className="font-medium">Motivo:</span> {n.observacoes}
+                        {n.status === "rejeitada" && (n.observacoes || n.rejeitada_em) && (
+                          <div className="text-xs text-muted-foreground mt-1 max-w-[260px] space-y-0.5">
+                            {n.rejeitada_em && (
+                              <div><span className="font-medium">Rejeitada em:</span> {new Date(n.rejeitada_em).toLocaleString("pt-BR")}</div>
+                            )}
+                            {n.observacoes && (
+                              <div><span className="font-medium">Motivo:</span> {n.observacoes}</div>
+                            )}
                           </div>
                         )}
                       </TableCell>

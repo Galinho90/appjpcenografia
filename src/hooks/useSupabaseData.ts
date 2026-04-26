@@ -460,6 +460,7 @@ export type NotaFiscal = {
   arquivo_nome?: string | null;
   status: "pendente" | "aprovada" | "rejeitada";
   observacoes?: string | null;
+  rejeitada_em?: string | null;
   created_at?: string;
   updated_at?: string;
   colaborador?: { id: string; nome: string };
@@ -558,9 +559,14 @@ export function useUpdateStatusNotaFiscal() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status, observacoes }: { id: string; status: "pendente" | "aprovada" | "rejeitada"; observacoes?: string }) => {
+      const payload: any = {
+        status,
+        observacoes: observacoes ?? null,
+        rejeitada_em: status === "rejeitada" ? new Date().toISOString() : null,
+      };
       const { error } = await supabase
         .from("notas_fiscais")
-        .update({ status, observacoes: observacoes ?? null })
+        .update(payload)
         .eq("id", id);
       if (error) throw error;
     },

@@ -5,16 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
   useNotasFiscais, useUpdateStatusNotaFiscal, useDeleteNotaFiscal,
-  getNotaFiscalSignedUrl, useFechamentos,
+  getNotaFiscalSignedUrl, useFechamentos, useColaboradores,
 } from "@/hooks/useSupabaseData";
-import { useColaboradores } from "@/hooks/useSupabaseData";
 
 const statusConfig = {
   pendente: { label: "Pendente", variant: "outline" as const, icon: Clock },
@@ -54,6 +58,8 @@ export default function NotasFiscais() {
   const deleteNota = useDeleteNotaFiscal();
 
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; arquivo_url: string } | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<{ id: string; nome: string } | null>(null);
+  const [motivoRejeicao, setMotivoRejeicao] = useState("");
 
   const fechamentosQ = useMemo(
     () => fechamentos.filter((f: any) => f.periodo_inicio === inicioISO && f.periodo_fim === fimISO),
@@ -84,10 +90,26 @@ export default function NotasFiscais() {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
   };
-  const rejeitar = async (id: string) => {
+  const abrirRejeitar = (id: string, nome: string) => {
+    setMotivoRejeicao("");
+    setRejectTarget({ id, nome });
+  };
+
+  const confirmarRejeicao = async () => {
+    if (!rejectTarget) return;
+    const motivo = motivoRejeicao.trim();
+    if (motivo.length < 3) {
+      toast({ title: "Informe o motivo", description: "O motivo deve ter pelo menos 3 caracteres.", variant: "destructive" });
+      return;
+    }
+    if (motivo.length > 500) {
+      toast({ title: "Motivo muito longo", description: "Máximo de 500 caracteres.", variant: "destructive" });
+      return;
+    }
     try {
-      await updateStatus.mutateAsync({ id, status: "rejeitada" });
+      await updateStatus.mutateAsync({ id: rejectTarget.id, status: "rejeitada", observacoes: motivo });
       toast({ title: "Nota rejeitada" });
+      setRejectTarget(null);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
@@ -175,6 +197,11 @@ export default function NotasFiscais() {
                         <Badge variant={cfg.variant} className="gap-1">
                           <Icon className="h-3 w-3" />{cfg.label}
                         </Badge>
+                        {n.status === "rejeitada" && n.observacoes && (
+                          <div className="text-xs text-muted-foreground mt-1 max-w-[260px]">
+                            <span className="font-medium">Motivo:</span> {n.observacoes}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-right space-x-1">
                         <Button size="icon" variant="ghost" onClick={() => visualizar(n.arquivo_url)} title="Visualizar">
@@ -186,7 +213,7 @@ export default function NotasFiscais() {
                           </Button>
                         )}
                         {n.status !== "rejeitada" && (
-                          <Button size="icon" variant="ghost" onClick={() => rejeitar(n.id)} title="Rejeitar">
+                          <Button size="icon" variant="ghost" onClick={() => abrirRejeitar(n.id, n.colaborador?.nome ?? colNome(n.colaborador_id))} title="Rejeitar">
                             <X className="h-4 w-4 text-destructive" />
                           </Button>
                         )}
@@ -231,6 +258,35 @@ export default function NotasFiscais() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rejeitar nota fiscal</DialogTitle>
+            <DialogDescription>
+              Informe o motivo da rejeição{rejectTarget ? ` para ${rejectTarget.nome}` : ""}. O diarista poderá ver essa mensagem.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="motivo">Motivo</Label>
+            <Textarea
+              id="motivo"
+              value={motivoRejeicao}
+              onChange={(e) => setMotivoRejeicao(e.target.value.slice(0, 500))}
+              placeholder="Ex.: número da NF não confere com o valor do fechamento."
+              rows={4}
+              maxLength={500}
+            />
+            <div className="text-xs text-muted-foreground text-right">{motivoRejeicao.length}/500</div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectTarget(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={confirmarRejeicao} disabled={updateStatus.isPending}>
+              Rejeitar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

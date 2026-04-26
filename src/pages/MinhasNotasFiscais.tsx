@@ -174,6 +174,11 @@ export default function MinhasNotasFiscais() {
                             <FileText className="h-3 w-3" />Não enviada
                           </Badge>
                         )}
+                        {nota?.status === "rejeitada" && nota.observacoes && (
+                          <div className="text-xs text-destructive mt-1 max-w-[280px]">
+                            <span className="font-medium">Motivo:</span> {nota.observacoes}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-right space-x-1">
                         {nota && (

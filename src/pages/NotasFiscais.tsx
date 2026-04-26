@@ -68,6 +68,8 @@ export default function NotasFiscais() {
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; arquivo_url: string } | null>(null);
   const [rejectTarget, setRejectTarget] = useState<{ id: string; nome: string } | null>(null);
   const [motivoRejeicao, setMotivoRejeicao] = useState("");
+  const [viewer, setViewer] = useState<{ nota: any; url: string } | null>(null);
+  const [viewerLoading, setViewerLoading] = useState(false);
 
   const fechamentosQ = useMemo(
     () => fechamentos.filter((f: any) => f.periodo_inicio === inicioISO && f.periodo_fim === fimISO),

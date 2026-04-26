@@ -22,9 +22,9 @@ import {
 } from "@/hooks/useSupabaseData";
 
 const statusConfig = {
-  pendente: { label: "Pendente", variant: "outline" as const, icon: Clock },
-  aprovada: { label: "Aprovada", variant: "default" as const, icon: CheckCircle2 },
-  rejeitada: { label: "Rejeitada", variant: "destructive" as const, icon: AlertCircle },
+  pendente: { label: "Pendente", variant: "outline" as const, icon: Clock, className: "" },
+  aprovada: { label: "Aprovada", variant: "default" as const, icon: CheckCircle2, className: "bg-green-600 hover:bg-green-600 text-white border-transparent" },
+  rejeitada: { label: "Rejeitada", variant: "destructive" as const, icon: AlertCircle, className: "" },
 };
 
 function getQuinzena(ref: Date) {
@@ -246,7 +246,7 @@ export default function NotasFiscais() {
                       <TableCell>{n.data_emissao ? new Date(n.data_emissao + "T00:00").toLocaleDateString("pt-BR") : "—"}</TableCell>
                       <TableCell>{fmtBRL(Number(n.valor))}</TableCell>
                       <TableCell>
-                        <Badge variant={cfg.variant} className="gap-1">
+                        <Badge variant={cfg.variant} className={`gap-1 ${cfg.className}`}>
                           <Icon className="h-3 w-3" />{cfg.label}
                         </Badge>
                         {n.status === "rejeitada" && (n.observacoes || n.rejeitada_em) && (

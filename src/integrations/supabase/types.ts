@@ -374,6 +374,7 @@ export type Database = {
           observacoes: string | null
           periodo_fim: string
           periodo_inicio: string
+          rejeitada_em: string | null
           status: string
           updated_at: string
           valor: number
@@ -390,6 +391,7 @@ export type Database = {
           observacoes?: string | null
           periodo_fim: string
           periodo_inicio: string
+          rejeitada_em?: string | null
           status?: string
           updated_at?: string
           valor?: number
@@ -406,6 +408,7 @@ export type Database = {
           observacoes?: string | null
           periodo_fim?: string
           periodo_inicio?: string
+          rejeitada_em?: string | null
           status?: string
           updated_at?: string
           valor?: number

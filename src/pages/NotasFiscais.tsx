@@ -52,7 +52,14 @@ export default function NotasFiscais() {
   const inicioISO = toISO(selecionada.inicio);
   const fimISO = toISO(selecionada.fim);
 
-  const { data: notas = [], isLoading } = useNotasFiscais({ inicio: inicioISO, fim: fimISO });
+  const { data: notas = [], isLoading, isFetching, refetch } = useNotasFiscais({ inicio: inicioISO, fim: fimISO });
+  const qc = useQueryClient();
+  const atualizar = async () => {
+    await qc.invalidateQueries({ queryKey: ["notas_fiscais"] });
+    await qc.invalidateQueries({ queryKey: ["fechamentos"] });
+    await refetch();
+    toast({ title: "Lista atualizada" });
+  };
   const { data: fechamentos = [] } = useFechamentos();
   const { data: colaboradores = [] } = useColaboradores();
   const updateStatus = useUpdateStatusNotaFiscal();

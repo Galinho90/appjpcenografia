@@ -287,6 +287,7 @@ export default function Configuracoes() {
           <TabsTrigger value="usuarios"><Users className="h-4 w-4 mr-2" />Usuários</TabsTrigger>
           <TabsTrigger value="prefs"><SlidersHorizontal className="h-4 w-4 mr-2" />Preferências</TabsTrigger>
           <TabsTrigger value="smtp"><Mail className="h-4 w-4 mr-2" />SMTP</TabsTrigger>
+          <TabsTrigger value="templates"><Mail className="h-4 w-4 mr-2" />Templates</TabsTrigger>
           <TabsTrigger value="integracoes"><Plug className="h-4 w-4 mr-2" />Integrações</TabsTrigger>
         </TabsList>
 

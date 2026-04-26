@@ -1,0 +1,1 @@
+UPDATE public.notificacoes SET link='/minhas-notas' WHERE link='/minhas-notas-fiscais';

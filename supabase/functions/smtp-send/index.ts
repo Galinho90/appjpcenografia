@@ -49,6 +49,8 @@ const bodySchema = z.discriminatedUnion("action", [
 ]);
 
 type SmtpFields = z.infer<typeof smtpFieldsSchema>;
+// deno-lint-ignore no-explicit-any
+type AdminClient = any;
 
 async function buildClient(s: SmtpFields): Promise<SMTPClient> {
   return new SMTPClient({
@@ -61,7 +63,7 @@ async function buildClient(s: SmtpFields): Promise<SMTPClient> {
   });
 }
 
-async function loadActiveConfig(admin: ReturnType<typeof createClient>): Promise<SmtpFields | null> {
+async function loadActiveConfig(admin: AdminClient): Promise<SmtpFields | null> {
   const { data, error } = await admin
     .from("smtp_config")
     .select("*")
@@ -71,20 +73,20 @@ async function loadActiveConfig(admin: ReturnType<typeof createClient>): Promise
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  const password = await decryptSecret(data.password_encrypted);
+  const password = await decryptSecret(data.password_encrypted as string);
   return {
-    host: data.host,
-    port: data.port,
+    host: data.host as string,
+    port: data.port as number,
     secure: data.secure as "tls" | "ssl" | "none",
-    username: data.username,
+    username: data.username as string,
     password,
-    from_email: data.from_email,
-    from_name: data.from_name,
+    from_email: data.from_email as string,
+    from_name: (data.from_name as string | null) ?? null,
   };
 }
 
 async function logEmail(
-  admin: ReturnType<typeof createClient>,
+  admin: AdminClient,
   payload: {
     to_email: string;
     subject: string;

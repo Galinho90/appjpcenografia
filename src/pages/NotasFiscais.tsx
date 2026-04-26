@@ -258,6 +258,35 @@ export default function NotasFiscais() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rejeitar nota fiscal</DialogTitle>
+            <DialogDescription>
+              Informe o motivo da rejeição{rejectTarget ? ` para ${rejectTarget.nome}` : ""}. O diarista poderá ver essa mensagem.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="motivo">Motivo</Label>
+            <Textarea
+              id="motivo"
+              value={motivoRejeicao}
+              onChange={(e) => setMotivoRejeicao(e.target.value.slice(0, 500))}
+              placeholder="Ex.: número da NF não confere com o valor do fechamento."
+              rows={4}
+              maxLength={500}
+            />
+            <div className="text-xs text-muted-foreground text-right">{motivoRejeicao.length}/500</div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectTarget(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={confirmarRejeicao} disabled={updateStatus.isPending}>
+              Rejeitar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

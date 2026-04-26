@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.password-reset-confirm]
 verify_jwt = false
+
+[functions.notify-nota-fiscal]
+verify_jwt = false

@@ -559,9 +559,14 @@ export function useUpdateStatusNotaFiscal() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status, observacoes }: { id: string; status: "pendente" | "aprovada" | "rejeitada"; observacoes?: string }) => {
+      const payload: any = {
+        status,
+        observacoes: observacoes ?? null,
+        rejeitada_em: status === "rejeitada" ? new Date().toISOString() : null,
+      };
       const { error } = await supabase
         .from("notas_fiscais")
-        .update({ status, observacoes: observacoes ?? null })
+        .update(payload)
         .eq("id", id);
       if (error) throw error;
     },

@@ -197,6 +197,11 @@ export default function NotasFiscais() {
                         <Badge variant={cfg.variant} className="gap-1">
                           <Icon className="h-3 w-3" />{cfg.label}
                         </Badge>
+                        {n.status === "rejeitada" && n.observacoes && (
+                          <div className="text-xs text-muted-foreground mt-1 max-w-[260px]">
+                            <span className="font-medium">Motivo:</span> {n.observacoes}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-right space-x-1">
                         <Button size="icon" variant="ghost" onClick={() => visualizar(n.arquivo_url)} title="Visualizar">

@@ -166,6 +166,10 @@ export default function NotasFiscais() {
           <p className="text-muted-foreground">Recebimento de NF dos diaristas por quinzena.</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={atualizar} disabled={isFetching}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
+            Atualizar notas
+          </Button>
           <Button variant="outline" size="icon" onClick={() => shift(-1)}><ChevronLeft className="h-4 w-4" /></Button>
           <span className="text-sm font-medium px-3">
             {fmt(selecionada.inicio)} – {fmt(selecionada.fim)}

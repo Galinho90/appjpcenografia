@@ -194,7 +194,7 @@ export default function MinhasNotasFiscais() {
                       </TableCell>
                       <TableCell className="text-right space-x-1">
                         {nota && (
-                          <Button size="sm" variant="ghost" onClick={() => visualizar(nota.arquivo_url)}>
+                          <Button size="sm" variant="ghost" onClick={() => visualizar(nota, f)}>
                             <Eye className="h-4 w-4 mr-1" />Ver
                           </Button>
                         )}

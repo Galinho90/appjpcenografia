@@ -160,8 +160,8 @@ export default function MinhasNotasFiscais() {
               <TableBody>
                 {meusFechamentos.map((f: any) => {
                   const nota = notaPorFechamento.get(f.id);
-                  const cfg = nota ? statusConfig[nota.status] : null;
-                  const Icon = cfg?.icon ?? FileText;
+                  const cfg = nota ? getStatusBadge(nota.status) : statusBadgeMap.nao_enviada;
+                  const Icon = cfg.icon;
                   return (
                     <TableRow key={f.id}>
                       <TableCell className="font-medium">
@@ -169,15 +169,9 @@ export default function MinhasNotasFiscais() {
                       </TableCell>
                       <TableCell>{fmtBRL(Number(f.valor_final))}</TableCell>
                       <TableCell>
-                        {nota && cfg ? (
-                          <Badge variant={cfg.variant} className="gap-1">
-                            <Icon className="h-3 w-3" />{cfg.label}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="gap-1">
-                            <FileText className="h-3 w-3" />Não enviada
-                          </Badge>
-                        )}
+                        <Badge className={`gap-1 ${cfg.className}`}>
+                          <Icon className="h-3 w-3" />{cfg.label}
+                        </Badge>
                         {nota?.status === "rejeitada" && (nota.observacoes || nota.rejeitada_em) && (
                           <div className="text-xs text-destructive mt-1 max-w-[280px] space-y-0.5">
                             {nota.rejeitada_em && (

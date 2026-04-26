@@ -276,10 +276,10 @@ export default function MinhasNotasFiscais() {
                   <div className="text-muted-foreground text-xs">Status</div>
                   <div>
                     {(() => {
-                      const cfg = statusConfig[viewNota.nota.status];
+                      const cfg = getStatusBadge(viewNota.nota.status);
                       const Icon = cfg.icon;
                       return (
-                        <Badge variant={cfg.variant} className="gap-1">
+                        <Badge className={`gap-1 ${cfg.className}`}>
                           <Icon className="h-3 w-3" />{cfg.label}
                         </Badge>
                       );

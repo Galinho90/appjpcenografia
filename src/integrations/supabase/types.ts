@@ -361,6 +361,57 @@ export type Database = {
           },
         ]
       }
+      notas_fiscais: {
+        Row: {
+          arquivo_nome: string | null
+          arquivo_url: string
+          colaborador_id: string
+          created_at: string
+          data_emissao: string | null
+          fechamento_id: string
+          id: string
+          numero: string | null
+          observacoes: string | null
+          periodo_fim: string
+          periodo_inicio: string
+          status: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          arquivo_nome?: string | null
+          arquivo_url: string
+          colaborador_id: string
+          created_at?: string
+          data_emissao?: string | null
+          fechamento_id: string
+          id?: string
+          numero?: string | null
+          observacoes?: string | null
+          periodo_fim: string
+          periodo_inicio: string
+          status?: string
+          updated_at?: string
+          valor?: number
+        }
+        Update: {
+          arquivo_nome?: string | null
+          arquivo_url?: string
+          colaborador_id?: string
+          created_at?: string
+          data_emissao?: string | null
+          fechamento_id?: string
+          id?: string
+          numero?: string | null
+          observacoes?: string | null
+          periodo_fim?: string
+          periodo_inicio?: string
+          status?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

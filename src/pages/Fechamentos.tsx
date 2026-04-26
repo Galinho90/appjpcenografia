@@ -202,7 +202,8 @@ export default function Fechamentos() {
                 </TableHeader>
                 <TableBody>
                   {fechamentosQ.map((f) => {
-                    const cfg = statusConfig[f.status] ?? statusConfig.pendente;
+                    const cfg = getStatusBadge(f.status);
+                    const Icon = cfg.icon;
                     return (
                       <TableRow key={f.id}>
                         <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
@@ -211,8 +212,8 @@ export default function Fechamentos() {
                         <TableCell className="text-success">+ {fmtBRL(f.total_reembolsos)}</TableCell>
                         <TableCell className="font-bold">{fmtBRL(f.valor_final)}</TableCell>
                         <TableCell>
-                          <Badge variant={cfg.variant} className="gap-1">
-                            <cfg.icon className="h-3 w-3" />
+                          <Badge className={`gap-1 ${cfg.className}`}>
+                            <Icon className="h-3 w-3" />
                             {cfg.label}
                           </Badge>
                         </TableCell>

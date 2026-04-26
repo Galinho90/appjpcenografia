@@ -48,6 +48,8 @@ export default function NotificacaoLogsSettings() {
   const [status, setStatus] = useState<string>("all");
   const [notaId, setNotaId] = useState<string>("");
   const [searchNota, setSearchNota] = useState<string>("");
+  const [emailFilter, setEmailFilter] = useState<string>("");
+  const [searchEmail, setSearchEmail] = useState<string>("");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(() => {
     const d = new Date();
     d.setDate(d.getDate() - 7);
@@ -71,7 +73,7 @@ export default function NotificacaoLogsSettings() {
     },
   });
 
-  const filters = { evento, status, notaId, dateFrom, dateTo, page };
+  const filters = { evento, status, notaId, emailFilter, dateFrom, dateTo, page };
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["notificacao_log", filters],
     queryFn: async () => {
@@ -83,6 +85,7 @@ export default function NotificacaoLogsSettings() {
       if (evento !== "all") q = q.eq("evento", evento);
       if (status !== "all") q = q.eq("status", status);
       if (notaId.trim()) q = q.eq("nota_fiscal_id", notaId.trim());
+      if (emailFilter.trim()) q = q.ilike("recipient_email", `%${emailFilter.trim()}%`);
       if (dateFrom) q = q.gte("created_at", new Date(dateFrom.setHours(0, 0, 0, 0)).toISOString());
       if (dateTo) {
         const t = new Date(dateTo);
@@ -114,6 +117,8 @@ export default function NotificacaoLogsSettings() {
     setStatus("all");
     setNotaId("");
     setSearchNota("");
+    setEmailFilter("");
+    setSearchEmail("");
     const d = new Date();
     d.setDate(d.getDate() - 7);
     setDateFrom(d);
@@ -123,6 +128,11 @@ export default function NotificacaoLogsSettings() {
 
   const aplicarBuscaNota = () => {
     setNotaId(searchNota.trim());
+    setPage(0);
+  };
+
+  const aplicarBuscaEmail = () => {
+    setEmailFilter(searchEmail.trim());
     setPage(0);
   };
 
@@ -196,6 +206,18 @@ export default function NotificacaoLogsSettings() {
                 <Calendar mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setPage(0); }} initialFocus className="p-3 pointer-events-auto" />
               </PopoverContent>
             </Popover>
+          </div>
+          <div className="space-y-1.5 md:col-span-2">
+            <Label className="text-xs">Destinatário (e-mail)</Label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Ex.: joao@empresa.com (busca parcial)"
+                value={searchEmail}
+                onChange={(e) => setSearchEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && aplicarBuscaEmail()}
+              />
+              <Button variant="secondary" onClick={aplicarBuscaEmail}><Search className="h-4 w-4" /></Button>
+            </div>
           </div>
           <div className="space-y-1.5 md:col-span-2">
             <Label className="text-xs">Nota fiscal (UUID)</Label>

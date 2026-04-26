@@ -208,6 +208,18 @@ export default function NotificacaoLogsSettings() {
             </Popover>
           </div>
           <div className="space-y-1.5 md:col-span-2">
+            <Label className="text-xs">Destinatário (e-mail)</Label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Ex.: joao@empresa.com (busca parcial)"
+                value={searchEmail}
+                onChange={(e) => setSearchEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && aplicarBuscaEmail()}
+              />
+              <Button variant="secondary" onClick={aplicarBuscaEmail}><Search className="h-4 w-4" /></Button>
+            </div>
+          </div>
+          <div className="space-y-1.5 md:col-span-2">
             <Label className="text-xs">Nota fiscal (UUID)</Label>
             <div className="flex gap-2">
               <Input

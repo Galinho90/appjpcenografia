@@ -247,6 +247,42 @@ export type Database = {
           },
         ]
       }
+      email_log: {
+        Row: {
+          context: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          sent_at: string | null
+          status: string
+          subject: string
+          to_email: string
+          triggered_by: string | null
+        }
+        Insert: {
+          context?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          to_email: string
+          triggered_by?: string | null
+        }
+        Update: {
+          context?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          to_email?: string
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
       fechamentos: {
         Row: {
           colaborador_id: string
@@ -451,6 +487,36 @@ export type Database = {
         }
         Relationships: []
       }
+      password_reset_tokens: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          token: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          token: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -475,6 +541,51 @@ export type Database = {
           nome?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      smtp_config: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          from_email: string
+          from_name: string | null
+          host: string
+          id: string
+          password_encrypted: string
+          port: number
+          secure: string
+          updated_at: string
+          updated_by: string | null
+          username: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          from_email: string
+          from_name?: string | null
+          host: string
+          id?: string
+          password_encrypted: string
+          port?: number
+          secure?: string
+          updated_at?: string
+          updated_by?: string | null
+          username: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          from_email?: string
+          from_name?: string | null
+          host?: string
+          id?: string
+          password_encrypted?: string
+          port?: number
+          secure?: string
+          updated_at?: string
+          updated_by?: string | null
+          username?: string
         }
         Relationships: []
       }

@@ -68,6 +68,8 @@ export default function NotasFiscais() {
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; arquivo_url: string } | null>(null);
   const [rejectTarget, setRejectTarget] = useState<{ id: string; nome: string } | null>(null);
   const [motivoRejeicao, setMotivoRejeicao] = useState("");
+  const [viewer, setViewer] = useState<{ nota: any; url: string } | null>(null);
+  const [viewerLoading, setViewerLoading] = useState(false);
 
   const fechamentosQ = useMemo(
     () => fechamentos.filter((f: any) => f.periodo_inicio === inicioISO && f.periodo_fim === fimISO),
@@ -81,12 +83,15 @@ export default function NotasFiscais() {
 
   const colNome = (id: string) => colaboradores.find((c: any) => c.id === id)?.nome ?? "—";
 
-  const visualizar = async (path: string) => {
+  const visualizar = async (nota: any) => {
     try {
-      const url = await getNotaFiscalSignedUrl(path);
-      window.open(url, "_blank");
+      setViewerLoading(true);
+      const url = await getNotaFiscalSignedUrl(nota.arquivo_url);
+      setViewer({ nota, url });
     } catch (e: any) {
       toast({ title: "Erro ao abrir arquivo", description: e.message, variant: "destructive" });
+    } finally {
+      setViewerLoading(false);
     }
   };
 
@@ -238,7 +243,7 @@ export default function NotasFiscais() {
                         )}
                       </TableCell>
                       <TableCell className="text-right space-x-1">
-                        <Button size="icon" variant="ghost" onClick={() => visualizar(n.arquivo_url)} title="Visualizar">
+                        <Button size="icon" variant="ghost" onClick={() => visualizar(n)} title="Visualizar" disabled={viewerLoading}>
                           <Eye className="h-4 w-4" />
                         </Button>
                         {n.status !== "aprovada" && (
@@ -318,6 +323,62 @@ export default function NotasFiscais() {
             <Button variant="destructive" onClick={confirmarRejeicao} disabled={updateStatus.isPending}>
               Rejeitar
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!viewer} onOpenChange={(o) => !o && setViewer(null)}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-6 pb-3 border-b">
+            <DialogTitle>Detalhes da Nota Fiscal</DialogTitle>
+            <DialogDescription>
+              {viewer ? (viewer.nota.colaborador?.nome ?? colNome(viewer.nota.colaborador_id)) : ""}
+            </DialogDescription>
+          </DialogHeader>
+          {viewer && (
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 border-b bg-muted/30 text-sm">
+                <div>
+                  <div className="text-xs text-muted-foreground">Número</div>
+                  <div className="font-medium">{viewer.nota.numero ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Emissão</div>
+                  <div className="font-medium">
+                    {viewer.nota.data_emissao ? new Date(viewer.nota.data_emissao + "T00:00").toLocaleDateString("pt-BR") : "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Valor</div>
+                  <div className="font-medium">{fmtBRL(Number(viewer.nota.valor))}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Status</div>
+                  <div className="font-medium">{statusConfig[viewer.nota.status as keyof typeof statusConfig]?.label}</div>
+                </div>
+                {viewer.nota.observacoes && (
+                  <div className="col-span-2 md:col-span-4">
+                    <div className="text-xs text-muted-foreground">Observações</div>
+                    <div className="font-medium text-sm">{viewer.nota.observacoes}</div>
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 bg-muted">
+                <iframe
+                  src={viewer.url}
+                  title="Nota Fiscal"
+                  className="w-full h-full border-0"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="p-4 border-t">
+            {viewer && (
+              <Button variant="outline" asChild>
+                <a href={viewer.url} target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
+              </Button>
+            )}
+            <Button onClick={() => setViewer(null)}>Fechar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

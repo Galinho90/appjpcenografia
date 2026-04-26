@@ -369,7 +369,7 @@ export default function NotasFiscais() {
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Status</div>
-                  <div className="font-medium">{statusConfig[viewer.nota.status as keyof typeof statusConfig]?.label}</div>
+                  <div className="font-medium">{getStatusBadge(viewer.nota.status).label}</div>
                 </div>
                 {viewer.nota.observacoes && (
                   <div className="col-span-2 md:col-span-4">

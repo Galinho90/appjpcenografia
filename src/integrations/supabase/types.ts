@@ -534,9 +534,11 @@ export type Database = {
           created_at: string
           id: string
           lida: boolean
+          lida_em: string | null
           link: string | null
           mensagem: string
           metadata: Json | null
+          status: string
           tipo: string
           titulo: string
           user_id: string
@@ -545,9 +547,11 @@ export type Database = {
           created_at?: string
           id?: string
           lida?: boolean
+          lida_em?: string | null
           link?: string | null
           mensagem: string
           metadata?: Json | null
+          status?: string
           tipo?: string
           titulo: string
           user_id: string
@@ -556,9 +560,11 @@ export type Database = {
           created_at?: string
           id?: string
           lida?: boolean
+          lida_em?: string | null
           link?: string | null
           mensagem?: string
           metadata?: Json | null
+          status?: string
           tipo?: string
           titulo?: string
           user_id?: string

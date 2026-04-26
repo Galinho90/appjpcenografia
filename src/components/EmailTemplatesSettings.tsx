@@ -31,6 +31,23 @@ const SAMPLE_VARS: Record<string, Record<string, string>> = {
     empresa: "JP Cenografia",
     data: new Date().toLocaleString("pt-BR"),
   },
+  nota_fiscal_solicitacao: {
+    nome: "João da Silva",
+    empresa: "JP Cenografia",
+    periodo_inicio: "01/04/2026",
+    periodo_fim: "15/04/2026",
+    total_diarias: "1.500,00",
+    valor_final: "1.450,00",
+    link: "https://app.exemplo.com/minhas-notas-fiscais",
+  },
+  nota_fiscal_recebida: {
+    nome: "João da Silva",
+    empresa: "JP Cenografia",
+    numero: "00012345",
+    valor: "1.450,00",
+    periodo_inicio: "01/04/2026",
+    periodo_fim: "15/04/2026",
+  },
 };
 
 function renderTemplate(tpl: string, vars: Record<string, string>): string {

@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
       periodo_inicio: fmtDate(nota.periodo_inicio),
       periodo_fim: fmtDate(nota.periodo_fim),
       motivo: motivo ?? nota.observacoes ?? "",
-      link: APP_PUBLIC_URL ? `${APP_PUBLIC_URL.replace(/\/$/, "")}/minhas-notas-fiscais` : "",
+      link: APP_PUBLIC_URL ? `${APP_PUBLIC_URL.replace(/\/$/, "")}/minhas-notas` : "",
     };
 
     const templateKey = TEMPLATE_KEYS[evento];

@@ -578,7 +578,7 @@ export function useUploadNotaFiscal() {
             titulo: "NF reenviada",
             mensagem: `Sua nota fiscal da quinzena ${periodo} foi reenviada e está aguardando análise.`,
             tipo: "success",
-            link: "/minhas-notas-fiscais",
+            link: "/minhas-notas",
           });
           // Aviso para admins
           await criarNotificacaoParaAdmins({
@@ -593,7 +593,7 @@ export function useUploadNotaFiscal() {
             titulo: "NF enviada",
             mensagem: `Sua nota fiscal da quinzena ${periodo} foi enviada e está aguardando análise.`,
             tipo: "success",
-            link: "/minhas-notas-fiscais",
+            link: "/minhas-notas",
           });
           await criarNotificacaoParaAdmins({
             titulo: "Nova NF para análise",
@@ -655,7 +655,7 @@ export function useUpdateStatusNotaFiscal() {
               observacoes ?? "não informado"
             }`,
             tipo: "error",
-            link: "/minhas-notas-fiscais",
+            link: "/minhas-notas",
           });
         } else if (status === "aprovada") {
           await criarNotificacao({
@@ -663,7 +663,7 @@ export function useUpdateStatusNotaFiscal() {
             titulo: "NF aprovada",
             mensagem: `Sua nota fiscal da quinzena ${periodo} foi aprovada.`,
             tipo: "success",
-            link: "/minhas-notas-fiscais",
+            link: "/minhas-notas",
           });
         }
       } catch (e) {

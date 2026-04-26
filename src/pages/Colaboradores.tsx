@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import * as XLSX from "xlsx";
-import { Plus, Search, Edit, Trash2, Eye, FileSpreadsheet, Upload, RefreshCw } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, FileSpreadsheet, Upload, RefreshCw, Mail } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -389,8 +389,34 @@ export default function Colaboradores() {
                 </div>
               )}
               {mode === "edit" && form.user_id && (
-                <div className="rounded-md border p-3 bg-success/10 text-sm text-foreground">
-                  ✓ Acesso ao painel já criado para este diarista.
+                <div className="space-y-2">
+                  <div className="rounded-md border p-3 bg-success/10 text-sm text-foreground">
+                    ✓ Acesso ao painel já criado para este diarista.
+                  </div>
+                  {!readOnly && form.email && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full gap-2"
+                      onClick={async () => {
+                        try {
+                          const { data, error } = await supabase.functions.invoke("password-reset-request", {
+                            body: { colaborador_id: editingId },
+                          });
+                          if (error) throw error;
+                          if ((data as any)?.error) throw new Error((data as any).error);
+                          toast({ title: "E-mail enviado!", description: `Link de redefinição enviado para ${form.email}` });
+                        } catch (e: any) {
+                          toast({ title: "Erro ao enviar", description: e.message, variant: "destructive" });
+                        }
+                      }}
+                    >
+                      <Mail className="h-4 w-4" /> Enviar link de redefinição por e-mail
+                    </Button>
+                  )}
+                  {!readOnly && !form.email && (
+                    <p className="text-xs text-muted-foreground">Cadastre um e-mail acima para habilitar o envio de link de redefinição.</p>
+                  )}
                 </div>
               )}
               {!readOnly && (

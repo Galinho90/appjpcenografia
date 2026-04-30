@@ -308,14 +308,17 @@ export function useGerarFechamentos() {
       const updates: { id: string; payload: any }[] = [];
 
       for (const [colaborador_id, t] of map) {
-        const valor_final = t.diarias + t.reembolsos - t.vales;
+        const totalDiarias = Math.round((Number(t.diarias) || 0) * 100) / 100;
+        const totalVales = Math.round((Number(t.vales) || 0) * 100) / 100;
+        const totalReembolsos = Math.round((Number(t.reembolsos) || 0) * 100) / 100;
+        const valor_final = Math.round((totalDiarias + totalReembolsos - totalVales) * 100) / 100;
         const payload = {
           colaborador_id,
           periodo_inicio,
           periodo_fim,
-          total_diarias: t.diarias,
-          total_vales: t.vales,
-          total_reembolsos: t.reembolsos,
+          total_diarias: totalDiarias,
+          total_vales: totalVales,
+          total_reembolsos: totalReembolsos,
           valor_final,
         };
         const ex = existMap.get(colaborador_id);

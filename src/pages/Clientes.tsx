@@ -48,14 +48,17 @@ export default function Clientes() {
   const updateMutation = useUpdateCliente();
   const deleteMutation = useDeleteCliente();
 
-  const filtered = clientes.filter((c) => {
-    const q = search.toLowerCase();
-    return (
-      c.razao_social.toLowerCase().includes(q) ||
-      (c.nome_fantasia ?? "").toLowerCase().includes(q) ||
-      c.cnpj.toLowerCase().includes(q)
-    );
-  });
+  const filtered = clientes
+    .filter((c) => {
+      const q = search.toLowerCase();
+      return (
+        c.razao_social.toLowerCase().includes(q) ||
+        (c.nome_fantasia ?? "").toLowerCase().includes(q) ||
+        c.cnpj.toLowerCase().includes(q)
+      );
+    })
+    .slice()
+    .sort((a, b) => a.razao_social.localeCompare(b.razao_social, "pt-BR", { sensitivity: "base" }));
 
   const buscarCNPJ = async () => {
     const cnpjLimpo = form.cnpj.replace(/\D/g, "");

@@ -37,7 +37,10 @@ export default function Categorias() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return categorias.filter((c) => c.descricao.toLowerCase().includes(q));
+    return categorias
+      .filter((c) => c.descricao.toLowerCase().includes(q))
+      .slice()
+      .sort((a, b) => a.descricao.localeCompare(b.descricao, "pt-BR", { sensitivity: "base" }));
   }, [categorias, search]);
 
   const openCreate = () => {

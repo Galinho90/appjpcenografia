@@ -75,8 +75,15 @@ export default function NotasFiscais() {
 
   const pendentesEnvio = useMemo(() => {
     const enviadosIds = new Set(notas.map(n => n.colaborador_id));
-    return fechamentosQ.filter((f: any) => !enviadosIds.has(f.colaborador_id));
-  }, [fechamentosQ, notas]);
+    return fechamentosQ
+      .filter((f: any) => !enviadosIds.has(f.colaborador_id))
+      .slice()
+      .sort((a: any, b: any) => {
+        const na = colaboradores.find((c: any) => c.id === a.colaborador_id)?.nome ?? "";
+        const nb = colaboradores.find((c: any) => c.id === b.colaborador_id)?.nome ?? "";
+        return na.localeCompare(nb, "pt-BR", { sensitivity: "base" });
+      });
+  }, [fechamentosQ, notas, colaboradores]);
 
   const colNome = (id: string) => colaboradores.find((c: any) => c.id === id)?.nome ?? "—";
 
@@ -233,7 +240,11 @@ export default function NotasFiscais() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {notas.map(n => {
+                {[...notas].sort((a: any, b: any) => {
+                  const na = a.colaborador?.nome ?? colNome(a.colaborador_id);
+                  const nb = b.colaborador?.nome ?? colNome(b.colaborador_id);
+                  return na.localeCompare(nb, "pt-BR", { sensitivity: "base" });
+                }).map(n => {
                   const cfg = getStatusBadge(n.status);
                   const Icon = cfg.icon;
                   return (

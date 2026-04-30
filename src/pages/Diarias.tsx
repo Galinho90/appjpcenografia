@@ -134,10 +134,6 @@ export default function Diarias() {
   };
 
   const filtered = [...lancamentos].sort((a, b) => {
-    const nomeA = (a.colaborador?.nome ?? "").trim();
-    const nomeB = (b.colaborador?.nome ?? "").trim();
-    const cmp = nomeA.localeCompare(nomeB, "pt-BR", { sensitivity: "base", ignorePunctuation: true });
-    if (cmp !== 0) return cmp;
     if (b.data !== a.data) return b.data.localeCompare(a.data);
     return String(b.id ?? "").localeCompare(String(a.id ?? ""));
   }).filter((l) => {

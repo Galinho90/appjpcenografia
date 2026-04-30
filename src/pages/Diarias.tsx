@@ -134,9 +134,9 @@ export default function Diarias() {
   };
 
   const filtered = [...lancamentos].sort((a, b) => {
-    const nomeA = a.colaborador?.nome ?? "";
-    const nomeB = b.colaborador?.nome ?? "";
-    const cmp = nomeA.localeCompare(nomeB, "pt-BR", { sensitivity: "base" });
+    const nomeA = (a.colaborador?.nome ?? "").trim();
+    const nomeB = (b.colaborador?.nome ?? "").trim();
+    const cmp = nomeA.localeCompare(nomeB, "pt-BR", { sensitivity: "base", ignorePunctuation: true });
     if (cmp !== 0) return cmp;
     if (b.data !== a.data) return b.data.localeCompare(a.data);
     return ((b as any).created_at ?? "").localeCompare((a as any).created_at ?? "");

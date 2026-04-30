@@ -61,7 +61,17 @@ export default function Fechamentos() {
   };
 
   const fechamentosQ = useMemo(
-    () => fechamentos.filter((f: any) => f.periodo_inicio === inicioISO && f.periodo_fim === fimISO),
+    () =>
+      fechamentos
+        .filter((f: any) => f.periodo_inicio === inicioISO && f.periodo_fim === fimISO)
+        .slice()
+        .sort((a: any, b: any) =>
+          ((a.colaborador as any)?.nome ?? "").localeCompare(
+            (b.colaborador as any)?.nome ?? "",
+            "pt-BR",
+            { sensitivity: "base" },
+          ),
+        ),
     [fechamentos, inicioISO, fimISO],
   );
 

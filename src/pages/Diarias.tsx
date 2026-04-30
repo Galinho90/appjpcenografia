@@ -139,7 +139,7 @@ export default function Diarias() {
     const cmp = nomeA.localeCompare(nomeB, "pt-BR", { sensitivity: "base", ignorePunctuation: true });
     if (cmp !== 0) return cmp;
     if (b.data !== a.data) return b.data.localeCompare(a.data);
-    return ((b as any).created_at ?? "").localeCompare((a as any).created_at ?? "");
+    return String(b.id ?? "").localeCompare(String(a.id ?? ""));
   }).filter((l) => {
     const nome = l.colaborador?.nome?.toLowerCase() ?? "";
     const cat = l.categoria?.descricao?.toLowerCase() ?? "";

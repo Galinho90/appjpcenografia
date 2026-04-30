@@ -65,13 +65,17 @@ export default function Fechamentos() {
       fechamentos
         .filter((f: any) => f.periodo_inicio === inicioISO && f.periodo_fim === fimISO)
         .slice()
-        .sort((a: any, b: any) =>
-          ((a.colaborador as any)?.nome ?? "").localeCompare(
+        .sort((a: any, b: any) => {
+          // Pendentes primeiro, pagos depois
+          const statusOrder = (s: string) => (s === "pago" ? 1 : 0);
+          const diff = statusOrder(a.status) - statusOrder(b.status);
+          if (diff !== 0) return diff;
+          return ((a.colaborador as any)?.nome ?? "").localeCompare(
             (b.colaborador as any)?.nome ?? "",
             "pt-BR",
             { sensitivity: "base" },
-          ),
-        ),
+          );
+        }),
     [fechamentos, inicioISO, fimISO],
   );
 

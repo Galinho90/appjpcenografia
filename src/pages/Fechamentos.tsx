@@ -64,7 +64,7 @@ export default function Fechamentos() {
     () =>
       fechamentos
         .filter((f: any) => f.periodo_inicio === inicioISO && f.periodo_fim === fimISO)
-        .filter((f: any) => !(f.status === "pendente" && Number(f.valor_final) === 0))
+        .filter((f: any) => !(f.status === "pendente" && Math.abs(Number(f.valor_final) || 0) < 0.005))
         .slice()
         .sort((a: any, b: any) => {
           // Pendentes primeiro, pagos depois

@@ -281,7 +281,7 @@ export function useGerarFechamentos() {
         const cat: any = (l as any).categorias;
         const tipo = cat?.tipo as "C" | "D" | undefined;
         const desc = (cat?.descricao ?? "").toUpperCase();
-        const valor = Number(l.valor);
+        const valor = Number(l.valor) || 0;
         const cur = map.get(l.colaborador_id) ?? { diarias: 0, vales: 0, reembolsos: 0 };
         if (tipo === "C") {
           if (desc.includes("REEMBOLSO")) cur.reembolsos += valor;
@@ -308,14 +308,17 @@ export function useGerarFechamentos() {
       const updates: { id: string; payload: any }[] = [];
 
       for (const [colaborador_id, t] of map) {
-        const valor_final = t.diarias + t.reembolsos - t.vales;
+        const totalDiarias = Math.round((Number(t.diarias) || 0) * 100) / 100;
+        const totalVales = Math.round((Number(t.vales) || 0) * 100) / 100;
+        const totalReembolsos = Math.round((Number(t.reembolsos) || 0) * 100) / 100;
+        const valor_final = Math.round((totalDiarias + totalReembolsos - totalVales) * 100) / 100;
         const payload = {
           colaborador_id,
           periodo_inicio,
           periodo_fim,
-          total_diarias: t.diarias,
-          total_vales: t.vales,
-          total_reembolsos: t.reembolsos,
+          total_diarias: totalDiarias,
+          total_vales: totalVales,
+          total_reembolsos: totalReembolsos,
           valor_final,
         };
         const ex = existMap.get(colaborador_id);

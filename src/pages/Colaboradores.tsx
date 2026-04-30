@@ -85,17 +85,20 @@ export default function Colaboradores() {
     }
   };
 
-  const filtered = colaboradores.filter((c) => {
-    if (statusFilter === "ativos" && !c.ativo) return false;
-    if (statusFilter === "inativos" && c.ativo) return false;
-    const q = search.toLowerCase();
-    return (
-      c.nome.toLowerCase().includes(q) ||
-      c.funcao.toLowerCase().includes(q) ||
-      c.cpf.toLowerCase().includes(q) ||
-      (c.telefone ?? "").toLowerCase().includes(q)
-    );
-  });
+  const filtered = colaboradores
+    .filter((c) => {
+      if (statusFilter === "ativos" && !c.ativo) return false;
+      if (statusFilter === "inativos" && c.ativo) return false;
+      const q = search.toLowerCase();
+      return (
+        c.nome.toLowerCase().includes(q) ||
+        c.funcao.toLowerCase().includes(q) ||
+        c.cpf.toLowerCase().includes(q) ||
+        (c.telefone ?? "").toLowerCase().includes(q)
+      );
+    })
+    .slice()
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" }));
 
   const handleExportExcel = () => {
     const rows = filtered.map((c) => ({

@@ -281,7 +281,7 @@ export function useGerarFechamentos() {
         const cat: any = (l as any).categorias;
         const tipo = cat?.tipo as "C" | "D" | undefined;
         const desc = (cat?.descricao ?? "").toUpperCase();
-        const valor = Number(l.valor);
+        const valor = Number(l.valor) || 0;
         const cur = map.get(l.colaborador_id) ?? { diarias: 0, vales: 0, reembolsos: 0 };
         if (tipo === "C") {
           if (desc.includes("REEMBOLSO")) cur.reembolsos += valor;

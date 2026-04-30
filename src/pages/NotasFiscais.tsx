@@ -240,7 +240,11 @@ export default function NotasFiscais() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {notas.map(n => {
+                {[...notas].sort((a: any, b: any) => {
+                  const na = a.colaborador?.nome ?? colNome(a.colaborador_id);
+                  const nb = b.colaborador?.nome ?? colNome(b.colaborador_id);
+                  return na.localeCompare(nb, "pt-BR", { sensitivity: "base" });
+                }).map(n => {
                   const cfg = getStatusBadge(n.status);
                   const Icon = cfg.icon;
                   return (

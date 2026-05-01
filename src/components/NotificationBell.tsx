@@ -1,4 +1,4 @@
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
   useMinhasNotificacoes,
   useMarcarNotificacaoLida,
   useMarcarTodasLidas,
+  useExcluirNotificacao,
 } from "@/hooks/useNotificacoes";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ export function NotificationBell() {
   const { data: notificacoes = [] } = useMinhasNotificacoes();
   const marcarLida = useMarcarNotificacaoLida();
   const marcarTodas = useMarcarTodasLidas();
+  const excluir = useExcluirNotificacao();
   const navigate = useNavigate();
 
   const naoLidas = notificacoes.filter((n) => !n.lida).length;
@@ -63,31 +65,46 @@ export function NotificationBell() {
             </div>
           ) : (
             notificacoes.map((n) => (
-              <button
+              <div
                 key={n.id}
-                onClick={() => handleClick(n)}
                 className={cn(
-                  "w-full text-left p-3 border-b last:border-b-0 hover:bg-accent transition-colors block",
+                  "relative w-full border-b last:border-b-0 hover:bg-accent transition-colors group",
                   !n.lida && "bg-accent/40"
                 )}
               >
-                <div className="flex items-start gap-2">
-                  {!n.lida && (
-                    <span className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {n.titulo}
-                    </p>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
-                      {n.mensagem}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      {new Date(n.created_at).toLocaleString("pt-BR")}
-                    </p>
+                <button
+                  onClick={() => handleClick(n)}
+                  className="w-full text-left p-3 pr-9 block"
+                >
+                  <div className="flex items-start gap-2">
+                    {!n.lida && (
+                      <span className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {n.titulo}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                        {n.mensagem}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        {new Date(n.created_at).toLocaleString("pt-BR")}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </button>
+                </button>
+                <button
+                  type="button"
+                  aria-label="Excluir notificação"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    excluir.mutate(n.id);
+                  }}
+                  className="absolute top-2 right-2 h-6 w-6 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
             ))
           )}
         </div>

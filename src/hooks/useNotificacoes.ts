@@ -70,6 +70,18 @@ export function useMarcarNotificacaoLida() {
   });
 }
 
+export function useExcluirNotificacao() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("notificacoes").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notificacoes", user?.id] }),
+  });
+}
+
 export function useMarcarTodasLidas() {
   const qc = useQueryClient();
   const { user } = useAuth();

@@ -1,4 +1,4 @@
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
   useMinhasNotificacoes,
   useMarcarNotificacaoLida,
   useMarcarTodasLidas,
+  useExcluirNotificacao,
 } from "@/hooks/useNotificacoes";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ export function NotificationBell() {
   const { data: notificacoes = [] } = useMinhasNotificacoes();
   const marcarLida = useMarcarNotificacaoLida();
   const marcarTodas = useMarcarTodasLidas();
+  const excluir = useExcluirNotificacao();
   const navigate = useNavigate();
 
   const naoLidas = notificacoes.filter((n) => !n.lida).length;

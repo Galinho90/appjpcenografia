@@ -76,7 +76,8 @@ export function useLancamentos() {
       const { data, error } = await supabase
         .from("lancamentos")
         .select("*, categoria:categorias(*), colaborador:colaboradores(id, nome)")
-        .order("data", { ascending: false });
+        .order("data", { ascending: false })
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []).map((l: any) => ({ ...l, valor: Number(l.valor) })) as Lancamento[];
     },

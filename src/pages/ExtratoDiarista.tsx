@@ -11,6 +11,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { cn, formatDateBR } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
@@ -128,6 +129,7 @@ export default function ExtratoDiarista() {
 
   // ── Modal ──
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [catPopoverOpen, setCatPopoverOpen] = useState(false);
   const hoje = toISO(new Date());
   const categoriasAtivas = categorias.filter(c => c.ativo);
   const [form, setForm] = useState({
@@ -396,28 +398,54 @@ export default function ExtratoDiarista() {
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
               <Label>Categoria</Label>
-              <Select value={form.categoria_id} onValueChange={(v) => {
-                const categoria = categorias.find(c => c.id === v);
-                const descricao = categoria?.descricao.toUpperCase() ?? "";
-                const categoriaUsaHorario = !descricao.includes("PAGAMENTO") && (
-                  descricao.includes("DIÁRIA") || descricao.includes("DIARIA")
-                );
-                setForm({
-                  ...form,
-                  categoria_id: v,
-                  hora_entrada: categoriaUsaHorario ? form.hora_entrada : "",
-                  hora_saida: categoriaUsaHorario ? form.hora_saida : "",
-                });
-              }}>
-                <SelectTrigger><SelectValue placeholder="Selecione a categoria..." /></SelectTrigger>
-                <SelectContent>
-                  {categoriasAtivas.map(c => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.descricao} ({c.tipo === "C" ? "Crédito" : "Débito"})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={catPopoverOpen} onOpenChange={setCatPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal min-w-0">
+                    {categoriaSelecionada ? (
+                      <span className="flex min-w-0 items-center gap-2 overflow-hidden">
+                        <Badge className={cn("text-[10px] px-1.5 py-0 shrink-0 border-transparent text-white hover:opacity-90", categoriaSelecionada.tipo === "C" ? "bg-success" : "bg-destructive")}>
+                          {categoriaSelecionada.tipo === "C" ? "Crédito" : "Débito"}
+                        </Badge>
+                        <span className="truncate">{categoriaSelecionada.descricao}</span>
+                      </span>
+                    ) : "Selecione a categoria..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar categoria..." />
+                    <CommandList>
+                      <CommandEmpty>Nenhuma encontrada.</CommandEmpty>
+                      <CommandGroup>
+                        {categoriasAtivas.map((c) => {
+                          const descricao = c.descricao.toUpperCase();
+                          const categoriaUsaHorario = !descricao.includes("PAGAMENTO") && (
+                            descricao.includes("DIÁRIA") || descricao.includes("DIARIA")
+                          );
+                          return (
+                            <CommandItem key={c.id} value={c.descricao} onSelect={() => {
+                              setForm({
+                                ...form,
+                                categoria_id: c.id,
+                                hora_entrada: categoriaUsaHorario ? form.hora_entrada : "",
+                                hora_saida: categoriaUsaHorario ? form.hora_saida : "",
+                              });
+                              setCatPopoverOpen(false);
+                            }}>
+                              <Check className={cn("mr-2 h-4 w-4", form.categoria_id === c.id ? "opacity-100" : "opacity-0")} />
+                              <Badge className={cn("text-[10px] px-1.5 py-0 mr-2 shrink-0 border-transparent text-white hover:opacity-90", c.tipo === "C" ? "bg-success" : "bg-destructive")}>
+                                {c.tipo === "C" ? "Crédito" : "Débito"}
+                              </Badge>
+                              <span className="truncate">{c.descricao}</span>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className={cn("grid gap-3", usaHorario ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2")}>

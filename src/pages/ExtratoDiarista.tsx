@@ -140,8 +140,10 @@ export default function ExtratoDiarista() {
   });
 
   const categoriaSelecionada = categorias.find(c => c.id === form.categoria_id);
-  const isDiariaCategoria = categoriaSelecionada?.descricao.toUpperCase().includes("DIÁRIA")
-    || categoriaSelecionada?.descricao.toUpperCase().includes("DIARIA");
+  const descCategoria = categoriaSelecionada?.descricao.toUpperCase() ?? "";
+  const usaHorario = !descCategoria.includes("PAGAMENTO") && (
+    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA")
+  );
 
   const abrirModal = () => {
     if (!colaboradorId) {
@@ -170,8 +172,8 @@ export default function ExtratoDiarista() {
         categoria_id: form.categoria_id,
         data: form.data,
         valor: Number(form.valor),
-        hora_entrada: form.hora_entrada || null,
-        hora_saida: form.hora_saida || null,
+        hora_entrada: usaHorario && form.hora_entrada ? form.hora_entrada : null,
+        hora_saida: usaHorario && form.hora_saida ? form.hora_saida : null,
         descricao: form.descricao || null,
       });
       toast({ title: "Lançamento registrado!" });
@@ -394,7 +396,19 @@ export default function ExtratoDiarista() {
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
               <Label>Categoria</Label>
-              <Select value={form.categoria_id} onValueChange={(v) => setForm({ ...form, categoria_id: v })}>
+              <Select value={form.categoria_id} onValueChange={(v) => {
+                const categoria = categorias.find(c => c.id === v);
+                const descricao = categoria?.descricao.toUpperCase() ?? "";
+                const categoriaUsaHorario = !descricao.includes("PAGAMENTO") && (
+                  descricao.includes("DIÁRIA") || descricao.includes("DIARIA")
+                );
+                setForm({
+                  ...form,
+                  categoria_id: v,
+                  hora_entrada: categoriaUsaHorario ? form.hora_entrada : "",
+                  hora_saida: categoriaUsaHorario ? form.hora_saida : "",
+                });
+              }}>
                 <SelectTrigger><SelectValue placeholder="Selecione a categoria..." /></SelectTrigger>
                 <SelectContent>
                   {categoriasAtivas.map(c => (
@@ -406,12 +420,12 @@ export default function ExtratoDiarista() {
               </Select>
             </div>
 
-            <div className={cn("grid gap-3", isDiariaCategoria ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2")}>
+            <div className={cn("grid gap-3", usaHorario ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2")}>
               <div className="space-y-2">
                 <Label>Data</Label>
                 <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
               </div>
-              {isDiariaCategoria && (
+              {usaHorario && (
                 <>
                   <div className="space-y-2">
                     <Label>Entrada</Label>
@@ -423,7 +437,7 @@ export default function ExtratoDiarista() {
                   </div>
                 </>
               )}
-              {!isDiariaCategoria && (
+              {!usaHorario && (
                 <div className="space-y-2">
                   <Label>Valor (R$)</Label>
                   <Input type="number" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
@@ -431,7 +445,7 @@ export default function ExtratoDiarista() {
               )}
             </div>
 
-            {isDiariaCategoria && (
+            {usaHorario && (
               <div className="space-y-2">
                 <Label>Valor (R$)</Label>
                 <Input type="number" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />

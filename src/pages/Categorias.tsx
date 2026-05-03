@@ -143,16 +143,18 @@ export default function Categorias() {
                   <Card key={c.id} className="border shadow-sm">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium break-words">{c.descricao}</p>
+                        <div className="min-w-0 flex-1 space-y-1">
                           <Badge
                             className={cn(
-                              "mt-1 border-transparent text-white hover:opacity-90",
+                              "border-transparent text-white hover:opacity-90 whitespace-nowrap",
                               c.tipo === "C" ? "bg-success" : "bg-destructive"
                             )}
                           >
-                            {c.tipo === "C" ? "Crédito" : "Débito"}
+                            {c.descricao}
                           </Badge>
+                          <p className="text-xs text-muted-foreground">
+                            {c.tipo === "C" ? "Crédito" : "Débito"}
+                          </p>
                         </div>
                         {canEdit && (
                           <div className="flex gap-1 shrink-0">

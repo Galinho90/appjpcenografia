@@ -421,7 +421,7 @@ export default function ExtratoDiarista() {
                         {categoriasAtivas.map((c) => {
                           const descricao = c.descricao.toUpperCase();
                           const categoriaUsaHorario = !descricao.includes("PAGAMENTO") && (
-                            descricao.includes("DIÁRIA") || descricao.includes("DIARIA")
+                            descricao.includes("DIÁRIA") || descricao.includes("DIARIA") || descricao.includes("DOBRA")
                           );
                           return (
                             <CommandItem key={c.id} value={c.descricao} onSelect={() => {

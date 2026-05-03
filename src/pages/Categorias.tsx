@@ -183,7 +183,7 @@ export default function Categorias() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Descrição</TableHead>
+                      <TableHead>Categoria</TableHead>
                       <TableHead>Tipo</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
@@ -192,16 +192,18 @@ export default function Categorias() {
                   <TableBody>
                     {filtered.map((c) => (
                       <TableRow key={c.id}>
-                        <TableCell className="font-medium">{c.descricao}</TableCell>
                         <TableCell>
                           <Badge
                             className={cn(
-                              "border-transparent text-white hover:opacity-90",
+                              "border-transparent text-white hover:opacity-90 whitespace-nowrap",
                               c.tipo === "C" ? "bg-success" : "bg-destructive"
                             )}
                           >
-                            {c.tipo === "C" ? "Crédito" : "Débito"}
+                            {c.descricao}
                           </Badge>
+                        </TableCell>
+                        <TableCell className={cn("text-sm font-medium", c.tipo === "C" ? "text-success" : "text-destructive")}>
+                          {c.tipo === "C" ? "Crédito" : "Débito"}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

@@ -144,7 +144,7 @@ export default function ExtratoDiarista() {
   const categoriaSelecionada = categorias.find(c => c.id === form.categoria_id);
   const descCategoria = categoriaSelecionada?.descricao.toUpperCase() ?? "";
   const usaHorario = !descCategoria.includes("PAGAMENTO") && (
-    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") || descCategoria.includes("DOBRA")
+    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") || descCategoria.includes("DOBRA") || descCategoria.includes("HORAS EXTRAS")
   );
 
   const abrirModal = () => {

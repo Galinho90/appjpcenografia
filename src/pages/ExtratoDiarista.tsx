@@ -144,7 +144,7 @@ export default function ExtratoDiarista() {
   const categoriaSelecionada = categorias.find(c => c.id === form.categoria_id);
   const descCategoria = categoriaSelecionada?.descricao.toUpperCase() ?? "";
   const usaHorario = !descCategoria.includes("PAGAMENTO") && (
-    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA")
+    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") || descCategoria.includes("DOBRA")
   );
 
   const abrirModal = () => {
@@ -421,7 +421,7 @@ export default function ExtratoDiarista() {
                         {categoriasAtivas.map((c) => {
                           const descricao = c.descricao.toUpperCase();
                           const categoriaUsaHorario = !descricao.includes("PAGAMENTO") && (
-                            descricao.includes("DIÁRIA") || descricao.includes("DIARIA")
+                            descricao.includes("DIÁRIA") || descricao.includes("DIARIA") || descricao.includes("DOBRA")
                           );
                           return (
                             <CommandItem key={c.id} value={c.descricao} onSelect={() => {

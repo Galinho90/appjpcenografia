@@ -71,7 +71,8 @@ const fmtBRL = (n: number) =>
 export default function ExtratoDiarista() {
   const { toast } = useToast();
   const { canEdit } = usePermissions();
-  const { data: colaboradores = [], isLoading: loadingCol } = useColaboradores();
+  const { data: colaboradoresAll = [], isLoading: loadingCol } = useColaboradores();
+  const colaboradores = useMemo(() => colaboradoresAll.filter(c => c.ativo), [colaboradoresAll]);
   const { data: categorias = [] } = useCategorias();
   const { data: lancamentos = [] } = useLancamentos();
   const { data: fechamentos = [] } = useFechamentos();
@@ -124,7 +125,7 @@ export default function ExtratoDiarista() {
   const totalPago = totalDebitos;
   const aPagar = totalCreditos - totalDebitos;
 
-  const colaboradorSel = colaboradores.find(c => c.id === colaboradorId);
+  const colaboradorSel = colaboradoresAll.find(c => c.id === colaboradorId);
   const colaboradorNome = colaboradorSel?.nome;
 
   // ── Modal ──

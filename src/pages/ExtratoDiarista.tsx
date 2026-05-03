@@ -129,6 +129,7 @@ export default function ExtratoDiarista() {
 
   // ── Modal ──
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [catPopoverOpen, setCatPopoverOpen] = useState(false);
   const hoje = toISO(new Date());
   const categoriasAtivas = categorias.filter(c => c.ativo);
   const [form, setForm] = useState({

@@ -125,7 +125,7 @@ export default function ExtratoDiarista() {
   const totalPago = totalDebitos;
   const aPagar = totalCreditos - totalDebitos;
 
-  const colaboradorSel = colaboradores.find(c => c.id === colaboradorId);
+  const colaboradorSel = colaboradoresAll.find(c => c.id === colaboradorId);
   const colaboradorNome = colaboradorSel?.nome;
 
   // ── Modal ──

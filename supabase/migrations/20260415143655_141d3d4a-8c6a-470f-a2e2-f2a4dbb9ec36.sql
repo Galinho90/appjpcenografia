@@ -1,6 +1,10 @@
 
 -- Create role enum
-DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'app_role') THEN CREATE TYPE public.app_role AS ENUM ('admin', 'gerente', 'visualizador');
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'app_role') THEN
+    CREATE TYPE public.app_role AS ENUM ('admin', 'gerente', 'visualizador');
+  END IF;
+END $$;
 
 -- User roles table
 CREATE TABLE public.user_roles (

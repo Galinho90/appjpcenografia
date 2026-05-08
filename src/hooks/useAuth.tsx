@@ -79,12 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       userIdRef.current = nextUserId;
 
       if (shouldFetchRole) {
-        const isBoot = !initializedRef.current;
-        if (isBoot) setLoading(true);
+        setLoading(true);
         setTimeout(() => {
           fetchRole(nextUserId).finally(() => {
             initializedRef.current = true;
-            if (isBoot) setLoading(false);
+            setLoading(false);
           });
         }, 0);
       } else if (!initializedRef.current) {

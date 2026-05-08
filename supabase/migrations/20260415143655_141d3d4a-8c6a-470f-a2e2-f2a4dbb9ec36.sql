@@ -45,10 +45,12 @@ AS $$
 $$;
 
 -- RLS for user_roles
+DROP POLICY IF EXISTS "Authenticated users can view roles" ON public.user_roles;
 CREATE POLICY "Authenticated users can view roles"
   ON public.user_roles FOR SELECT TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Admins can manage roles" ON public.user_roles;
 CREATE POLICY "Admins can manage roles"
   ON public.user_roles FOR ALL TO authenticated
   USING (public.has_role(auth.uid(), 'admin'))
@@ -72,17 +74,21 @@ CREATE TABLE IF NOT EXISTS public.colaboradores (
 );
 ALTER TABLE public.colaboradores ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated can view colaboradores" ON public.user_roles;
 CREATE POLICY "Authenticated can view colaboradores"
   ON public.colaboradores FOR SELECT TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Admin/Gerente can insert colaboradores" ON public.user_roles;
 CREATE POLICY "Admin/Gerente can insert colaboradores"
   ON public.colaboradores FOR INSERT TO authenticated
   WITH CHECK (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Admin/Gerente can update colaboradores" ON public.user_roles;
 CREATE POLICY "Admin/Gerente can update colaboradores"
   ON public.colaboradores FOR UPDATE TO authenticated
   USING (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Admin can delete colaboradores" ON public.user_roles;
 CREATE POLICY "Admin can delete colaboradores"
   ON public.colaboradores FOR DELETE TO authenticated
   USING (public.has_role(auth.uid(), 'admin'));
@@ -100,17 +106,21 @@ CREATE TABLE IF NOT EXISTS public.diarias (
 );
 ALTER TABLE public.diarias ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated can view diarias" ON public.user_roles;
 CREATE POLICY "Authenticated can view diarias"
   ON public.diarias FOR SELECT TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Admin/Gerente can insert diarias" ON public.user_roles;
 CREATE POLICY "Admin/Gerente can insert diarias"
   ON public.diarias FOR INSERT TO authenticated
   WITH CHECK (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Admin/Gerente can update diarias" ON public.user_roles;
 CREATE POLICY "Admin/Gerente can update diarias"
   ON public.diarias FOR UPDATE TO authenticated
   USING (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Admin can delete diarias" ON public.user_roles;
 CREATE POLICY "Admin can delete diarias"
   ON public.diarias FOR DELETE TO authenticated
   USING (public.has_role(auth.uid(), 'admin'));
@@ -126,17 +136,21 @@ CREATE TABLE IF NOT EXISTS public.vales (
 );
 ALTER TABLE public.vales ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated can view vales" ON public.user_roles;
 CREATE POLICY "Authenticated can view vales"
   ON public.vales FOR SELECT TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Admin/Gerente can insert vales" ON public.user_roles;
 CREATE POLICY "Admin/Gerente can insert vales"
   ON public.vales FOR INSERT TO authenticated
   WITH CHECK (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Admin/Gerente can update vales" ON public.user_roles;
 CREATE POLICY "Admin/Gerente can update vales"
   ON public.vales FOR UPDATE TO authenticated
   USING (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Admin can delete vales" ON public.user_roles;
 CREATE POLICY "Admin can delete vales"
   ON public.vales FOR DELETE TO authenticated
   USING (public.has_role(auth.uid(), 'admin'));
@@ -152,17 +166,21 @@ CREATE TABLE IF NOT EXISTS public.reembolsos (
 );
 ALTER TABLE public.reembolsos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated can view reembolsos" ON public.user_roles;
 CREATE POLICY "Authenticated can view reembolsos"
   ON public.reembolsos FOR SELECT TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Admin/Gerente can insert reembolsos" ON public.user_roles;
 CREATE POLICY "Admin/Gerente can insert reembolsos"
   ON public.reembolsos FOR INSERT TO authenticated
   WITH CHECK (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Admin/Gerente can update reembolsos" ON public.user_roles;
 CREATE POLICY "Admin/Gerente can update reembolsos"
   ON public.reembolsos FOR UPDATE TO authenticated
   USING (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Admin can delete reembolsos" ON public.user_roles;
 CREATE POLICY "Admin can delete reembolsos"
   ON public.reembolsos FOR DELETE TO authenticated
   USING (public.has_role(auth.uid(), 'admin'));
@@ -183,17 +201,21 @@ CREATE TABLE IF NOT EXISTS public.fechamentos (
 );
 ALTER TABLE public.fechamentos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated can view fechamentos" ON public.user_roles;
 CREATE POLICY "Authenticated can view fechamentos"
   ON public.fechamentos FOR SELECT TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Admin/Gerente can insert fechamentos" ON public.user_roles;
 CREATE POLICY "Admin/Gerente can insert fechamentos"
   ON public.fechamentos FOR INSERT TO authenticated
   WITH CHECK (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Admin/Gerente can update fechamentos" ON public.user_roles;
 CREATE POLICY "Admin/Gerente can update fechamentos"
   ON public.fechamentos FOR UPDATE TO authenticated
   USING (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Admin can delete fechamentos" ON public.user_roles;
 CREATE POLICY "Admin can delete fechamentos"
   ON public.fechamentos FOR DELETE TO authenticated
   USING (public.has_role(auth.uid(), 'admin'));
@@ -210,9 +232,11 @@ CREATE TABLE IF NOT EXISTS public.transacoes_log (
 );
 ALTER TABLE public.transacoes_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated can view transacoes" ON public.user_roles;
 CREATE POLICY "Authenticated can view transacoes"
   ON public.transacoes_log FOR SELECT TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Admin can manage transacoes" ON public.user_roles;
 CREATE POLICY "Admin can manage transacoes"
   ON public.transacoes_log FOR ALL TO authenticated
   USING (public.has_role(auth.uid(), 'admin'))

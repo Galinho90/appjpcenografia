@@ -38,7 +38,14 @@ export default function Login() {
     const { error } = await signIn(phone, password);
     setSubmitting(false);
     if (error) {
-      toast({ title: "Falha no login", description: "Celular ou senha incorretos.", variant: "destructive" });
+      const isInativo = error.toLowerCase().includes("inativ");
+      toast({
+        title: isInativo ? "Usuário inativo" : "Falha no login",
+        description: isInativo
+          ? "Seu acesso está inativo. Procure o administrador."
+          : "Celular ou senha incorretos.",
+        variant: "destructive",
+      });
       return;
     }
     toast({ title: "Bem-vindo!", description: "Login realizado com sucesso." });

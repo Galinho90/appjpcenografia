@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn } from "lucide-react";
+import { LogIn, Phone, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { isValidPhoneBR, maskPhoneBR } from "@/lib/phone";
 import { toast } from "@/hooks/use-toast";

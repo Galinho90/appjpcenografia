@@ -13,6 +13,7 @@ import logoJpEventos from "@/assets/logo-jp-eventos.png";
 export default function Login() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { signIn, session } = useAuth();
   const navigate = useNavigate();

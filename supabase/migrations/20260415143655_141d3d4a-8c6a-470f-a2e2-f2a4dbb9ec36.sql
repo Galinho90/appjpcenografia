@@ -7,7 +7,7 @@ DO $$ BEGIN
 END $$;
 
 -- User roles table
-CREATE TABLE public.user_roles (
+CREATE TABLE IF NOT EXISTS public.user_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   role app_role NOT NULL,
@@ -55,7 +55,7 @@ CREATE POLICY "Admins can manage roles"
   WITH CHECK (public.has_role(auth.uid(), 'admin'));
 
 -- Colaboradores
-CREATE TABLE public.colaboradores (
+CREATE TABLE IF NOT EXISTS public.colaboradores (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   nome TEXT NOT NULL,
   cpf TEXT NOT NULL UNIQUE,
@@ -88,7 +88,7 @@ CREATE POLICY "Admin can delete colaboradores"
   USING (public.has_role(auth.uid(), 'admin'));
 
 -- Diarias
-CREATE TABLE public.diarias (
+CREATE TABLE IF NOT EXISTS public.diarias (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   colaborador_id UUID REFERENCES public.colaboradores(id) ON DELETE CASCADE NOT NULL,
   data DATE NOT NULL,
@@ -116,7 +116,7 @@ CREATE POLICY "Admin can delete diarias"
   USING (public.has_role(auth.uid(), 'admin'));
 
 -- Vales
-CREATE TABLE public.vales (
+CREATE TABLE IF NOT EXISTS public.vales (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   colaborador_id UUID REFERENCES public.colaboradores(id) ON DELETE CASCADE NOT NULL,
   data DATE NOT NULL,
@@ -142,7 +142,7 @@ CREATE POLICY "Admin can delete vales"
   USING (public.has_role(auth.uid(), 'admin'));
 
 -- Reembolsos
-CREATE TABLE public.reembolsos (
+CREATE TABLE IF NOT EXISTS public.reembolsos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   colaborador_id UUID REFERENCES public.colaboradores(id) ON DELETE CASCADE NOT NULL,
   data DATE NOT NULL,
@@ -168,7 +168,7 @@ CREATE POLICY "Admin can delete reembolsos"
   USING (public.has_role(auth.uid(), 'admin'));
 
 -- Fechamentos
-CREATE TABLE public.fechamentos (
+CREATE TABLE IF NOT EXISTS public.fechamentos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   colaborador_id UUID REFERENCES public.colaboradores(id) ON DELETE CASCADE NOT NULL,
   periodo_inicio DATE NOT NULL,
@@ -199,7 +199,7 @@ CREATE POLICY "Admin can delete fechamentos"
   USING (public.has_role(auth.uid(), 'admin'));
 
 -- Transacoes Log
-CREATE TABLE public.transacoes_log (
+CREATE TABLE IF NOT EXISTS public.transacoes_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   fechamento_id UUID REFERENCES public.fechamentos(id) ON DELETE CASCADE NOT NULL,
   tipo TEXT NOT NULL DEFAULT 'pix',

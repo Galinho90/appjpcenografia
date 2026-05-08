@@ -117,8 +117,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (phone: string, password: string) => {
     const email = phoneToEmail(phone);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: error.message };
+
+    const uid = data.user?.id;
+    if (uid) {
+      const { data: colab } = await supabase
+        .from("colaboradores")
+        .select("ativo")
+        .eq("user_id", uid)
+        .maybeSingle();
+      if (colab && colab.ativo === false) {
+        await supabase.auth.signOut();
+        return { error: "Usuário inativo. Contate o administrador." };
+      }
+    }
     return { error: null };
   }, []);
 

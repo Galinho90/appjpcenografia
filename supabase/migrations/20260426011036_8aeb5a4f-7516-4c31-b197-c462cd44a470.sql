@@ -1,6 +1,6 @@
 
 -- Tabela notas_fiscais
-CREATE TABLE public.notas_fiscais (
+CREATE TABLE IF NOT EXISTS public.notas_fiscais (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   fechamento_id UUID NOT NULL,
   colaborador_id UUID NOT NULL,

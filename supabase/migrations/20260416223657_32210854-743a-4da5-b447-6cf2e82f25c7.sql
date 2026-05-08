@@ -1,4 +1,4 @@
-CREATE TABLE public.clientes (
+CREATE TABLE IF NOT EXISTS public.clientes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   cnpj text NOT NULL UNIQUE,
   razao_social text NOT NULL,

@@ -28,12 +28,16 @@ DROP POLICY IF EXISTS "categorias insert all" ON public.categorias;
 DROP POLICY IF EXISTS "categorias select all" ON public.categorias;
 DROP POLICY IF EXISTS "categorias update all" ON public.categorias;
 
+DROP POLICY IF EXISTS "Authenticated view categorias" ON public.categorias;
 CREATE POLICY "Authenticated view categorias" ON public.categorias
   FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Admin/Gerente insert categorias" ON public.categorias;
 CREATE POLICY "Admin/Gerente insert categorias" ON public.categorias
   FOR INSERT TO authenticated WITH CHECK (public.is_admin_or_gerente(auth.uid()));
+DROP POLICY IF EXISTS "Admin/Gerente update categorias" ON public.categorias;
 CREATE POLICY "Admin/Gerente update categorias" ON public.categorias
   FOR UPDATE TO authenticated USING (public.is_admin_or_gerente(auth.uid()));
+DROP POLICY IF EXISTS "Admin delete categorias" ON public.categorias;
 CREATE POLICY "Admin delete categorias" ON public.categorias
   FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role));
 
@@ -43,12 +47,16 @@ DROP POLICY IF EXISTS "Delete clientes liberado" ON public.clientes;
 DROP POLICY IF EXISTS "Insert clientes liberado" ON public.clientes;
 DROP POLICY IF EXISTS "Update clientes liberado" ON public.clientes;
 
+DROP POLICY IF EXISTS "Authenticated view clientes" ON public.clientes;
 CREATE POLICY "Authenticated view clientes" ON public.clientes
   FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Admin/Gerente insert clientes" ON public.clientes;
 CREATE POLICY "Admin/Gerente insert clientes" ON public.clientes
   FOR INSERT TO authenticated WITH CHECK (public.is_admin_or_gerente(auth.uid()));
+DROP POLICY IF EXISTS "Admin/Gerente update clientes" ON public.clientes;
 CREATE POLICY "Admin/Gerente update clientes" ON public.clientes
   FOR UPDATE TO authenticated USING (public.is_admin_or_gerente(auth.uid()));
+DROP POLICY IF EXISTS "Admin delete clientes" ON public.clientes;
 CREATE POLICY "Admin delete clientes" ON public.clientes
   FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role));
 
@@ -58,12 +66,16 @@ DROP POLICY IF EXISTS "lancamentos insert all" ON public.lancamentos;
 DROP POLICY IF EXISTS "lancamentos select all" ON public.lancamentos;
 DROP POLICY IF EXISTS "lancamentos update all" ON public.lancamentos;
 
+DROP POLICY IF EXISTS "Authenticated view lancamentos" ON public.lancamentos;
 CREATE POLICY "Authenticated view lancamentos" ON public.lancamentos
   FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Admin/Gerente insert lancamentos" ON public.lancamentos;
 CREATE POLICY "Admin/Gerente insert lancamentos" ON public.lancamentos
   FOR INSERT TO authenticated WITH CHECK (public.is_admin_or_gerente(auth.uid()));
+DROP POLICY IF EXISTS "Admin/Gerente update lancamentos" ON public.lancamentos;
 CREATE POLICY "Admin/Gerente update lancamentos" ON public.lancamentos
   FOR UPDATE TO authenticated USING (public.is_admin_or_gerente(auth.uid()));
+DROP POLICY IF EXISTS "Admin delete lancamentos" ON public.lancamentos;
 CREATE POLICY "Admin delete lancamentos" ON public.lancamentos
   FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role));
 

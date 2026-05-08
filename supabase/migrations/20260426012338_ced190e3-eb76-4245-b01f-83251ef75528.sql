@@ -1,5 +1,5 @@
 -- Tabela de notificações in-app
-CREATE TABLE public.notificacoes (
+CREATE TABLE IF NOT EXISTS public.notificacoes (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL,
   titulo TEXT NOT NULL,

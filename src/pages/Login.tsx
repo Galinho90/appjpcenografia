@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn } from "lucide-react";
+import { LogIn, Phone, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { isValidPhoneBR, maskPhoneBR } from "@/lib/phone";
 import { toast } from "@/hooks/use-toast";
@@ -14,6 +13,7 @@ import logoJpEventos from "@/assets/logo-jp-eventos.png";
 export default function Login() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { signIn, session } = useAuth();
   const navigate = useNavigate();
@@ -53,47 +53,109 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/20 p-4">
-      <Card className="w-full max-w-md shadow-2xl border-none">
-        <CardHeader className="text-center space-y-2">
-          <div className="mx-auto h-32 w-32 rounded-2xl bg-white flex items-center justify-center mb-3 shadow-md p-3">
-            <img src={logoSrc} alt={empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"} className="h-full w-full object-contain" />
+    <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary/80 to-secondary p-4">
+      {/* Decorative blurred shapes */}
+      <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl animate-pulse" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-secondary/50 blur-3xl animate-pulse" />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-glow/30 blur-3xl" />
+
+      {/* Grid pattern overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        style={{
+          backgroundImage:
+            "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      <div className="relative w-full max-w-md">
+        {/* Glow halo behind card */}
+        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-accent via-primary-glow to-secondary opacity-60 blur-xl" />
+
+        <div className="relative rounded-3xl bg-card/90 backdrop-blur-xl border border-border/50 shadow-2xl p-8 sm:p-10">
+          {/* Logo */}
+          <div className="flex flex-col items-center text-center mb-8">
+            <div className="relative mb-4">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary to-secondary blur-md opacity-50" />
+              <div className="relative h-24 w-24 rounded-2xl bg-white flex items-center justify-center shadow-lg p-2 ring-1 ring-border/40">
+                <img
+                  src={logoSrc}
+                  alt={empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary via-primary-glow to-secondary bg-clip-text text-transparent">
+              Bem-vindo de volta
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              Acesse sua conta para continuar
+            </p>
           </div>
-          <CardDescription>Acesse o sistema com seu celular</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="grid gap-4">
+
+          <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="phone">Celular</Label>
-              <Input
-                id="phone"
-                type="tel"
-                inputMode="numeric"
-                placeholder="(11) 99999-8888"
-                value={phone}
-                onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
-                autoComplete="tel"
-              />
+              <Label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Celular
+              </Label>
+              <div className="relative group">
+                <Phone className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="(11) 99999-8888"
+                  value={phone}
+                  onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
+                  autoComplete="tel"
+                  className="h-12 pl-10 bg-background/60 border-border/60 focus-visible:ring-primary/40 transition-all"
+                />
+              </div>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-              />
+              <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Senha
+              </Label>
+              <div className="relative group">
+                <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  className="h-12 pl-10 pr-10 bg-background/60 border-border/60 focus-visible:ring-primary/40 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
-            <Button type="submit" className="w-full gap-2" disabled={submitting}>
-              <LogIn className="h-4 w-4" /> {submitting ? "Entrando..." : "Entrar"}
+
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full h-12 gap-2 text-base font-semibold bg-gradient-to-r from-primary to-secondary hover:opacity-90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all"
+            >
+              <LogIn className="h-4 w-4" />
+              {submitting ? "Entrando..." : "Entrar"}
             </Button>
           </form>
-        </CardContent>
-      </Card>
+
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            {empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"} · Plataforma de gestão
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

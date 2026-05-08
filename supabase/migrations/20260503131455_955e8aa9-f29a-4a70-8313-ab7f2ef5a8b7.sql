@@ -2,10 +2,12 @@
 -- 1. colaboradores: restrict SELECT — visualizador only own row
 DROP POLICY IF EXISTS "Authenticated can view colaboradores" ON public.colaboradores;
 
+DROP POLICY IF EXISTS "Admin/Gerente view all colaboradores" ON public.colaboradores;
 CREATE POLICY "Admin/Gerente view all colaboradores" ON public.colaboradores
   FOR SELECT TO authenticated
   USING (public.is_admin_or_gerente(auth.uid()));
 
+DROP POLICY IF EXISTS "Diarista view own colaborador" ON public.colaboradores;
 CREATE POLICY "Diarista view own colaborador" ON public.colaboradores
   FOR SELECT TO authenticated
   USING (user_id = auth.uid());

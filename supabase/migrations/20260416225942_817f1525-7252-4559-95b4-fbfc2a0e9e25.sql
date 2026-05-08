@@ -1,5 +1,5 @@
 -- Categorias de lançamento
-CREATE TABLE public.categorias (
+CREATE TABLE IF NOT EXISTS public.categorias (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   descricao text NOT NULL UNIQUE,
   tipo text NOT NULL CHECK (tipo IN ('C','D')),
@@ -10,9 +10,13 @@ CREATE TABLE public.categorias (
 
 ALTER TABLE public.categorias ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "categorias select all" ON public.categorias;
 CREATE POLICY "categorias select all" ON public.categorias FOR SELECT USING (true);
+DROP POLICY IF EXISTS "categorias insert all" ON public.categorias;
 CREATE POLICY "categorias insert all" ON public.categorias FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "categorias update all" ON public.categorias;
 CREATE POLICY "categorias update all" ON public.categorias FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "categorias delete all" ON public.categorias;
 CREATE POLICY "categorias delete all" ON public.categorias FOR DELETE USING (true);
 
 CREATE TRIGGER categorias_updated_at
@@ -32,7 +36,7 @@ INSERT INTO public.categorias (descricao, tipo) VALUES
   ('VALE', 'D');
 
 -- Tabela unificada de lançamentos
-CREATE TABLE public.lancamentos (
+CREATE TABLE IF NOT EXISTS public.lancamentos (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   colaborador_id uuid NOT NULL REFERENCES public.colaboradores(id) ON DELETE CASCADE,
   categoria_id uuid NOT NULL REFERENCES public.categorias(id),
@@ -51,9 +55,13 @@ CREATE INDEX idx_lancamentos_categoria ON public.lancamentos(categoria_id);
 
 ALTER TABLE public.lancamentos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "lancamentos select all" ON public.lancamentos;
 CREATE POLICY "lancamentos select all" ON public.lancamentos FOR SELECT USING (true);
+DROP POLICY IF EXISTS "lancamentos insert all" ON public.lancamentos;
 CREATE POLICY "lancamentos insert all" ON public.lancamentos FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "lancamentos update all" ON public.lancamentos;
 CREATE POLICY "lancamentos update all" ON public.lancamentos FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "lancamentos delete all" ON public.lancamentos;
 CREATE POLICY "lancamentos delete all" ON public.lancamentos FOR DELETE USING (true);
 
 CREATE TRIGGER lancamentos_updated_at

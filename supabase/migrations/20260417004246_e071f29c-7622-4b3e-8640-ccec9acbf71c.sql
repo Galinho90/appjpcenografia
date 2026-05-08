@@ -1,4 +1,4 @@
-CREATE TABLE public.configuracoes_empresa (
+CREATE TABLE IF NOT EXISTS public.configuracoes_empresa (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   razao_social TEXT NOT NULL DEFAULT '',
   nome_fantasia TEXT,

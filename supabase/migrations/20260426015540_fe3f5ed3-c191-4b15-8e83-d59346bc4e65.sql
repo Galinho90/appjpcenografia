@@ -1,5 +1,5 @@
 -- Tabela de configuração SMTP (linha única)
-CREATE TABLE public.smtp_config (
+CREATE TABLE IF NOT EXISTS public.smtp_config (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   host TEXT NOT NULL,
   port INTEGER NOT NULL DEFAULT 587,
@@ -37,7 +37,7 @@ CREATE TRIGGER update_smtp_config_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Tabela de log de envios
-CREATE TABLE public.email_log (
+CREATE TABLE IF NOT EXISTS public.email_log (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   to_email TEXT NOT NULL,
   subject TEXT NOT NULL,
@@ -58,7 +58,7 @@ CREATE POLICY "Admin/Gerente view email_log"
 CREATE INDEX idx_email_log_created_at ON public.email_log(created_at DESC);
 
 -- Tabela de tokens de redefinição de senha (fluxo próprio via SMTP)
-CREATE TABLE public.password_reset_tokens (
+CREATE TABLE IF NOT EXISTS public.password_reset_tokens (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   token TEXT NOT NULL UNIQUE,
   user_id UUID NOT NULL,

@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useColaboradores,
   useCategorias,
+  useClientes,
   useLancamentos,
   useCreateLancamento,
   useUpdateLancamento,

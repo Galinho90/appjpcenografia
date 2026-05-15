@@ -82,6 +82,7 @@ export default function Diarias() {
   const { data: lancamentos = [], isLoading } = useLancamentos();
   const { data: colaboradores = [] } = useColaboradores();
   const { data: categorias = [] } = useCategorias();
+  const { data: clientes = [] } = useClientes();
   const createMutation = useCreateLancamento();
   const updateMutation = useUpdateLancamento();
   const deleteMutation = useDeleteLancamento();

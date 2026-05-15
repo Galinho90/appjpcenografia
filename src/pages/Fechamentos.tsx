@@ -283,6 +283,24 @@ export default function Fechamentos() {
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             {canEdit && f.status === "pendente" && (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className="gap-1"
+                                onClick={() => setPixTarget(f)}
+                                disabled={!(f.colaborador as any)?.chave_pix || !integAtiva}
+                                title={
+                                  !integAtiva
+                                    ? "Nenhuma integração bancária ativa"
+                                    : !(f.colaborador as any)?.chave_pix
+                                    ? "Colaborador sem chave PIX"
+                                    : `Pagar via ${integAtiva.banco.toUpperCase()}`
+                                }
+                              >
+                                <Send className="h-3 w-3" /> Pagar PIX
+                              </Button>
+                            )}
+                            {canEdit && f.status === "pendente" && (
                               <Button size="sm" className="gap-1" onClick={() => handleMarcarPago(f.id)} disabled={updateStatus.isPending}>
                                 <DollarSign className="h-3 w-3" /> Marcar Pago
                               </Button>

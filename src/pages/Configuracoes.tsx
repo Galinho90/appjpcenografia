@@ -12,6 +12,7 @@ import { Building2, Users, SlidersHorizontal, Plug, CheckCircle2, XCircle, Save,
 import SmtpSettings from "@/components/SmtpSettings";
 import EmailTemplatesSettings from "@/components/EmailTemplatesSettings";
 import NotificacaoLogsSettings from "@/components/NotificacaoLogsSettings";
+import IntegracoesBancariasSettings from "@/components/IntegracoesBancariasSettings";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";

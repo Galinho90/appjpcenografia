@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Calculator, DollarSign, Clock, CheckCircle2, ChevronLeft, ChevronRight, Trash2, RotateCcw } from "lucide-react";
+import { Calculator, DollarSign, Clock, CheckCircle2, ChevronLeft, ChevronRight, Trash2, RotateCcw, Send } from "lucide-react";
 import { getStatusBadge } from "@/lib/statusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import {
   useFechamentos, useGerarFechamentos, useUpdateFechamentoStatus, useDeleteFechamento,
 } from "@/hooks/useSupabaseData";
 import { usePermissions } from "@/hooks/usePermissions";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Configuração de status agora vem de @/lib/statusBadge (padrão visual unificado).
 

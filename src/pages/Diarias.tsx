@@ -115,6 +115,7 @@ export default function Diarias() {
     setForm({
       colaborador_id: l.colaborador_id,
       categoria_id: l.categoria_id,
+      cliente_id: (l as any).cliente_id || "",
       data: l.data,
       hora_entrada: l.hora_entrada || "",
       hora_saida: l.hora_saida || "",

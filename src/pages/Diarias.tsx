@@ -180,6 +180,7 @@ export default function Diarias() {
       const payload = {
         colaborador_id: form.colaborador_id,
         categoria_id: form.categoria_id,
+        cliente_id: form.cliente_id || null,
         data: form.data,
         hora_entrada: isDiaria && form.hora_entrada ? form.hora_entrada : null,
         hora_saida: isDiaria && form.hora_saida ? form.hora_saida : null,

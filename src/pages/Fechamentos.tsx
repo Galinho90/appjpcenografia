@@ -133,7 +133,7 @@ export default function Fechamentos() {
     }
   };
 
-
+  const handleGerar = async () => {
     try {
       const res = await gerar.mutateAsync({ periodo_inicio: inicioISO, periodo_fim: fimISO });
       toast({

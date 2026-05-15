@@ -42,7 +42,7 @@ const fmtBRL = (n: number) =>
 
 export default function Fechamentos() {
   const { toast } = useToast();
-  const { canEdit } = usePermissions();
+  const { canEdit, isAdmin } = usePermissions();
   const { data: fechamentos = [], isLoading } = useFechamentos();
   const gerar = useGerarFechamentos();
   const updateStatus = useUpdateFechamentoStatus();

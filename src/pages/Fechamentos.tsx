@@ -86,8 +86,54 @@ export default function Fechamentos() {
   const totalPago = fechamentosQ.filter(f => f.status === 'pago').reduce((s, f) => s + f.valor_final, 0);
 
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [pixTarget, setPixTarget] = useState<any | null>(null);
+  const [pixSending, setPixSending] = useState(false);
+  const qc = useQueryClient();
 
-  const handleGerar = async () => {
+  const { data: integAtiva } = useQuery({
+    queryKey: ["integracao_ativa"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("integracoes_bancarias")
+        .select("banco, apelido")
+        .eq("ativo", true)
+        .maybeSingle();
+      return data as { banco: string; apelido: string } | null;
+    },
+  });
+
+  const handleEnviarPix = async () => {
+    if (!pixTarget) return;
+    setPixSending(true);
+    try {
+      const colab = pixTarget.colaborador as any;
+      const { data, error } = await supabase.functions.invoke("pix-pagamento", {
+        body: {
+          fechamento_id: pixTarget.id,
+          valor: Number(pixTarget.valor_final),
+          chave_pix: colab?.chave_pix,
+          favorecido: { nome: colab?.nome, documento: colab?.cpf },
+          descricao: `Fechamento ${pixTarget.periodo_inicio} a ${pixTarget.periodo_fim}`,
+        },
+      });
+      if (error) throw error;
+      const mock = (data as any)?.mock;
+      toast({
+        title: mock ? "PIX simulado (modo dev)" : "PIX enviado!",
+        description: mock
+          ? "Sem credenciais reais; transação registrada apenas no log."
+          : `Transação ${(data as any)?.transacao_id ?? ""}`,
+      });
+      qc.invalidateQueries({ queryKey: ["fechamentos"] });
+      setPixTarget(null);
+    } catch (e: any) {
+      toast({ title: "Erro ao enviar PIX", description: e.message, variant: "destructive" });
+    } finally {
+      setPixSending(false);
+    }
+  };
+
+
     try {
       const res = await gerar.mutateAsync({ periodo_inicio: inicioISO, periodo_fim: fimISO });
       toast({

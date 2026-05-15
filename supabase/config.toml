@@ -26,3 +26,10 @@ verify_jwt = false
 
 [functions.notify-nota-fiscal]
 verify_jwt = false
+
+[functions.inter-pix-pagamento]
+verify_jwt = false
+
+[functions.pix-pagamento]
+verify_jwt = false
+

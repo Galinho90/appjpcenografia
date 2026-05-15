@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Calculator, DollarSign, Clock, CheckCircle2, ChevronLeft, ChevronRight, Trash2, RotateCcw } from "lucide-react";
+import { Calculator, DollarSign, Clock, CheckCircle2, ChevronLeft, ChevronRight, Trash2, RotateCcw, Send } from "lucide-react";
 import { getStatusBadge } from "@/lib/statusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import {
   useFechamentos, useGerarFechamentos, useUpdateFechamentoStatus, useDeleteFechamento,
 } from "@/hooks/useSupabaseData";
 import { usePermissions } from "@/hooks/usePermissions";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Configuração de status agora vem de @/lib/statusBadge (padrão visual unificado).
 
@@ -84,6 +86,52 @@ export default function Fechamentos() {
   const totalPago = fechamentosQ.filter(f => f.status === 'pago').reduce((s, f) => s + f.valor_final, 0);
 
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [pixTarget, setPixTarget] = useState<any | null>(null);
+  const [pixSending, setPixSending] = useState(false);
+  const qc = useQueryClient();
+
+  const { data: integAtiva } = useQuery({
+    queryKey: ["integracao_ativa"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("integracoes_bancarias")
+        .select("banco, apelido")
+        .eq("ativo", true)
+        .maybeSingle();
+      return data as { banco: string; apelido: string } | null;
+    },
+  });
+
+  const handleEnviarPix = async () => {
+    if (!pixTarget) return;
+    setPixSending(true);
+    try {
+      const colab = pixTarget.colaborador as any;
+      const { data, error } = await supabase.functions.invoke("pix-pagamento", {
+        body: {
+          fechamento_id: pixTarget.id,
+          valor: Number(pixTarget.valor_final),
+          chave_pix: colab?.chave_pix,
+          favorecido: { nome: colab?.nome, documento: colab?.cpf },
+          descricao: `Fechamento ${pixTarget.periodo_inicio} a ${pixTarget.periodo_fim}`,
+        },
+      });
+      if (error) throw error;
+      const mock = (data as any)?.mock;
+      toast({
+        title: mock ? "PIX simulado (modo dev)" : "PIX enviado!",
+        description: mock
+          ? "Sem credenciais reais; transação registrada apenas no log."
+          : `Transação ${(data as any)?.transacao_id ?? ""}`,
+      });
+      qc.invalidateQueries({ queryKey: ["fechamentos"] });
+      setPixTarget(null);
+    } catch (e: any) {
+      toast({ title: "Erro ao enviar PIX", description: e.message, variant: "destructive" });
+    } finally {
+      setPixSending(false);
+    }
+  };
 
   const handleGerar = async () => {
     try {
@@ -235,6 +283,24 @@ export default function Fechamentos() {
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             {canEdit && f.status === "pendente" && (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className="gap-1"
+                                onClick={() => setPixTarget(f)}
+                                disabled={!(f.colaborador as any)?.chave_pix || !integAtiva}
+                                title={
+                                  !integAtiva
+                                    ? "Nenhuma integração bancária ativa"
+                                    : !(f.colaborador as any)?.chave_pix
+                                    ? "Colaborador sem chave PIX"
+                                    : `Pagar via ${integAtiva.banco.toUpperCase()}`
+                                }
+                              >
+                                <Send className="h-3 w-3" /> Pagar PIX
+                              </Button>
+                            )}
+                            {canEdit && f.status === "pendente" && (
                               <Button size="sm" className="gap-1" onClick={() => handleMarcarPago(f.id)} disabled={updateStatus.isPending}>
                                 <DollarSign className="h-3 w-3" /> Marcar Pago
                               </Button>
@@ -273,6 +339,32 @@ export default function Fechamentos() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
               Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!pixTarget} onOpenChange={(o) => !o && !pixSending && setPixTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar pagamento PIX?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <div>
+                  Banco ativo:{" "}
+                  <strong className="uppercase">{integAtiva?.banco ?? "—"}</strong>{" "}
+                  {integAtiva?.apelido ? `(${integAtiva.apelido})` : ""}
+                </div>
+                <div>Colaborador: <strong>{(pixTarget?.colaborador as any)?.nome}</strong></div>
+                <div>Chave PIX: <strong>{(pixTarget?.colaborador as any)?.chave_pix}</strong></div>
+                <div>Valor: <strong>{pixTarget ? fmtBRL(Number(pixTarget.valor_final)) : ""}</strong></div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pixSending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); handleEnviarPix(); }} disabled={pixSending}>
+              {pixSending ? "Enviando..." : "Confirmar e enviar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -369,6 +369,42 @@ export type Database = {
           },
         ]
       }
+      integracoes_bancarias: {
+        Row: {
+          ambiente: string
+          apelido: string
+          ativo: boolean
+          banco: string
+          conta_corrente: string | null
+          created_at: string
+          id: string
+          observacoes: string | null
+          updated_at: string
+        }
+        Insert: {
+          ambiente?: string
+          apelido: string
+          ativo?: boolean
+          banco: string
+          conta_corrente?: string | null
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ambiente?: string
+          apelido?: string
+          ativo?: boolean
+          banco?: string
+          conta_corrente?: string | null
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lancamentos: {
         Row: {
           categoria_id: string

@@ -247,7 +247,7 @@ export function useFechamentos() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("fechamentos")
-        .select("*, colaboradores(id, nome, funcao)")
+        .select("*, colaboradores(id, nome, funcao, cpf, chave_pix)")
         .order("periodo_inicio", { ascending: false });
       if (error) throw error;
       return (data ?? []).map((f) => ({

@@ -29,6 +29,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 const emptyForm = {
   colaborador_id: "",
   categoria_id: "",
+  cliente_id: "",
   data: "",
   hora_entrada: "",
   hora_saida: "",

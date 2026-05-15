@@ -372,6 +372,7 @@ export type Database = {
       lancamentos: {
         Row: {
           categoria_id: string
+          cliente_id: string | null
           colaborador_id: string
           created_at: string
           data: string
@@ -385,6 +386,7 @@ export type Database = {
         }
         Insert: {
           categoria_id: string
+          cliente_id?: string | null
           colaborador_id: string
           created_at?: string
           data: string
@@ -398,6 +400,7 @@ export type Database = {
         }
         Update: {
           categoria_id?: string
+          cliente_id?: string | null
           colaborador_id?: string
           created_at?: string
           data?: string
@@ -415,6 +418,13 @@ export type Database = {
             columns: ["categoria_id"]
             isOneToOne: false
             referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
           {

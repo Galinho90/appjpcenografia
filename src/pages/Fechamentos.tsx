@@ -343,6 +343,32 @@ export default function Fechamentos() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!pixTarget} onOpenChange={(o) => !o && !pixSending && setPixTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar pagamento PIX?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <div>
+                  Banco ativo:{" "}
+                  <strong className="uppercase">{integAtiva?.banco ?? "—"}</strong>{" "}
+                  {integAtiva?.apelido ? `(${integAtiva.apelido})` : ""}
+                </div>
+                <div>Colaborador: <strong>{(pixTarget?.colaborador as any)?.nome}</strong></div>
+                <div>Chave PIX: <strong>{(pixTarget?.colaborador as any)?.chave_pix}</strong></div>
+                <div>Valor: <strong>{pixTarget ? fmtBRL(Number(pixTarget.valor_final)) : ""}</strong></div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pixSending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); handleEnviarPix(); }} disabled={pixSending}>
+              {pixSending ? "Enviando..." : "Confirmar e enviar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -275,7 +275,8 @@ export function useGerarFechamentos() {
         .from("lancamentos")
         .select("colaborador_id, valor, categorias(tipo, descricao)")
         .gte("data", periodo_inicio)
-        .lte("data", periodo_fim);
+        .lte("data", periodo_fim)
+        .range(0, 49999);
       if (lErr) throw lErr;
 
       const map = new Map<string, { diarias: number; vales: number; reembolsos: number }>();

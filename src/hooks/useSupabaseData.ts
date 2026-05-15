@@ -23,6 +23,13 @@ export type Lancamento = {
   colaborador?: { id: string; nome: string };
 };
 
+type LancamentosFilters = {
+  dataInicio?: string;
+  dataFim?: string;
+  colaboradorId?: string;
+  categoriaId?: string;
+};
+
 // ── Categorias ──
 export function useCategorias() {
   return useQuery({
@@ -69,18 +76,33 @@ export function useDeleteCategoria() {
 }
 
 // ── Lançamentos ──
-export function useLancamentos() {
+export function useLancamentos(filters: LancamentosFilters = {}) {
   return useQuery({
-    queryKey: ["lancamentos"],
+    queryKey: ["lancamentos", filters],
     queryFn: async (): Promise<Lancamento[]> => {
-      const { data, error } = await supabase
-        .from("lancamentos")
-        .select("*, categoria:categorias(*), colaborador:colaboradores(id, nome)")
-        .order("data", { ascending: false })
-        .order("created_at", { ascending: false })
-        .range(0, 49999);
-      if (error) throw error;
-      return (data ?? []).map((l: any) => ({ ...l, valor: Number(l.valor) })) as Lancamento[];
+      const pageSize = 1000;
+      const all: any[] = [];
+
+      for (let from = 0; ; from += pageSize) {
+        let query = supabase
+          .from("lancamentos")
+          .select("*, categoria:categorias(*), colaborador:colaboradores(id, nome)")
+          .order("data", { ascending: false })
+          .order("created_at", { ascending: false });
+
+        if (filters.dataInicio) query = query.gte("data", filters.dataInicio);
+        if (filters.dataFim) query = query.lte("data", filters.dataFim);
+        if (filters.colaboradorId && filters.colaboradorId !== "all") query = query.eq("colaborador_id", filters.colaboradorId);
+        if (filters.categoriaId && filters.categoriaId !== "all") query = query.eq("categoria_id", filters.categoriaId);
+
+        const { data, error } = await query.range(from, from + pageSize - 1);
+        if (error) throw error;
+
+        all.push(...(data ?? []));
+        if (!data || data.length < pageSize) break;
+      }
+
+      return all.map((l: any) => ({ ...l, valor: Number(l.valor) })) as Lancamento[];
     },
   });
 }

@@ -42,7 +42,7 @@ const fmtBRL = (n: number) =>
 
 export default function Fechamentos() {
   const { toast } = useToast();
-  const { canEdit } = usePermissions();
+  const { canEdit, isAdmin } = usePermissions();
   const { data: fechamentos = [], isLoading } = useFechamentos();
   const gerar = useGerarFechamentos();
   const updateStatus = useUpdateFechamentoStatus();
@@ -282,7 +282,7 @@ export default function Fechamentos() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {canEdit && f.status === "pendente" && (
+                            {isAdmin && f.status === "pendente" && (
                               <Button
                                 size="sm"
                                 variant="secondary"
@@ -300,7 +300,7 @@ export default function Fechamentos() {
                                 <Send className="h-3 w-3" /> Pagar PIX
                               </Button>
                             )}
-                            {canEdit && f.status === "pendente" && (
+                            {isAdmin && f.status === "pendente" && (
                               <Button size="sm" className="gap-1" onClick={() => handleMarcarPago(f.id)} disabled={updateStatus.isPending}>
                                 <DollarSign className="h-3 w-3" /> Marcar Pago
                               </Button>

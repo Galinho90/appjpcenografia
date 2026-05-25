@@ -75,8 +75,8 @@ export default function Login() {
           {/* Logo */}
           <div className="flex flex-col items-center text-center mb-8">
             <div className="relative mb-4">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary to-secondary blur-md opacity-50" />
-              <div className="relative h-24 w-24 rounded-2xl bg-white flex items-center justify-center shadow-lg p-2 ring-1 ring-border/40">
+              <div className="absolute inset-0 rounded-2xl bg-white/20 blur-md opacity-50" />
+              <div className="relative h-24 w-24 rounded-2xl bg-white flex items-center justify-center shadow-lg p-2 ring-1 ring-white/20">
                 <img
                   src={logoSrc}
                   alt={empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"}
@@ -84,11 +84,11 @@ export default function Login() {
                 />
               </div>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary via-primary-glow to-secondary bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold tracking-tight text-white">
               Bem-vindo de volta
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <p className="mt-1 text-sm text-slate-400 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-slate-300" />
               Acesse sua conta para continuar
             </p>
           </div>

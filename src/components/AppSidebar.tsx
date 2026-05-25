@@ -100,6 +100,35 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {role !== "visualizador" && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/60">Financeiro</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {financeiroMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location.pathname === item.url}
+                      className={collapsed ? "justify-center" : ""}
+                    >
+                      <NavLink
+                        to={item.url}
+                        end={item.url === "/financeiro"}
+                        className={`hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}
+                        activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                      >
+                        <item.icon className={`h-4 w-4 ${collapsed ? "" : "mr-2"}`} />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4 space-y-2">

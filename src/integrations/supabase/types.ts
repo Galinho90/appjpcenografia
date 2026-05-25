@@ -783,6 +783,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_company_branding: {
+        Args: never
+        Returns: {
+          id: string
+          logo_url: string
+          nome_fantasia: string
+          razao_social: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

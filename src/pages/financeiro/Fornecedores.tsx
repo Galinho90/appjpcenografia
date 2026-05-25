@@ -240,7 +240,7 @@ export default function Fornecedores() {
                       </TableCell>
                       <TableCell className="text-xs">{f.chave_pix || "—"}</TableCell>
                       <TableCell>
-                        <Badge variant={f.ativo ? "default" : "outline"} className="text-[10px]">
+                        <Badge variant={f.ativo ? "default" : "outline"} className={`text-[10px] ${!f.ativo ? "bg-red-500 text-white border-red-500 hover:bg-red-600" : ""}`}>
                           {f.ativo ? "Ativo" : "Inativo"}
                         </Badge>
                       </TableCell>

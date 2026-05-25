@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Pencil, Trash2, Search, Truck, Power } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Truck, Power, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,40 @@ export default function Fornecedores() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [buscandoCnpj, setBuscandoCnpj] = useState(false);
+
+  const onlyDigits = (s: string) => s.replace(/\D/g, "");
+
+  const buscarCnpj = async () => {
+    const cnpj = onlyDigits(form.documento);
+    if (cnpj.length !== 14) {
+      toast({ title: "CNPJ inválido", description: "Informe 14 dígitos.", variant: "destructive" });
+      return;
+    }
+    setBuscandoCnpj(true);
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
+      if (!res.ok) throw new Error("CNPJ não encontrado");
+      const d = await res.json();
+      setForm((f) => ({
+        ...f,
+        nome: d.razao_social || d.nome_fantasia || f.nome,
+        email: d.email || f.email,
+        telefone: d.ddd_telefone_1 || f.telefone,
+        observacoes: [
+          d.logradouro && `${d.logradouro}, ${d.numero || "S/N"}${d.complemento ? " - " + d.complemento : ""}`,
+          d.bairro,
+          d.municipio && `${d.municipio}/${d.uf}`,
+          d.cep && `CEP ${d.cep}`,
+        ].filter(Boolean).join(" - ") || f.observacoes,
+      }));
+      toast({ title: "Dados preenchidos" });
+    } catch (e: any) {
+      toast({ title: "Erro ao buscar CNPJ", description: e.message, variant: "destructive" });
+    } finally {
+      setBuscandoCnpj(false);
+    }
+  };
 
   const categoriasDespesa = categorias.filter((c) => c.tipo === "despesa");
 
@@ -240,11 +274,6 @@ export default function Fornecedores() {
             <DialogTitle>{editingId ? "Editar" : "Novo"} fornecedor</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label>Nome / Razão social *</Label>
-              <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
-            </div>
-
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
                 <Label>Tipo doc.</Label>
@@ -259,8 +288,25 @@ export default function Fornecedores() {
               </div>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label>Documento</Label>
-                <Input value={form.documento} onChange={(e) => setForm({ ...form, documento: e.target.value })} />
+                <div className="flex gap-2">
+                  <Input
+                    value={form.documento}
+                    onChange={(e) => setForm({ ...form, documento: e.target.value })}
+                    onBlur={() => { if (form.tipo_documento === "cnpj" && onlyDigits(form.documento).length === 14 && !form.nome) buscarCnpj(); }}
+                    placeholder={form.tipo_documento === "cnpj" ? "00.000.000/0000-00" : ""}
+                  />
+                  {form.tipo_documento === "cnpj" && (
+                    <Button type="button" variant="outline" onClick={buscarCnpj} disabled={buscandoCnpj}>
+                      {buscandoCnpj ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                    </Button>
+                  )}
+                </div>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Nome / Razão social *</Label>
+              <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">

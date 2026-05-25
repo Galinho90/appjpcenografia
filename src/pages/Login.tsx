@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { LogIn, Phone, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { isValidPhoneBR, maskPhoneBR } from "@/lib/phone";
 import { toast } from "@/hooks/use-toast";
@@ -52,105 +53,106 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#0a1628] p-4 selection:bg-blue-400/20">
-      {/* Sophisticated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Subtle Radial Vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(96,165,250,0.06)_0%,_transparent_60%)]" />
-        {/* Fine Vertical Line */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[70%] w-[1px] bg-gradient-to-b from-transparent via-blue-200/[0.08] to-transparent" />
-        {/* Micro Grain Texture */}
-        <svg className="absolute inset-1 opacity-[0.08] mix-blend-overlay" width="100%" height="100%">
-          <filter id="noise">
-            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch" />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#noise)" />
-        </svg>
-      </div>
+    <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4">
+      {/* Subtle light glow — monochrome */}
+      <div className="pointer-events-none absolute top-0 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-white/[0.03] blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-white/[0.02] blur-[100px]" />
 
-      {/* Login Card */}
-      <div className="relative w-full max-w-[420px] bg-[#0d1f38] border border-blue-200/10 shadow-[0_20px_50px_rgba(0,10,30,0.8)] p-8 sm:p-10">
-        {/* Top Accent Line */}
-        <div className="absolute top-1 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-300/20 to-transparent" />
+      {/* Very faint dot pattern */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 0.5px, transparent 0.5px)",
+          backgroundSize: "24px 24px",
+        }}
+      />
 
-        {/* Logo */}
-        <div className="mb-10 text-center">
-          <div className="inline-block mb-6 p-3 border border-blue-200/10">
-            <div className="relative h-16 w-16 bg-white flex items-center justify-center">
-              <img
-                src={logoSrc}
-                alt={empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"}
-                className="h-14 w-14 object-contain"
-              />
+      <div className="relative w-full max-w-md">
+        {/* Glow halo behind card */}
+        <div className="absolute -inset-1 rounded-3xl bg-white/10 blur-xl" />
+
+        <div className="relative rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-2xl p-8 sm:p-10">
+          {/* Logo */}
+          <div className="flex flex-col items-center text-center mb-8">
+            <div className="relative mb-4">
+              <div className="absolute inset-0 rounded-2xl bg-white/20 blur-md opacity-50" />
+              <div className="relative h-24 w-24 rounded-2xl bg-white flex items-center justify-center shadow-lg p-2 ring-1 ring-white/20">
+                <img
+                  src={logoSrc}
+                  alt={empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"}
+                  className="h-full w-full object-contain"
+                />
+              </div>
             </div>
+            <h1 className="text-2xl font-bold tracking-tight text-white">
+              Bem-vindo de volta
+            </h1>
+            <p className="mt-1 text-sm text-slate-400 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-slate-300" />
+              Acesse sua conta para continuar
+            </p>
           </div>
-          <h1 className="text-white text-lg font-light tracking-[0.2em] uppercase mb-2">
-            {empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"}
-          </h1>
-          <p className="text-blue-200/30 text-[11px] tracking-wide">
-            Acesse sua conta para continuar
+
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Celular
+              </Label>
+              <div className="relative group">
+                <Phone className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="(11) 99999-8888"
+                  value={phone}
+                  onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
+                  autoComplete="tel"
+                  className="h-12 pl-10 bg-background/60 border-border/60 focus-visible:ring-primary/40 transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Senha
+              </Label>
+              <div className="relative group">
+                <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  className="h-12 pl-10 pr-10 bg-background/60 border-border/60 focus-visible:ring-primary/40 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full h-12 gap-2 text-base font-semibold bg-white text-slate-900 hover:bg-slate-100 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all"
+            >
+              <LogIn className="h-4 w-4" />
+              {submitting ? "Entrando..." : "Entrar"}
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            {empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"} · Plataforma de gestão
           </p>
         </div>
-
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-2">
-            <label className="block text-[10px] uppercase tracking-[0.2em] text-blue-200/30 ml-1 font-mono">
-              Celular
-            </label>
-            <Input
-              id="phone"
-              type="tel"
-              inputMode="numeric"
-              placeholder="(11) 99999-8888"
-              value={phone}
-              onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
-              autoComplete="tel"
-              className="h-11 w-full bg-blue-200/[0.03] border-blue-200/10 text-white text-sm rounded-none px-4 focus:outline-none focus:border-blue-300/30 focus-visible:ring-0 focus-visible:ring-transparent placeholder:text-blue-200/10 transition-colors"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-blue-200/30 ml-1 font-mono">
-                Senha
-              </label>
-              <a href="#" className="text-[10px] text-blue-200/20 hover:text-blue-100 transition-colors">
-                Esqueceu?
-              </a>
-            </div>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                className="h-11 w-full bg-blue-200/[0.03] border-blue-200/10 text-white text-sm rounded-none px-4 pr-10 focus:outline-none focus:border-blue-300/30 focus-visible:ring-5 focus-visible:ring-transparent placeholder:text-blue-200/10 transition-colors"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((s) => !s)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200/20 hover:text-blue-100/60 transition-colors"
-                aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={submitting}
-            className="w-full h-12 bg-white text-[#0a1628] text-[11px] font-semibold uppercase tracking-[0.15em] rounded-none hover:bg-blue-50 transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
-          >
-            {submitting ? "Entrando..." : "Entrar"}
-          </Button>
-        </form>
-
-        <p className="mt-10 pt-8 border-t border-blue-200/[0.04] text-center text-[10px] text-blue-200/20 tracking-wide">
-          {empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"} · Plataforma de gestão
-        </p>
       </div>
     </div>
   );

@@ -197,7 +197,7 @@ export function AppSidebar() {
         )}
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-3">
+      <SidebarContent className={cn("px-2 py-3", isMobile && "[&_a]:justify-center [&_button]:justify-center")}>
         <SidebarGroup>
           {!collapsed && (
             <SidebarGroupLabel className="px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -292,7 +292,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
+      <SidebarFooter className={cn("border-t border-sidebar-border p-3 space-y-2", isMobile && "[&_a]:justify-center [&_button]:justify-center")}>
         {canManageSettings && (
           <SidebarMenu>
             <SidebarMenuItem>

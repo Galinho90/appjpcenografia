@@ -23,9 +23,9 @@ type MenuItem = { title: string; url: string; icon: any };
 type MenuSection = { title: string; icon: any; items: MenuItem[] };
 
 const operacionalItems: MenuItem[] = [
+  { title: "Lançamentos", url: "/diarias", icon: CalendarDays },
   { title: "Extrato do Diarista", url: "/extrato", icon: FileText },
   { title: "Fechamento", url: "/fechamentos", icon: Wallet },
-  { title: "Lançamentos", url: "/diarias", icon: CalendarDays },
   { title: "Notas Fiscais", url: "/notas-fiscais", icon: Receipt },
   { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
 ];

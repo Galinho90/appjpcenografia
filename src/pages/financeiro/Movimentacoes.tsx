@@ -250,6 +250,9 @@ export default function Movimentacoes() {
                       <TableCell>{tipoIcon(m.tipo)}</TableCell>
                       <TableCell>
                         <div className="font-medium">{m.descricao}</div>
+                        {m.fornecedor && (
+                          <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
+                        )}
                         <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
                       </TableCell>
                       <TableCell>

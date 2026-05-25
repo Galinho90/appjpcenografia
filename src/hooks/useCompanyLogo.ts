@@ -5,14 +5,9 @@ export function useCompanyLogo() {
   return useQuery({
     queryKey: ["company_logo"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("configuracoes_empresa")
-        .select("id, logo_url, razao_social, nome_fantasia")
-        .order("created_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("get_company_branding");
       if (error) throw error;
-      return data;
+      return Array.isArray(data) ? data[0] ?? null : data ?? null;
     },
     staleTime: 60_000,
   });

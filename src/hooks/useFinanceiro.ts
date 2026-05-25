@@ -259,3 +259,50 @@ export function useSaldoConta(contaId: string | null, dataRef?: string) {
     },
   });
 }
+
+// ── Fornecedores ──
+export function useFornecedores(onlyActive = false) {
+  return useQuery({
+    queryKey: ["fornecedores", onlyActive],
+    queryFn: async () => {
+      let q = supabase.from("fornecedores" as any).select("*").order("nome");
+      if (onlyActive) q = q.eq("ativo", true);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as unknown as Fornecedor[];
+    },
+  });
+}
+
+export function useCreateFornecedor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<Fornecedor>) => {
+      const { error } = await supabase.from("fornecedores" as any).insert(data as any);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["fornecedores"] }),
+  });
+}
+
+export function useUpdateFornecedor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: Partial<Fornecedor> & { id: string }) => {
+      const { error } = await supabase.from("fornecedores" as any).update(data as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["fornecedores"] }),
+  });
+}
+
+export function useDeleteFornecedor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("fornecedores" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["fornecedores"] }),
+  });
+}

@@ -1,7 +1,8 @@
 import {
   LayoutDashboard, Users, CalendarDays, FileBarChart, FileText,
   Settings, Building2, Tags, LogOut, Wallet, BarChart3, Receipt,
-  DollarSign, ArrowDownUp, CalendarClock, Landmark,
+  DollarSign, ArrowDownUp, CalendarClock, Landmark, ChevronRight,
+  ClipboardList, FolderKanban,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -11,24 +12,35 @@ import { Button } from "@/components/ui/button";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
+  SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem,
   SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import logoJpEventos from "@/assets/logo-jp-eventos.png";
 import { useCompanyLogo } from "@/hooks/useCompanyLogo";
 
-const staffMenuItems = [
-  { title: "Home", url: "/", icon: LayoutDashboard },
+type MenuItem = { title: string; url: string; icon: any };
+type MenuSection = { title: string; icon: any; items: MenuItem[] };
+
+const operacionalItems: MenuItem[] = [
   { title: "Lançamentos", url: "/diarias", icon: CalendarDays },
   { title: "Extrato do Diarista", url: "/extrato", icon: FileText },
   { title: "Fechamento", url: "/fechamentos", icon: Wallet },
   { title: "Notas Fiscais", url: "/notas-fiscais", icon: Receipt },
+];
+
+const cadastrosItems: MenuItem[] = [
   { title: "Diaristas", url: "/colaboradores", icon: Users },
   { title: "Clientes", url: "/clientes", icon: Building2 },
   { title: "Categorias", url: "/categorias", icon: Tags },
-  { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
 ];
 
-const financeiroMenuItems = [
+const staffSections: MenuSection[] = [
+  { title: "Operacional", icon: ClipboardList, items: operacionalItems },
+  { title: "Cadastros", icon: FolderKanban, items: cadastrosItems },
+];
+
+const financeiroItems: MenuItem[] = [
   { title: "Dashboard", url: "/financeiro", icon: DollarSign },
   { title: "Movimentações", url: "/financeiro/movimentacoes", icon: ArrowDownUp },
   { title: "Contas a Pagar", url: "/financeiro/contas-pagar", icon: CalendarClock },
@@ -36,10 +48,82 @@ const financeiroMenuItems = [
   { title: "Plano de Contas", url: "/financeiro/categorias", icon: Tags },
 ];
 
-const diaristaMenuItems = [
+const diaristaMenuItems: MenuItem[] = [
   { title: "Meu Extrato", url: "/meu-extrato", icon: FileText },
   { title: "Minhas NFs", url: "/minhas-notas", icon: Receipt },
 ];
+
+function CollapsibleSection({
+  section,
+  collapsed,
+  pathname,
+}: {
+  section: MenuSection;
+  collapsed: boolean;
+  pathname: string;
+}) {
+  const isActiveSection = section.items.some((i) => pathname.startsWith(i.url));
+
+  // When sidebar is collapsed (icon-only), render flat icons (no collapsible chevron)
+  if (collapsed) {
+    return (
+      <SidebarMenu>
+        {section.items.map((item) => (
+          <SidebarMenuItem key={item.title}>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname === item.url}
+              tooltip={item.title}
+              className="justify-center"
+            >
+              <NavLink
+                to={item.url}
+                className="hover:bg-sidebar-accent justify-center"
+                activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+              >
+                <item.icon className="h-4 w-4" />
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+    );
+  }
+
+  return (
+    <Collapsible defaultOpen={isActiveSection} className="group/collapsible">
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton className="hover:bg-sidebar-accent">
+              <section.icon className="h-4 w-4 mr-2" />
+              <span className="flex-1 text-left">{section.title}</span>
+              <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarMenuSub>
+              {section.items.map((item) => (
+                <SidebarMenuSubItem key={item.title}>
+                  <SidebarMenuSubButton asChild isActive={pathname === item.url}>
+                    <NavLink
+                      to={item.url}
+                      className="hover:bg-sidebar-accent"
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    >
+                      <item.icon className="h-4 w-4 mr-2" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              ))}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </Collapsible>
+  );
+}
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -48,7 +132,6 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { user, role, signOut } = useAuth();
   const { canManageSettings } = usePermissions();
-  const menuItems = role === "visualizador" ? diaristaMenuItems : staffMenuItems;
   const { data: empresa } = useCompanyLogo();
   const logoSrc = empresa?.logo_url || logoJpEventos;
   const displayName = (user?.user_metadata as any)?.nome || (user?.user_metadata as any)?.phone || user?.email?.split("@")[0] || "Usuário";
@@ -58,15 +141,18 @@ export function AppSidebar() {
     navigate("/login", { replace: true });
   };
 
+  const isVisualizador = role === "visualizador";
+  const financeiroSection: MenuSection = { title: "Financeiro", icon: DollarSign, items: financeiroItems };
+  const financeiroActive = financeiroItems.some((i) => location.pathname.startsWith(i.url));
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className={collapsed ? "p-2" : "p-4"}>
-        {!collapsed && (
+        {!collapsed ? (
           <div className="rounded-lg bg-white px-3 py-2 w-fit mx-auto">
             <img src={logoSrc} alt="Logo da empresa" className="h-12 w-auto object-contain block" />
           </div>
-        )}
-        {collapsed && (
+        ) : (
           <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center mx-auto">
             <img src={logoSrc} alt="Logo" className="h-6 w-6 object-contain" />
           </div>
@@ -75,19 +161,41 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/60">Diárias</SidebarGroupLabel>
+          {!collapsed && <SidebarGroupLabel className="text-sidebar-foreground/60">Menu</SidebarGroupLabel>}
           <SidebarGroupContent>
+            {/* Home / topo */}
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {!isVisualizador && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === "/"}
+                    tooltip="Home"
+                    className={collapsed ? "justify-center" : ""}
+                  >
+                    <NavLink
+                      to="/"
+                      end
+                      className={`hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    >
+                      <LayoutDashboard className={`h-4 w-4 ${collapsed ? "" : "mr-2"}`} />
+                      {!collapsed && <span>Home</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+
+              {isVisualizador && diaristaMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
                     isActive={location.pathname === item.url}
+                    tooltip={item.title}
                     className={collapsed ? "justify-center" : ""}
                   >
                     <NavLink
                       to={item.url}
-                      end={item.url === "/"}
                       className={`hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}
                       activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     >
@@ -98,34 +206,49 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+
+            {!isVisualizador && staffSections.map((section) => (
+              <CollapsibleSection
+                key={section.title}
+                section={section}
+                collapsed={collapsed}
+                pathname={location.pathname}
+              />
+            ))}
+
+            {!isVisualizador && (
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === "/relatorios"}
+                    tooltip="Relatórios"
+                    className={collapsed ? "justify-center" : ""}
+                  >
+                    <NavLink
+                      to="/relatorios"
+                      className={`hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    >
+                      <BarChart3 className={`h-4 w-4 ${collapsed ? "" : "mr-2"}`} />
+                      {!collapsed && <span>Relatórios</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            )}
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {role !== "visualizador" && (
+        {!isVisualizador && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-sidebar-foreground/60">Financeiro</SidebarGroupLabel>
+            {!collapsed && <SidebarGroupLabel className="text-sidebar-foreground/60">Financeiro</SidebarGroupLabel>}
             <SidebarGroupContent>
-              <SidebarMenu>
-                {financeiroMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location.pathname === item.url}
-                      className={collapsed ? "justify-center" : ""}
-                    >
-                      <NavLink
-                        to={item.url}
-                        end={item.url === "/financeiro"}
-                        className={`hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}
-                        activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      >
-                        <item.icon className={`h-4 w-4 ${collapsed ? "" : "mr-2"}`} />
-                        {!collapsed && <span>{item.title}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+              <CollapsibleSection
+                section={financeiroSection}
+                collapsed={collapsed}
+                pathname={location.pathname}
+              />
             </SidebarGroupContent>
           </SidebarGroup>
         )}
@@ -135,7 +258,7 @@ export function AppSidebar() {
         {canManageSettings && (
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild tooltip="Configurações">
                 <NavLink to="/configuracoes" className="hover:bg-sidebar-accent" activeClassName="bg-sidebar-accent">
                   <Settings className="mr-2 h-4 w-4" />
                   {!collapsed && <span>Configurações</span>}

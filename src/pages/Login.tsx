@@ -23,6 +23,11 @@ export default function Login() {
   const logoSrc = empresa?.logo_url || logoJpEventos;
   const brandName = empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos";
 
+  const [showForgotDialog, setShowForgotDialog] = useState(false);
+  const [forgotPhone, setForgotPhone] = useState("");
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+
   useEffect(() => {
     if (session) navigate("/", { replace: true });
   }, [session, navigate]);

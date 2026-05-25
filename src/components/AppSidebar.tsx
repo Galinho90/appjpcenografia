@@ -42,6 +42,7 @@ const cadastrosItems: MenuItem[] = [
   { title: "Categorias", url: "/categorias", icon: Tags },
   { title: "Clientes", url: "/clientes", icon: Building2 },
   { title: "Diaristas", url: "/colaboradores", icon: Users },
+  { title: "Fornecedores", url: "/financeiro/fornecedores", icon: Truck },
 ];
 
 const financeiroItems: MenuItem[] = [
@@ -49,7 +50,6 @@ const financeiroItems: MenuItem[] = [
   { title: "Movimentações", url: "/financeiro/movimentacoes", icon: ArrowDownUp },
   { title: "Contas a Pagar", url: "/financeiro/contas-pagar", icon: CalendarClock },
   { title: "Contas Bancárias", url: "/financeiro/contas-bancarias", icon: Landmark },
-  { title: "Fornecedores", url: "/financeiro/fornecedores", icon: Truck },
   { title: "Plano de Contas", url: "/financeiro/categorias", icon: Tags },
   { title: "Relatórios", url: "/financeiro/relatorios", icon: BarChart3 },
 ];

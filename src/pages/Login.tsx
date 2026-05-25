@@ -60,6 +60,28 @@ export default function Login() {
     navigate("/", { replace: true });
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isValidPhoneBR(forgotPhone)) {
+      toast({ title: "Celular inválido", description: "Informe DDD + número.", variant: "destructive" });
+      return;
+    }
+    setForgotSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("password-reset-self", {
+        body: { telefone: forgotPhone },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setForgotSent(true);
+      toast({ title: "Link enviado", description: "Verifique seu e-mail para redefinir a senha." });
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    } finally {
+      setForgotSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex items-stretch bg-[#0B1120]">
       {/* Left: Branding */}

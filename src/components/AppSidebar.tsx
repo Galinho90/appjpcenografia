@@ -65,7 +65,8 @@ const cadastrosSection: MenuSection = { title: "Cadastros", icon: FolderKanban, 
 const activePillClasses =
   "bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary hover:text-primary-foreground";
 const itemBaseClasses =
-  "rounded-lg transition-colors hover:bg-sidebar-accent";
+  "rounded-lg transition-colors hover:bg-sidebar-accent items-center";
+
 
 function CollapsibleSection({
   section,
@@ -117,7 +118,7 @@ function CollapsibleSection({
             </SidebarMenuButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <SidebarMenuSub className="ml-4 border-l border-sidebar-border pl-3">
+            <SidebarMenuSub className="mx-0 border-l-0 px-0">
               {section.items.map((item) => {
                 const active = pathname === item.url;
                 return (
@@ -152,12 +153,13 @@ function CollapsibleSection({
 }
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const navigate = useNavigate();
   const { user, role, signOut } = useAuth();
   const { canManageSettings } = usePermissions();
+
   const { data: empresa } = useCompanyLogo();
   const logoSrc = empresa?.logo_url || logoJpEventos;
   const displayName =

@@ -106,13 +106,15 @@ export async function criarNotificacao(input: {
   link?: string;
   metadata?: any;
 }) {
-  const { error } = await supabase.from("notificacoes").insert({
-    user_id: input.user_id,
-    titulo: input.titulo,
-    mensagem: input.mensagem,
-    tipo: input.tipo ?? "info",
-    link: input.link ?? null,
-    metadata: input.metadata ?? null,
+  const { error } = await supabase.functions.invoke("criar-notificacao", {
+    body: {
+      user_id: input.user_id,
+      titulo: input.titulo,
+      mensagem: input.mensagem,
+      tipo: input.tipo ?? "info",
+      link: input.link ?? null,
+      metadata: input.metadata ?? null,
+    },
   });
   if (error) console.error("Erro ao criar notificação:", error);
 }
@@ -125,24 +127,16 @@ export async function criarNotificacaoParaAdmins(input: {
   link?: string;
   metadata?: any;
 }) {
-  const { data: roles, error } = await supabase
-    .from("user_roles")
-    .select("user_id, role")
-    .in("role", ["admin", "gerente"]);
-  if (error) {
-    console.error("Erro buscando admins:", error);
-    return;
-  }
-  const userIds = Array.from(new Set((roles ?? []).map((r: any) => r.user_id)));
-  if (userIds.length === 0) return;
-  const rows = userIds.map((uid) => ({
-    user_id: uid,
-    titulo: input.titulo,
-    mensagem: input.mensagem,
-    tipo: input.tipo ?? "info",
-    link: input.link ?? null,
-    metadata: input.metadata ?? null,
-  }));
-  const { error: insErr } = await supabase.from("notificacoes").insert(rows);
-  if (insErr) console.error("Erro ao notificar admins:", insErr);
+  const { error } = await supabase.functions.invoke("criar-notificacao", {
+    body: {
+      notify_admins: true,
+      titulo: input.titulo,
+      mensagem: input.mensagem,
+      tipo: input.tipo ?? "info",
+      link: input.link ?? null,
+      metadata: input.metadata ?? null,
+    },
+  });
+  if (error) console.error("Erro ao notificar admins:", error);
 }
+

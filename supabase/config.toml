@@ -33,3 +33,7 @@ verify_jwt = false
 [functions.pix-pagamento]
 verify_jwt = false
 
+[functions.criar-notificacao]
+verify_jwt = false
+
+

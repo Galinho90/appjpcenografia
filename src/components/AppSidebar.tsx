@@ -118,7 +118,7 @@ function CollapsibleSection({
             </SidebarMenuButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <SidebarMenuSub className="ml-4 border-l border-sidebar-border pl-3">
+            <SidebarMenuSub className="mx-0 border-l-0 px-0">
               {section.items.map((item) => {
                 const active = pathname === item.url;
                 return (

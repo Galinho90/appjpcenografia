@@ -151,7 +151,6 @@ export type Database = {
           nome: string
           pix: string | null
           rg: string | null
-          senha_hash: string | null
           telefone: string | null
           updated_at: string
           user_id: string | null
@@ -173,7 +172,6 @@ export type Database = {
           nome: string
           pix?: string | null
           rg?: string | null
-          senha_hash?: string | null
           telefone?: string | null
           updated_at?: string
           user_id?: string | null
@@ -195,7 +193,6 @@ export type Database = {
           nome?: string
           pix?: string | null
           rg?: string | null
-          senha_hash?: string | null
           telefone?: string | null
           updated_at?: string
           user_id?: string | null

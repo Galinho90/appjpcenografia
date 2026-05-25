@@ -29,6 +29,23 @@ export type CategoriaFinanceira = {
   ativo: boolean;
 };
 
+export type Fornecedor = {
+  id: string;
+  nome: string;
+  tipo_documento: string;
+  documento: string | null;
+  email: string | null;
+  telefone: string | null;
+  contato: string | null;
+  chave_pix: string | null;
+  banco: string | null;
+  agencia: string | null;
+  conta: string | null;
+  categoria_padrao_id: string | null;
+  observacoes: string | null;
+  ativo: boolean;
+};
+
 export type MovimentacaoFinanceira = {
   id: string;
   conta_id: string;
@@ -43,6 +60,7 @@ export type MovimentacaoFinanceira = {
   observacoes: string | null;
   cliente_id: string | null;
   colaborador_id: string | null;
+  fornecedor_id: string | null;
   fechamento_id: string | null;
   origem: OrigemMovimentacao;
   comprovante_url: string | null;
@@ -52,6 +70,7 @@ export type MovimentacaoFinanceira = {
   conta?: ContaBancaria | null;
   colaborador?: { id: string; nome: string } | null;
   cliente?: { id: string; razao_social: string } | null;
+  fornecedor?: { id: string; nome: string } | null;
 };
 
 // ── Contas Bancárias ──

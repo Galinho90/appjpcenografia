@@ -142,7 +142,7 @@ export default function Login() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 gap-2 text-base font-semibold bg-gradient-to-r from-primary to-secondary hover:opacity-90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all"
+              className="w-full h-12 gap-2 text-base font-semibold bg-white text-slate-900 hover:bg-slate-100 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all"
             >
               <LogIn className="h-4 w-4" />
               {submitting ? "Entrando..." : "Entrar"}

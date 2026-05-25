@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import {
   useMovimentacoes, useCreateMovimentacao, useUpdateMovimentacao, useDeleteMovimentacao,
-  useContasBancarias, useCategoriasFinanceiras,
+  useContasBancarias, useCategoriasFinanceiras, useFornecedores,
   type MovimentacaoFinanceira, type TipoMovimentacao, type StatusMovimentacao,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/financeiro";

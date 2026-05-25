@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import {
   useMovimentacoes, useCreateMovimentacao, useUpdateMovimentacao, useDeleteMovimentacao,
-  useContasBancarias, useCategoriasFinanceiras,
+  useContasBancarias, useCategoriasFinanceiras, useFornecedores,
   type MovimentacaoFinanceira, type TipoMovimentacao, type StatusMovimentacao,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/financeiro";
@@ -25,6 +25,7 @@ const emptyForm = {
   conta_id: "",
   conta_destino_id: "",
   categoria_id: "",
+  fornecedor_id: "",
   valor: "",
   data_vencimento: todayISO(),
   data_pagamento: "",
@@ -45,6 +46,7 @@ export default function Movimentacoes() {
   const { data: movs = [], isLoading } = useMovimentacoes(filters);
   const { data: contas = [] } = useContasBancarias();
   const { data: categorias = [] } = useCategoriasFinanceiras();
+  const { data: fornecedores = [] } = useFornecedores(true);
 
   const createMutation = useCreateMovimentacao();
   const updateMutation = useUpdateMovimentacao();
@@ -68,6 +70,7 @@ export default function Movimentacoes() {
       conta_id: m.conta_id,
       conta_destino_id: m.conta_destino_id ?? "",
       categoria_id: m.categoria_id ?? "",
+      fornecedor_id: m.fornecedor_id ?? "",
       valor: String(m.valor),
       data_vencimento: m.data_vencimento ?? todayISO(),
       data_pagamento: m.data_pagamento ?? "",
@@ -92,6 +95,7 @@ export default function Movimentacoes() {
       conta_id: form.conta_id,
       conta_destino_id: form.tipo === "transferencia" ? form.conta_destino_id : null,
       categoria_id: form.tipo === "transferencia" ? null : (form.categoria_id || null),
+      fornecedor_id: form.tipo === "saida" ? (form.fornecedor_id || null) : null,
       valor: Number(form.valor),
       data_vencimento: form.data_vencimento || null,
       data_pagamento: form.status === "pago" ? (form.data_pagamento || todayISO()) : (form.data_pagamento || null),
@@ -246,6 +250,9 @@ export default function Movimentacoes() {
                       <TableCell>{tipoIcon(m.tipo)}</TableCell>
                       <TableCell>
                         <div className="font-medium">{m.descricao}</div>
+                        {m.fornecedor && (
+                          <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
+                        )}
                         <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
                       </TableCell>
                       <TableCell>
@@ -365,6 +372,32 @@ export default function Movimentacoes() {
                 </div>
               )}
             </div>
+
+            {form.tipo === "saida" && (
+              <div className="space-y-1.5">
+                <Label>Fornecedor (para quem está pagando)</Label>
+                <Select
+                  value={form.fornecedor_id || "none"}
+                  onValueChange={(v) => {
+                    const id = v === "none" ? "" : v;
+                    const f = fornecedores.find((x) => x.id === id);
+                    setForm({
+                      ...form,
+                      fornecedor_id: id,
+                      categoria_id: form.categoria_id || (f?.categoria_padrao_id ?? ""),
+                      descricao: form.descricao || (f ? `Pagamento ${f.nome}` : ""),
+                    });
+                  }}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione um fornecedor" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {fornecedores.map((f) => <SelectItem key={f.id} value={f.id}>{f.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">

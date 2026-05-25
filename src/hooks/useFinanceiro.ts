@@ -29,6 +29,23 @@ export type CategoriaFinanceira = {
   ativo: boolean;
 };
 
+export type Fornecedor = {
+  id: string;
+  nome: string;
+  tipo_documento: string;
+  documento: string | null;
+  email: string | null;
+  telefone: string | null;
+  contato: string | null;
+  chave_pix: string | null;
+  banco: string | null;
+  agencia: string | null;
+  conta: string | null;
+  categoria_padrao_id: string | null;
+  observacoes: string | null;
+  ativo: boolean;
+};
+
 export type MovimentacaoFinanceira = {
   id: string;
   conta_id: string;
@@ -43,6 +60,7 @@ export type MovimentacaoFinanceira = {
   observacoes: string | null;
   cliente_id: string | null;
   colaborador_id: string | null;
+  fornecedor_id: string | null;
   fechamento_id: string | null;
   origem: OrigemMovimentacao;
   comprovante_url: string | null;
@@ -52,6 +70,7 @@ export type MovimentacaoFinanceira = {
   conta?: ContaBancaria | null;
   colaborador?: { id: string; nome: string } | null;
   cliente?: { id: string; razao_social: string } | null;
+  fornecedor?: { id: string; nome: string } | null;
 };
 
 // ── Contas Bancárias ──
@@ -173,7 +192,8 @@ export function useMovimentacoes(filters: MovFilters = {}) {
           conta:contas_bancarias!movimentacoes_financeiras_conta_id_fkey(*),
           conta_destino:contas_bancarias!movimentacoes_financeiras_conta_destino_id_fkey(*),
           colaborador:colaboradores(id, nome),
-          cliente:clientes(id, razao_social)
+          cliente:clientes(id, razao_social),
+          fornecedor:fornecedores(id, nome)
         `)
         .order("data_vencimento", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false });
@@ -237,5 +257,52 @@ export function useSaldoConta(contaId: string | null, dataRef?: string) {
       if (error) throw error;
       return Number(data ?? 0);
     },
+  });
+}
+
+// ── Fornecedores ──
+export function useFornecedores(onlyActive = false) {
+  return useQuery({
+    queryKey: ["fornecedores", onlyActive],
+    queryFn: async () => {
+      let q = supabase.from("fornecedores" as any).select("*").order("nome");
+      if (onlyActive) q = q.eq("ativo", true);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as unknown as Fornecedor[];
+    },
+  });
+}
+
+export function useCreateFornecedor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<Fornecedor>) => {
+      const { error } = await supabase.from("fornecedores" as any).insert(data as any);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["fornecedores"] }),
+  });
+}
+
+export function useUpdateFornecedor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: Partial<Fornecedor> & { id: string }) => {
+      const { error } = await supabase.from("fornecedores" as any).update(data as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["fornecedores"] }),
+  });
+}
+
+export function useDeleteFornecedor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("fornecedores" as any).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["fornecedores"] }),
   });
 }

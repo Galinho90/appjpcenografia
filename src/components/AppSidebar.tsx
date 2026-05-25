@@ -217,6 +217,14 @@ export function AppSidebar() {
             ))}
 
             {!isVisualizador && (
+              <CollapsibleSection
+                section={financeiroSection}
+                collapsed={collapsed}
+                pathname={location.pathname}
+              />
+            )}
+
+            {!isVisualizador && (
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
@@ -240,18 +248,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {!isVisualizador && (
-          <SidebarGroup>
-            {!collapsed && <SidebarGroupLabel className="text-sidebar-foreground/60">Financeiro</SidebarGroupLabel>}
-            <SidebarGroupContent>
-              <CollapsibleSection
-                section={financeiroSection}
-                collapsed={collapsed}
-                pathname={location.pathname}
-              />
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4 space-y-2">

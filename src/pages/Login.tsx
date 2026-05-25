@@ -93,7 +93,7 @@ export default function Login() {
           </div>
 
           <header className="mb-10">
-            <h2 className="text-3xl font-semibold text-slate-100 mb-2 tracking-tight">Bem-vindo de volta</h2>
+            <h2 className="text-3xl font-semibold text-slate-100 mb-2 tracking-tight">Bem-vindo</h2>
             <p className="text-slate-400">Acesse sua conta para gerenciar seus serviços.</p>
           </header>
 

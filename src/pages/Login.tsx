@@ -54,28 +54,28 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-stretch bg-[#F8F9FB]">
+    <div className="min-h-screen w-full flex items-stretch bg-[#0B1120]">
       {/* Left: Branding */}
       <aside className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center">
-        <div className="absolute inset-2 rounded-3xl bg-white" />
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-slate-200/60 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-gray-200/60 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-[#0f172a]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[28rem] h-[28rem] bg-blue-600/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[28rem] h-[28rem] bg-indigo-500/10 rounded-full blur-[100px]" />
         <div
-          className="absolute inset-0 opacity-[0.025] pointer-events-none"
+          className="absolute inset-0 opacity-[0.04] pointer-events-none"
           style={{
-            backgroundImage: "radial-gradient(circle at 2px 2px, #0f172a 1px, transparent 0)",
+            backgroundImage: "radial-gradient(circle at 2px 2px, #94a3b8 1px, transparent 0)",
             backgroundSize: "40px 40px",
           }}
         />
 
         <div className="relative z-10 p-12 text-center">
-          <div className="mb-8 inline-flex items-center justify-center w-24 h-24 bg-slate-50 border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
-            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center p-1.5 shadow-sm">
+          <div className="mb-8 inline-flex items-center justify-center w-24 h-24 bg-[#1e293b]/60 border border-slate-700/50 rounded-3xl shadow-lg overflow-hidden backdrop-blur-sm">
+            <div className="w-16 h-16 bg-[#1e293b] rounded-lg flex items-center justify-center p-1.5 shadow-md">
               <img src={logoSrc} alt={brandName} className="h-full w-full object-contain" />
             </div>
           </div>
-          <h1 className="text-4xl font-semibold tracking-tight text-slate-900 mb-4">{brandName}</h1>
-          <p className="text-lg text-slate-500 max-w-sm mx-auto font-light leading-relaxed">
+          <h1 className="text-4xl font-semibold tracking-tight text-slate-100 mb-4">{brandName}</h1>
+          <p className="text-lg text-slate-400 max-w-sm mx-auto font-light leading-relaxed">
             Excelência em gestão para os melhores profissionais de eventos.
           </p>
         </div>
@@ -86,27 +86,27 @@ export default function Login() {
         <div className="max-w-md w-full mx-auto">
           {/* Mobile brand */}
           <div className="lg:hidden flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1 shadow-sm border border-slate-200">
+            <div className="w-10 h-10 bg-[#1e293b] rounded-lg flex items-center justify-center p-1 shadow-md border border-slate-700/50">
               <img src={logoSrc} alt={brandName} className="h-full w-full object-contain" />
             </div>
-            <span className="text-slate-900 font-semibold text-xl tracking-tight">{brandName}</span>
+            <span className="text-slate-100 font-semibold text-xl tracking-tight">{brandName}</span>
           </div>
 
           <header className="mb-10">
-            <h2 className="text-3xl font-semibold text-slate-900 mb-2 tracking-tight">Bem-vindo de volta</h2>
-            <p className="text-slate-500">Acesse sua conta para gerenciar seus serviços.</p>
+            <h2 className="text-3xl font-semibold text-slate-100 mb-2 tracking-tight">Bem-vindo de volta</h2>
+            <p className="text-slate-400">Acesse sua conta para gerenciar seus serviços.</p>
           </header>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2 group">
               <Label
                 htmlFor="phone"
-                className="text-xs font-medium uppercase tracking-widest text-slate-400 ml-1 group-focus-within:text-slate-700 transition-colors"
+                className="text-xs font-medium uppercase tracking-widest text-slate-500 ml-1 group-focus-within:text-blue-400 transition-colors"
               >
                 Celular
               </Label>
               <div className="relative">
-                <Phone className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-slate-400" />
+                <Phone className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-slate-500" />
                 <Input
                   id="phone"
                   type="tel"
@@ -115,7 +115,7 @@ export default function Login() {
                   value={phone}
                   onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
                   autoComplete="tel"
-                  className="h-auto w-full bg-white border border-slate-200 text-slate-900 pl-12 pr-4 py-4 rounded-xl focus-visible:ring-2 focus-visible:ring-slate-900/10 focus-visible:ring-offset-1 focus-visible:border-slate-400 transition-all outline-none placeholder:text-slate-300 shadow-sm"
+                  className="h-auto w-full bg-[#1e293b]/80 border border-slate-700 text-slate-100 pl-12 pr-4 py-4 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:ring-offset-1 focus-visible:border-blue-500/50 transition-all outline-none placeholder:text-slate-600 shadow-sm"
                 />
               </div>
             </div>
@@ -124,13 +124,13 @@ export default function Login() {
               <div className="flex justify-between items-center">
                 <Label
                   htmlFor="password"
-                  className="text-xs font-medium uppercase tracking-widest text-slate-400 ml-1 group-focus-within:text-slate-700 transition-colors"
+                  className="text-xs font-medium uppercase tracking-widest text-slate-500 ml-1 group-focus-within:text-blue-400 transition-colors"
                 >
                   Senha
                 </Label>
               </div>
               <div className="relative">
-                <Lock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-slate-400" />
+                <Lock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-slate-500" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -138,12 +138,12 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
-                  className="h-auto w-full bg-white border border-slate-200 text-slate-900 pl-12 pr-12 py-4 rounded-xl focus-visible:ring-2 focus-visible:ring-slate-900/10 focus-visible:ring-offset-1 focus-visible:border-slate-400 transition-all outline-none placeholder:text-slate-300 shadow-sm"
+                  className="h-auto w-full bg-[#1e293b]/80 border border-slate-700 text-slate-100 pl-12 pr-12 py-4 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:ring-offset-1 focus-visible:border-blue-500/50 transition-all outline-none placeholder:text-slate-600 shadow-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                   aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
                 >
                   {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
@@ -154,15 +154,15 @@ export default function Login() {
             <Button
               type="submit"
               disabled={submitting}
-              className="group w-full h-auto bg-slate-900 text-white font-semibold py-4 rounded-xl hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm"
+              className="group w-full h-auto bg-white text-slate-900 font-semibold py-4 rounded-xl hover:bg-slate-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/5"
             >
               {submitting ? "Entrando..." : "Entrar"}
               <ArrowRight className="h-[18px] w-[18px] group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />
             </Button>
           </form>
 
-          <footer className="mt-12 text-center border-t border-slate-200 pt-8">
-            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-medium">
+          <footer className="mt-12 text-center border-t border-slate-700/50 pt-8">
+            <p className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">
               {brandName} · Plataforma de gestão
             </p>
           </footer>

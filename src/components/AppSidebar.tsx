@@ -302,7 +302,6 @@ export function AppSidebar() {
         className={cn(
           "border-t border-sidebar-border space-y-2",
           collapsed ? "p-2" : "p-3",
-          isMobile && "[&_a]:justify-center [&_button]:justify-center",
         )}
       >
         {canManageSettings && (

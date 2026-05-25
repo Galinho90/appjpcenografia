@@ -17,7 +17,7 @@ export const statusLabel: Record<string, string> = {
 };
 
 export const statusColor: Record<string, string> = {
-  pendente: "bg-warning text-warning-foreground",
+  pendente: "bg-warning text-white",
   pago: "bg-success text-success-foreground",
   atrasado: "bg-destructive text-destructive-foreground",
   cancelado: "bg-muted text-muted-foreground",

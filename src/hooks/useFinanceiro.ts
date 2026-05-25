@@ -16,6 +16,7 @@ export type ContaBancaria = {
   saldo_inicial: number;
   ativo: boolean;
   observacoes: string | null;
+  integracao_id: string | null;
 };
 
 export type CategoriaFinanceira = {

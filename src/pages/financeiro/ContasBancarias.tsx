@@ -96,7 +96,10 @@ export default function ContasBancarias() {
                   <span className="flex items-center gap-2 truncate">
                     <Wallet className="h-4 w-4 text-primary shrink-0" /> {c.apelido}
                   </span>
-                  {!c.ativo && <Badge variant="outline" className="text-[10px]">Inativa</Badge>}
+                  <div className="flex gap-1">
+                    {c.integracao_id && <Badge variant="secondary" className="text-[10px]">Integração</Badge>}
+                    {!c.ativo && <Badge variant="outline" className="text-[10px]">Inativa</Badge>}
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
@@ -115,9 +118,11 @@ export default function ContasBancarias() {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    {!c.integracao_id && (
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
                   </div>
                 )}
               </CardContent>

@@ -251,6 +251,7 @@ export type Database = {
           conta: string | null
           created_at: string
           id: string
+          integracao_id: string | null
           observacoes: string | null
           saldo_inicial: number
           tipo: string
@@ -264,6 +265,7 @@ export type Database = {
           conta?: string | null
           created_at?: string
           id?: string
+          integracao_id?: string | null
           observacoes?: string | null
           saldo_inicial?: number
           tipo?: string
@@ -277,12 +279,21 @@ export type Database = {
           conta?: string | null
           created_at?: string
           id?: string
+          integracao_id?: string | null
           observacoes?: string | null
           saldo_inicial?: number
           tipo?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contas_bancarias_integracao_id_fkey"
+            columns: ["integracao_id"]
+            isOneToOne: false
+            referencedRelation: "integracoes_bancarias"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       diarias: {
         Row: {

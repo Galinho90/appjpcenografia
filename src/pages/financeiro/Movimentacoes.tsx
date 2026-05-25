@@ -46,6 +46,7 @@ export default function Movimentacoes() {
   const { data: movs = [], isLoading } = useMovimentacoes(filters);
   const { data: contas = [] } = useContasBancarias();
   const { data: categorias = [] } = useCategoriasFinanceiras();
+  const { data: fornecedores = [] } = useFornecedores(true);
 
   const createMutation = useCreateMovimentacao();
   const updateMutation = useUpdateMovimentacao();

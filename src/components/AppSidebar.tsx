@@ -152,12 +152,13 @@ function CollapsibleSection({
 }
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const navigate = useNavigate();
   const { user, role, signOut } = useAuth();
   const { canManageSettings } = usePermissions();
+
   const { data: empresa } = useCompanyLogo();
   const logoSrc = empresa?.logo_url || logoJpEventos;
   const displayName =

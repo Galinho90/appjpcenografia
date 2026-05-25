@@ -149,7 +149,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className={collapsed ? "p-2" : "p-4"}>
         {!collapsed ? (
-          <div className="px-3 py-2 w-fit mx-auto">
+          <div className="px-3 py-2 w-fit mx-auto bg-white rounded-md">
             <img src={logoSrc} alt="Logo da empresa" className="h-12 w-auto object-contain block" />
           </div>
         ) : (

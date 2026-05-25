@@ -34,14 +34,14 @@
 
     --radius: 0.75rem;
 
-    --sidebar-background: 263 70% 50%;
-    --sidebar-foreground: 263 30% 95%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 263 70% 50%;
-    --sidebar-accent: 263 60% 58%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 263 50% 55%;
-    --sidebar-ring: 0 0% 100%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 250 20% 25%;
+    --sidebar-primary: 263 70% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 263 70% 96%;
+    --sidebar-accent-foreground: 263 70% 40%;
+    --sidebar-border: 250 15% 92%;
+    --sidebar-ring: 263 70% 50%;
 
     --success: 142 71% 38%;
     --success-foreground: 0 0% 100%;

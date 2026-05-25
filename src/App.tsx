@@ -23,6 +23,11 @@ import NotasFiscais from "./pages/NotasFiscais";
 import MinhasNotasFiscais from "./pages/MinhasNotasFiscais";
 import Login from "./pages/Login";
 import RedefinirSenha from "./pages/RedefinirSenha";
+import FinanceiroDashboard from "./pages/financeiro/FinanceiroDashboard";
+import Movimentacoes from "./pages/financeiro/Movimentacoes";
+import ContasPagar from "./pages/financeiro/ContasPagar";
+import CategoriasFinanceiras from "./pages/financeiro/CategoriasFinanceiras";
+import ContasBancarias from "./pages/financeiro/ContasBancarias";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +60,11 @@ const App = () => (
             <Route path="/extrato" element={<Protected><Staff><ExtratoDiarista /></Staff></Protected>} />
             <Route path="/clientes" element={<Protected><Staff><Clientes /></Staff></Protected>} />
             <Route path="/categorias" element={<Protected><Staff><Categorias /></Staff></Protected>} />
+            <Route path="/financeiro" element={<Protected><Staff><FinanceiroDashboard /></Staff></Protected>} />
+            <Route path="/financeiro/movimentacoes" element={<Protected><Staff><Movimentacoes /></Staff></Protected>} />
+            <Route path="/financeiro/contas-pagar" element={<Protected><Staff><ContasPagar /></Staff></Protected>} />
+            <Route path="/financeiro/categorias" element={<Protected><Staff><CategoriasFinanceiras /></Staff></Protected>} />
+            <Route path="/financeiro/contas-bancarias" element={<Protected><Staff><ContasBancarias /></Staff></Protected>} />
             <Route path="/configuracoes" element={<Protected><RequireAdmin><Configuracoes /></RequireAdmin></Protected>} />
             <Route path="/meu-extrato" element={<Protected><MeuExtrato /></Protected>} />
             <Route path="/minhas-notas" element={<Protected><MinhasNotasFiscais /></Protected>} />

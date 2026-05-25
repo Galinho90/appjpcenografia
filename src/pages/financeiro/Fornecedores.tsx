@@ -50,6 +50,40 @@ export default function Fornecedores() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [buscandoCnpj, setBuscandoCnpj] = useState(false);
+
+  const onlyDigits = (s: string) => s.replace(/\D/g, "");
+
+  const buscarCnpj = async () => {
+    const cnpj = onlyDigits(form.documento);
+    if (cnpj.length !== 14) {
+      toast({ title: "CNPJ inválido", description: "Informe 14 dígitos.", variant: "destructive" });
+      return;
+    }
+    setBuscandoCnpj(true);
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
+      if (!res.ok) throw new Error("CNPJ não encontrado");
+      const d = await res.json();
+      setForm((f) => ({
+        ...f,
+        nome: d.razao_social || d.nome_fantasia || f.nome,
+        email: d.email || f.email,
+        telefone: d.ddd_telefone_1 || f.telefone,
+        observacoes: [
+          d.logradouro && `${d.logradouro}, ${d.numero || "S/N"}${d.complemento ? " - " + d.complemento : ""}`,
+          d.bairro,
+          d.municipio && `${d.municipio}/${d.uf}`,
+          d.cep && `CEP ${d.cep}`,
+        ].filter(Boolean).join(" - ") || f.observacoes,
+      }));
+      toast({ title: "Dados preenchidos" });
+    } catch (e: any) {
+      toast({ title: "Erro ao buscar CNPJ", description: e.message, variant: "destructive" });
+    } finally {
+      setBuscandoCnpj(false);
+    }
+  };
 
   const categoriasDespesa = categorias.filter((c) => c.tipo === "despesa");
 

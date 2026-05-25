@@ -95,6 +95,7 @@ export default function Movimentacoes() {
       conta_id: form.conta_id,
       conta_destino_id: form.tipo === "transferencia" ? form.conta_destino_id : null,
       categoria_id: form.tipo === "transferencia" ? null : (form.categoria_id || null),
+      fornecedor_id: form.tipo === "saida" ? (form.fornecedor_id || null) : null,
       valor: Number(form.valor),
       data_vencimento: form.data_vencimento || null,
       data_pagamento: form.status === "pago" ? (form.data_pagamento || todayISO()) : (form.data_pagamento || null),

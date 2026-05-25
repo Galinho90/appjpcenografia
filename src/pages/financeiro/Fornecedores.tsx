@@ -274,11 +274,6 @@ export default function Fornecedores() {
             <DialogTitle>{editingId ? "Editar" : "Novo"} fornecedor</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label>Nome / Razão social *</Label>
-              <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
-            </div>
-
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
                 <Label>Tipo doc.</Label>
@@ -293,8 +288,25 @@ export default function Fornecedores() {
               </div>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label>Documento</Label>
-                <Input value={form.documento} onChange={(e) => setForm({ ...form, documento: e.target.value })} />
+                <div className="flex gap-2">
+                  <Input
+                    value={form.documento}
+                    onChange={(e) => setForm({ ...form, documento: e.target.value })}
+                    onBlur={() => { if (form.tipo_documento === "cnpj" && onlyDigits(form.documento).length === 14 && !form.nome) buscarCnpj(); }}
+                    placeholder={form.tipo_documento === "cnpj" ? "00.000.000/0000-00" : ""}
+                  />
+                  {form.tipo_documento === "cnpj" && (
+                    <Button type="button" variant="outline" onClick={buscarCnpj} disabled={buscandoCnpj}>
+                      {buscandoCnpj ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                    </Button>
+                  )}
+                </div>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Nome / Razão social *</Label>
+              <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">

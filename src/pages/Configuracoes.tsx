@@ -326,7 +326,7 @@ export default function Configuracoes() {
               <div className="space-y-2">
                 <Label>Logo da empresa</Label>
                 <div className="flex items-center gap-4">
-                  <div className="h-20 w-20 rounded-lg border flex items-center justify-center overflow-hidden shadow-sm bg-[conic-gradient(at_50%_50%,#e5e7eb_25%,transparent_0_50%,#e5e7eb_0_75%,transparent_0)] bg-[length:16px_16px]">
+                  <div className="h-20 w-20 rounded-lg bg-white border flex items-center justify-center overflow-hidden shadow-sm">
                     {empresa.logo_url ? (
                       <img src={empresa.logo_url} alt="Logo" className="h-full w-full object-contain p-1" />
                     ) : (

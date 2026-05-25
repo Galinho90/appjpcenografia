@@ -27,6 +27,7 @@ const operacionalItems: MenuItem[] = [
   { title: "Extrato do Diarista", url: "/extrato", icon: FileText },
   { title: "Fechamento", url: "/fechamentos", icon: Wallet },
   { title: "Notas Fiscais", url: "/notas-fiscais", icon: Receipt },
+  { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
 ];
 
 const cadastrosItems: MenuItem[] = [
@@ -225,27 +226,6 @@ export function AppSidebar() {
               />
             )}
 
-            {!isVisualizador && (
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname === "/relatorios"}
-                    tooltip="Relatórios"
-                    className={collapsed ? "justify-center" : ""}
-                  >
-                    <NavLink
-                      to="/relatorios"
-                      className={`hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
-                      <BarChart3 className={`h-4 w-4 ${collapsed ? "" : "mr-2"}`} />
-                      {!collapsed && <span>Relatórios</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            )}
           </SidebarGroupContent>
         </SidebarGroup>
 

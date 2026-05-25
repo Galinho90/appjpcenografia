@@ -27,15 +27,19 @@ Deno.serve(async (req) => {
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) return json({ error: "Payload inválido" }, 400);
 
-    // Normaliza telefone removendo não-dígitos para buscar
-    const digits = parsed.data.telefone.replace(/\D/g, "");
+    // Normaliza telefone: remove não-dígitos e descarta DDI 55 se presente
+    let digits = parsed.data.telefone.replace(/\D/g, "");
+    if (digits.length > 11 && digits.startsWith("55")) digits = digits.slice(2);
 
-    const { data: colab, error: colabErr } = await admin
+    // Busca comparando apenas dígitos (telefone pode estar formatado no banco)
+    const { data: candidatos, error: colabErr } = await admin
       .from("colaboradores")
       .select("id, nome, email, user_id, telefone")
-      .ilike("telefone", `%${digits}%`)
-      .maybeSingle();
+      .not("telefone", "is", null);
     if (colabErr) throw colabErr;
+    const colab = (candidatos ?? []).find(
+      (c) => (c.telefone ?? "").replace(/\D/g, "").replace(/^55/, "") === digits
+    );
     if (!colab) return json({ error: "Celular não encontrado" }, 404);
     if (!colab.email) return json({ error: "Colaborador não possui e-mail cadastrado" }, 400);
     if (!colab.user_id) return json({ error: "Colaborador sem usuário de acesso vinculado" }, 400);

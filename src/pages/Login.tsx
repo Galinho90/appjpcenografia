@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Phone, Lock, Eye, EyeOff } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ArrowRight, Phone, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { isValidPhoneBR, maskPhoneBR } from "@/lib/phone";
 import { toast } from "@/hooks/use-toast";
 import { useCompanyLogo } from "@/hooks/useCompanyLogo";
+import { supabase } from "@/integrations/supabase/client";
 import logoJpEventos from "@/assets/logo-jp-eventos.png";
 
 export default function Login() {
@@ -20,6 +22,11 @@ export default function Login() {
   const { data: empresa } = useCompanyLogo();
   const logoSrc = empresa?.logo_url || logoJpEventos;
   const brandName = empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos";
+
+  const [showForgotDialog, setShowForgotDialog] = useState(false);
+  const [forgotPhone, setForgotPhone] = useState("");
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
 
   useEffect(() => {
     if (session) navigate("/", { replace: true });
@@ -51,6 +58,28 @@ export default function Login() {
     }
     toast({ title: "Bem-vindo!", description: "Login realizado com sucesso." });
     navigate("/", { replace: true });
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isValidPhoneBR(forgotPhone)) {
+      toast({ title: "Celular inválido", description: "Informe DDD + número.", variant: "destructive" });
+      return;
+    }
+    setForgotSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("password-reset-self", {
+        body: { telefone: forgotPhone },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setForgotSent(true);
+      toast({ title: "Link enviado", description: "Verifique seu e-mail para redefinir a senha." });
+    } catch (e: any) {
+      toast({ title: "Erro", description: e.message, variant: "destructive" });
+    } finally {
+      setForgotSubmitting(false);
+    }
   };
 
   return (
@@ -128,6 +157,17 @@ export default function Login() {
                 >
                   Senha
                 </Label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotDialog(true);
+                    setForgotSent(false);
+                    setForgotPhone("");
+                  }}
+                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-medium"
+                >
+                  Esqueci minha senha?
+                </button>
               </div>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-slate-500" />
@@ -168,6 +208,60 @@ export default function Login() {
           </footer>
         </div>
       </main>
+
+      <Dialog open={showForgotDialog} onOpenChange={setShowForgotDialog}>
+        <DialogContent className="bg-[#0f172a] border border-slate-700 text-slate-100 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-slate-100">Recuperar senha</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              {forgotSent
+                ? "Se o celular estiver cadastrado, você receberá um e-mail com instruções."
+                : "Informe seu celular para enviarmos o link de redefinição."}
+            </DialogDescription>
+          </DialogHeader>
+          {!forgotSent ? (
+            <form onSubmit={handleForgotPassword} className="space-y-4 mt-2">
+              <div className="relative">
+                <Phone className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-slate-500" />
+                <Input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="(11) 99999-8888"
+                  value={forgotPhone}
+                  onChange={(e) => setForgotPhone(maskPhoneBR(e.target.value))}
+                  autoComplete="tel"
+                  className="h-auto w-full bg-[#1e293b]/80 border border-slate-700 text-slate-100 pl-12 pr-4 py-3 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:ring-offset-1 focus-visible:border-blue-500/50 transition-all outline-none placeholder:text-slate-600 shadow-sm"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={forgotSubmitting}
+                className="w-full bg-white text-slate-900 font-semibold py-3 rounded-xl hover:bg-slate-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/5"
+              >
+                {forgotSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  "Enviar link de redefinição"
+                )}
+              </Button>
+            </form>
+          ) : (
+            <div className="mt-4 flex justify-center">
+              <Button
+                type="button"
+                onClick={() => setShowForgotDialog(false)}
+                variant="outline"
+                className="border-slate-700 text-slate-100 hover:bg-slate-800 hover:text-slate-100"
+              >
+                Fechar
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

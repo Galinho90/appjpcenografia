@@ -25,6 +25,7 @@ const emptyForm = {
   conta_id: "",
   conta_destino_id: "",
   categoria_id: "",
+  fornecedor_id: "",
   valor: "",
   data_vencimento: todayISO(),
   data_pagamento: "",

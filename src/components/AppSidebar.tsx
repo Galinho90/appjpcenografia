@@ -36,10 +36,8 @@ const cadastrosItems: MenuItem[] = [
   { title: "Diaristas", url: "/colaboradores", icon: Users },
 ];
 
-const staffSections: MenuSection[] = [
-  { title: "Operacional", icon: ClipboardList, items: operacionalItems },
-  { title: "Cadastros", icon: FolderKanban, items: cadastrosItems },
-];
+const operacionalSection: MenuSection = { title: "Operacional", icon: ClipboardList, items: operacionalItems };
+const cadastrosSection: MenuSection = { title: "Cadastros", icon: FolderKanban, items: cadastrosItems };
 
 const financeiroItems: MenuItem[] = [
   { title: "Contas a Pagar", url: "/financeiro/contas-pagar", icon: CalendarClock },
@@ -209,18 +207,25 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
 
-            {!isVisualizador && staffSections.map((section) => (
+            {!isVisualizador && (
               <CollapsibleSection
-                key={section.title}
-                section={section}
+                section={operacionalSection}
                 collapsed={collapsed}
                 pathname={location.pathname}
               />
-            ))}
+            )}
 
             {!isVisualizador && (
               <CollapsibleSection
                 section={financeiroSection}
+                collapsed={collapsed}
+                pathname={location.pathname}
+              />
+            )}
+
+            {!isVisualizador && (
+              <CollapsibleSection
+                section={cadastrosSection}
                 collapsed={collapsed}
                 pathname={location.pathname}
               />

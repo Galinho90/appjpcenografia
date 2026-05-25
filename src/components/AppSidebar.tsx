@@ -127,11 +127,16 @@ function CollapsibleSection({
                         to={item.url}
                         className={cn(
                           itemBaseClasses,
-                          "text-sm",
+                          "gap-3 text-sm",
                           active && activePillClasses,
                         )}
                       >
-                        <item.icon className={cn("h-4 w-4 mr-2", !active && "text-muted-foreground")} />
+                        <span className={cn(
+                          "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+                          active ? "bg-white/20 text-white" : tone.chip,
+                        )}>
+                          <item.icon className="h-4 w-4" />
+                        </span>
                         <span>{item.title}</span>
                       </NavLink>
                     </SidebarMenuSubButton>

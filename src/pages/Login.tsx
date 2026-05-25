@@ -69,9 +69,9 @@ export default function Login() {
 
       <div className="relative w-full max-w-md">
         {/* Glow halo behind card */}
-        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-accent via-primary-glow to-secondary opacity-60 blur-xl" />
+        <div className="absolute -inset-1 rounded-3xl bg-white/10 blur-xl" />
 
-        <div className="relative rounded-3xl bg-card/90 backdrop-blur-xl border border-border/50 shadow-2xl p-8 sm:p-10">
+        <div className="relative rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-2xl p-8 sm:p-10">
           {/* Logo */}
           <div className="flex flex-col items-center text-center mb-8">
             <div className="relative mb-4">

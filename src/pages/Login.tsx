@@ -53,32 +53,30 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary/80 to-secondary p-4">
-      {/* Decorative blurred shapes */}
-      <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl animate-pulse" />
-      <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-secondary/50 blur-3xl animate-pulse" />
-      <div className="pointer-events-none absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-glow/30 blur-3xl" />
+    <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4">
+      {/* Subtle light glow — monochrome */}
+      <div className="pointer-events-none absolute top-0 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-white/[0.03] blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-white/[0.02] blur-[100px]" />
 
-      {/* Grid pattern overlay */}
+      {/* Very faint dot pattern */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
         style={{
-          backgroundImage:
-            "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
+          backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 0.5px, transparent 0.5px)",
+          backgroundSize: "24px 24px",
         }}
       />
 
       <div className="relative w-full max-w-md">
         {/* Glow halo behind card */}
-        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-accent via-primary-glow to-secondary opacity-60 blur-xl" />
+        <div className="absolute -inset-1 rounded-3xl bg-white/10 blur-xl" />
 
-        <div className="relative rounded-3xl bg-card/90 backdrop-blur-xl border border-border/50 shadow-2xl p-8 sm:p-10">
+        <div className="relative rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-2xl p-8 sm:p-10">
           {/* Logo */}
           <div className="flex flex-col items-center text-center mb-8">
             <div className="relative mb-4">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary to-secondary blur-md opacity-50" />
-              <div className="relative h-24 w-24 rounded-2xl bg-white flex items-center justify-center shadow-lg p-2 ring-1 ring-border/40">
+              <div className="absolute inset-0 rounded-2xl bg-white/20 blur-md opacity-50" />
+              <div className="relative h-24 w-24 rounded-2xl bg-white flex items-center justify-center shadow-lg p-2 ring-1 ring-white/20">
                 <img
                   src={logoSrc}
                   alt={empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"}
@@ -86,11 +84,11 @@ export default function Login() {
                 />
               </div>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary via-primary-glow to-secondary bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold tracking-tight text-white">
               Bem-vindo de volta
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <p className="mt-1 text-sm text-slate-400 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-slate-300" />
               Acesse sua conta para continuar
             </p>
           </div>
@@ -144,7 +142,7 @@ export default function Login() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 gap-2 text-base font-semibold bg-gradient-to-r from-primary to-secondary hover:opacity-90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all"
+              className="w-full h-12 gap-2 text-base font-semibold bg-white text-slate-900 hover:bg-slate-100 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all"
             >
               <LogIn className="h-4 w-4" />
               {submitting ? "Entrando..." : "Entrar"}

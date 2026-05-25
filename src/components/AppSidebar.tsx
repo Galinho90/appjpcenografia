@@ -23,17 +23,17 @@ type MenuItem = { title: string; url: string; icon: any };
 type MenuSection = { title: string; icon: any; items: MenuItem[] };
 
 const operacionalItems: MenuItem[] = [
-  { title: "Lançamentos", url: "/diarias", icon: CalendarDays },
   { title: "Extrato do Diarista", url: "/extrato", icon: FileText },
   { title: "Fechamento", url: "/fechamentos", icon: Wallet },
+  { title: "Lançamentos", url: "/diarias", icon: CalendarDays },
   { title: "Notas Fiscais", url: "/notas-fiscais", icon: Receipt },
   { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
 ];
 
 const cadastrosItems: MenuItem[] = [
-  { title: "Diaristas", url: "/colaboradores", icon: Users },
-  { title: "Clientes", url: "/clientes", icon: Building2 },
   { title: "Categorias", url: "/categorias", icon: Tags },
+  { title: "Clientes", url: "/clientes", icon: Building2 },
+  { title: "Diaristas", url: "/colaboradores", icon: Users },
 ];
 
 const staffSections: MenuSection[] = [
@@ -42,10 +42,10 @@ const staffSections: MenuSection[] = [
 ];
 
 const financeiroItems: MenuItem[] = [
-  { title: "Dashboard", url: "/financeiro", icon: DollarSign },
-  { title: "Movimentações", url: "/financeiro/movimentacoes", icon: ArrowDownUp },
   { title: "Contas a Pagar", url: "/financeiro/contas-pagar", icon: CalendarClock },
   { title: "Contas Bancárias", url: "/financeiro/contas-bancarias", icon: Landmark },
+  { title: "Dashboard", url: "/financeiro", icon: DollarSign },
+  { title: "Movimentações", url: "/financeiro/movimentacoes", icon: ArrowDownUp },
   { title: "Plano de Contas", url: "/financeiro/categorias", icon: Tags },
   { title: "Relatórios", url: "/financeiro/relatorios", icon: BarChart3 },
 ];

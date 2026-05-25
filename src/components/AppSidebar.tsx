@@ -292,7 +292,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
+      <SidebarFooter className={cn("border-t border-sidebar-border p-3 space-y-2", isMobile && "[&_a]:justify-center [&_button]:justify-center")}>
         {canManageSettings && (
           <SidebarMenu>
             <SidebarMenuItem>

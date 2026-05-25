@@ -16,11 +16,19 @@ import {
   SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 import logoJpEventos from "@/assets/logo-jp-eventos.png";
 import { useCompanyLogo } from "@/hooks/useCompanyLogo";
 
+type Tone = "primary" | "secondary" | "accent";
 type MenuItem = { title: string; url: string; icon: any };
-type MenuSection = { title: string; icon: any; items: MenuItem[] };
+type MenuSection = { title: string; icon: any; items: MenuItem[]; tone: Tone };
+
+const toneClasses: Record<Tone, { icon: string; chip: string }> = {
+  primary: { icon: "text-primary", chip: "bg-primary/10 text-primary" },
+  secondary: { icon: "text-secondary", chip: "bg-secondary/10 text-secondary" },
+  accent: { icon: "text-accent", chip: "bg-accent/10 text-accent" },
+};
 
 const operacionalItems: MenuItem[] = [
   { title: "Lançamentos", url: "/diarias", icon: CalendarDays },
@@ -36,9 +44,6 @@ const cadastrosItems: MenuItem[] = [
   { title: "Diaristas", url: "/colaboradores", icon: Users },
 ];
 
-const operacionalSection: MenuSection = { title: "Operacional", icon: ClipboardList, items: operacionalItems };
-const cadastrosSection: MenuSection = { title: "Cadastros", icon: FolderKanban, items: cadastrosItems };
-
 const financeiroItems: MenuItem[] = [
   { title: "Dashboard", url: "/financeiro", icon: DollarSign },
   { title: "Movimentações", url: "/financeiro/movimentacoes", icon: ArrowDownUp },
@@ -53,6 +58,15 @@ const diaristaMenuItems: MenuItem[] = [
   { title: "Minhas NFs", url: "/minhas-notas", icon: Receipt },
 ];
 
+const operacionalSection: MenuSection = { title: "Operacional", icon: ClipboardList, items: operacionalItems, tone: "primary" };
+const financeiroBaseSection: MenuSection = { title: "Financeiro", icon: DollarSign, items: financeiroItems, tone: "secondary" };
+const cadastrosSection: MenuSection = { title: "Cadastros", icon: FolderKanban, items: cadastrosItems, tone: "accent" };
+
+const activePillClasses =
+  "bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary hover:text-primary-foreground";
+const itemBaseClasses =
+  "rounded-lg transition-colors hover:bg-sidebar-accent";
+
 function CollapsibleSection({
   section,
   collapsed,
@@ -63,29 +77,28 @@ function CollapsibleSection({
   pathname: string;
 }) {
   const isActiveSection = section.items.some((i) => pathname.startsWith(i.url));
+  const tone = toneClasses[section.tone];
 
-  // When sidebar is collapsed (icon-only), render flat icons (no collapsible chevron)
   if (collapsed) {
     return (
       <SidebarMenu>
-        {section.items.map((item) => (
-          <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname === item.url}
-              tooltip={item.title}
-              className="justify-center"
-            >
-              <NavLink
-                to={item.url}
-                className="hover:bg-sidebar-accent justify-center"
-                activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+        {section.items.map((item) => {
+          const active = pathname === item.url;
+          return (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton
+                asChild
+                isActive={active}
+                tooltip={item.title}
+                className={cn("justify-center rounded-lg", active && activePillClasses)}
               >
-                <item.icon className="h-4 w-4" />
-              </NavLink>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
+                <NavLink to={item.url} className="justify-center">
+                  <item.icon className={cn("h-4 w-4", !active && tone.icon)} />
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          );
+        })}
       </SidebarMenu>
     );
   }
@@ -95,28 +108,36 @@ function CollapsibleSection({
       <SidebarMenu>
         <SidebarMenuItem>
           <CollapsibleTrigger asChild>
-            <SidebarMenuButton className="hover:bg-sidebar-accent">
-              <section.icon className="h-4 w-4 mr-2" />
-              <span className="flex-1 text-left">{section.title}</span>
-              <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+            <SidebarMenuButton className={cn(itemBaseClasses, "gap-3")}>
+              <span className={cn("flex h-7 w-7 items-center justify-center rounded-md", tone.chip)}>
+                <section.icon className="h-4 w-4" />
+              </span>
+              <span className="flex-1 text-left text-sm font-medium">{section.title}</span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]/collapsible:rotate-90" />
             </SidebarMenuButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <SidebarMenuSub>
-              {section.items.map((item) => (
-                <SidebarMenuSubItem key={item.title}>
-                  <SidebarMenuSubButton asChild isActive={pathname === item.url}>
-                    <NavLink
-                      to={item.url}
-                      className="hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
-                      <item.icon className="h-4 w-4 mr-2" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-              ))}
+            <SidebarMenuSub className="ml-4 border-l border-sidebar-border pl-3">
+              {section.items.map((item) => {
+                const active = pathname === item.url;
+                return (
+                  <SidebarMenuSubItem key={item.title}>
+                    <SidebarMenuSubButton asChild isActive={active}>
+                      <NavLink
+                        to={item.url}
+                        className={cn(
+                          itemBaseClasses,
+                          "text-sm",
+                          active && activePillClasses,
+                        )}
+                      >
+                        <item.icon className={cn("h-4 w-4 mr-2", !active && "text-muted-foreground")} />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                );
+              })}
             </SidebarMenuSub>
           </CollapsibleContent>
         </SidebarMenuItem>
@@ -134,7 +155,17 @@ export function AppSidebar() {
   const { canManageSettings } = usePermissions();
   const { data: empresa } = useCompanyLogo();
   const logoSrc = empresa?.logo_url || logoJpEventos;
-  const displayName = (user?.user_metadata as any)?.nome || (user?.user_metadata as any)?.phone || user?.email?.split("@")[0] || "Usuário";
+  const displayName =
+    (user?.user_metadata as any)?.nome ||
+    (user?.user_metadata as any)?.phone ||
+    user?.email?.split("@")[0] ||
+    "Usuário";
+  const initials = displayName
+    .split(" ")
+    .map((p: string) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   const handleSignOut = async () => {
     await signOut();
@@ -142,130 +173,180 @@ export function AppSidebar() {
   };
 
   const isVisualizador = role === "visualizador";
-  const financeiroSection: MenuSection = { title: "Financeiro", icon: DollarSign, items: financeiroItems };
-  const financeiroActive = financeiroItems.some((i) => location.pathname.startsWith(i.url));
+  const homeActive = location.pathname === "/";
+  const settingsActive = location.pathname.startsWith("/configuracoes");
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className={collapsed ? "p-2" : "p-4"}>
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-sm">
+      <SidebarHeader className={cn("border-b border-sidebar-border", collapsed ? "p-2" : "p-4")}>
         {!collapsed ? (
-          <div className="rounded-lg bg-white px-3 py-2 w-fit mx-auto">
-            <img src={logoSrc} alt="Logo da empresa" className="h-12 w-auto object-contain block" />
+          <div className="flex items-center justify-center">
+            <img src={logoSrc} alt="Logo da empresa" className="h-12 w-auto object-contain" />
           </div>
         ) : (
-          <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center mx-auto">
+          <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
             <img src={logoSrc} alt="Logo" className="h-6 w-6 object-contain" />
           </div>
         )}
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2 py-3">
         <SidebarGroup>
-          {!collapsed && <SidebarGroupLabel className="text-sidebar-foreground/60">Menu</SidebarGroupLabel>}
-          <SidebarGroupContent>
-            {/* Home / topo */}
+          {!collapsed && (
+            <SidebarGroupLabel className="px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Menu
+            </SidebarGroupLabel>
+          )}
+          <SidebarGroupContent className="space-y-1">
             <SidebarMenu>
               {!isVisualizador && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    isActive={location.pathname === "/"}
+                    isActive={homeActive}
                     tooltip="Home"
-                    className={collapsed ? "justify-center" : ""}
+                    className={cn(
+                      itemBaseClasses,
+                      "gap-3",
+                      collapsed && "justify-center",
+                      homeActive && activePillClasses,
+                    )}
                   >
-                    <NavLink
-                      to="/"
-                      end
-                      className={`hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
-                      <LayoutDashboard className={`h-4 w-4 ${collapsed ? "" : "mr-2"}`} />
-                      {!collapsed && <span>Home</span>}
+                    <NavLink to="/" end className={collapsed ? "justify-center" : ""}>
+                      {collapsed ? (
+                        <LayoutDashboard className={cn("h-4 w-4", !homeActive && "text-primary")} />
+                      ) : (
+                        <>
+                          <span
+                            className={cn(
+                              "flex h-7 w-7 items-center justify-center rounded-md",
+                              homeActive ? "bg-white/20 text-white" : toneClasses.primary.chip,
+                            )}
+                          >
+                            <LayoutDashboard className="h-4 w-4" />
+                          </span>
+                          <span className="text-sm font-medium">Home</span>
+                        </>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )}
 
-              {isVisualizador && diaristaMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname === item.url}
-                    tooltip={item.title}
-                    className={collapsed ? "justify-center" : ""}
-                  >
-                    <NavLink
-                      to={item.url}
-                      className={`hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
-                      <item.icon className={`h-4 w-4 ${collapsed ? "" : "mr-2"}`} />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {isVisualizador &&
+                diaristaMenuItems.map((item) => {
+                  const active = location.pathname === item.url;
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        tooltip={item.title}
+                        className={cn(
+                          itemBaseClasses,
+                          "gap-3",
+                          collapsed && "justify-center",
+                          active && activePillClasses,
+                        )}
+                      >
+                        <NavLink to={item.url} className={collapsed ? "justify-center" : ""}>
+                          {collapsed ? (
+                            <item.icon className={cn("h-4 w-4", !active && "text-primary")} />
+                          ) : (
+                            <>
+                              <span
+                                className={cn(
+                                  "flex h-7 w-7 items-center justify-center rounded-md",
+                                  active ? "bg-white/20 text-white" : toneClasses.primary.chip,
+                                )}
+                              >
+                                <item.icon className="h-4 w-4" />
+                              </span>
+                              <span className="text-sm font-medium">{item.title}</span>
+                            </>
+                          )}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
             </SidebarMenu>
 
             {!isVisualizador && (
-              <CollapsibleSection
-                section={operacionalSection}
-                collapsed={collapsed}
-                pathname={location.pathname}
-              />
+              <CollapsibleSection section={operacionalSection} collapsed={collapsed} pathname={location.pathname} />
             )}
-
             {!isVisualizador && (
-              <CollapsibleSection
-                section={financeiroSection}
-                collapsed={collapsed}
-                pathname={location.pathname}
-              />
+              <CollapsibleSection section={financeiroBaseSection} collapsed={collapsed} pathname={location.pathname} />
             )}
-
             {!isVisualizador && (
-              <CollapsibleSection
-                section={cadastrosSection}
-                collapsed={collapsed}
-                pathname={location.pathname}
-              />
+              <CollapsibleSection section={cadastrosSection} collapsed={collapsed} pathname={location.pathname} />
             )}
-
           </SidebarGroupContent>
         </SidebarGroup>
-
       </SidebarContent>
 
-      <SidebarFooter className="p-4 space-y-2">
+      <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
         {canManageSettings && (
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Configurações">
-                <NavLink to="/configuracoes" className="hover:bg-sidebar-accent" activeClassName="bg-sidebar-accent">
-                  <Settings className="mr-2 h-4 w-4" />
-                  {!collapsed && <span>Configurações</span>}
+              <SidebarMenuButton
+                asChild
+                tooltip="Configurações"
+                className={cn(
+                  itemBaseClasses,
+                  "gap-3",
+                  collapsed && "justify-center",
+                  settingsActive && activePillClasses,
+                )}
+              >
+                <NavLink to="/configuracoes" className={collapsed ? "justify-center" : ""}>
+                  {collapsed ? (
+                    <Settings className={cn("h-4 w-4", !settingsActive && "text-muted-foreground")} />
+                  ) : (
+                    <>
+                      <span
+                        className={cn(
+                          "flex h-7 w-7 items-center justify-center rounded-md",
+                          settingsActive ? "bg-white/20 text-white" : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        <Settings className="h-4 w-4" />
+                      </span>
+                      <span className="text-sm font-medium">Configurações</span>
+                    </>
+                  )}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         )}
+
         {!collapsed && user && (
-          <div className="px-2 pt-2 border-t border-sidebar-border">
-            <div className="text-xs text-sidebar-foreground/60 truncate">{displayName}</div>
-            {role && role !== "visualizador" && (
-              <div className="text-[10px] uppercase text-sidebar-foreground/40">
-                {role === "admin" ? "Administrador" : role === "gerente" ? "Gerente" : role}
-              </div>
-            )}
+          <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-2">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+              {initials || "U"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium text-sidebar-foreground">{displayName}</div>
+              {role && (
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {role === "admin" ? "Administrador" : role === "gerente" ? "Gerente" : "Diarista"}
+                </div>
+              )}
+            </div>
           </div>
         )}
+
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-center text-sidebar-foreground hover:bg-sidebar-accent"
+          className={cn(
+            "w-full text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive",
+            collapsed ? "justify-center" : "justify-start gap-2",
+          )}
           onClick={handleSignOut}
         >
-          <LogOut className={collapsed ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+          <LogOut className="h-4 w-4" />
           {!collapsed && <span>Sair</span>}
         </Button>
       </SidebarFooter>

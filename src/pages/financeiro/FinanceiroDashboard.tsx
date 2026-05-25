@@ -230,7 +230,7 @@ export default function FinanceiroDashboard() {
                     outerRadius={80}
                     dataKey="valor"
                     nameKey="nome"
-                    label={({ nome }) => nome}
+                    label={(entry: any) => entry.nome}
                   >
                     {gastosPorCategoria.map((g, i) => (
                       <Cell key={i} fill={g.cor} />

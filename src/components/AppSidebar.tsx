@@ -65,7 +65,8 @@ const cadastrosSection: MenuSection = { title: "Cadastros", icon: FolderKanban, 
 const activePillClasses =
   "bg-primary text-primary-foreground font-medium shadow-sm hover:bg-primary hover:text-primary-foreground";
 const itemBaseClasses =
-  "rounded-lg transition-colors hover:bg-sidebar-accent";
+  "rounded-lg transition-colors hover:bg-sidebar-accent items-center";
+
 
 function CollapsibleSection({
   section,

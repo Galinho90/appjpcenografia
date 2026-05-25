@@ -28,6 +28,7 @@ import Movimentacoes from "./pages/financeiro/Movimentacoes";
 import ContasPagar from "./pages/financeiro/ContasPagar";
 import CategoriasFinanceiras from "./pages/financeiro/CategoriasFinanceiras";
 import ContasBancarias from "./pages/financeiro/ContasBancarias";
+import RelatoriosFinanceiros from "./pages/financeiro/RelatoriosFinanceiros";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

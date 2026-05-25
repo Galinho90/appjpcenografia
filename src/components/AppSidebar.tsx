@@ -1,6 +1,7 @@
 import {
   LayoutDashboard, Users, CalendarDays, FileBarChart, FileText,
   Settings, Building2, Tags, LogOut, Wallet, BarChart3, Receipt,
+  DollarSign, ArrowDownUp, CalendarClock, Landmark,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -25,6 +26,14 @@ const staffMenuItems = [
   { title: "Clientes", url: "/clientes", icon: Building2 },
   { title: "Categorias", url: "/categorias", icon: Tags },
   { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
+];
+
+const financeiroMenuItems = [
+  { title: "Dashboard", url: "/financeiro", icon: DollarSign },
+  { title: "Movimentações", url: "/financeiro/movimentacoes", icon: ArrowDownUp },
+  { title: "Contas a Pagar", url: "/financeiro/contas-pagar", icon: CalendarClock },
+  { title: "Contas Bancárias", url: "/financeiro/contas-bancarias", icon: Landmark },
+  { title: "Plano de Contas", url: "/financeiro/categorias", icon: Tags },
 ];
 
 const diaristaMenuItems = [
@@ -91,6 +100,35 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {role !== "visualizador" && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/60">Financeiro</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {financeiroMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location.pathname === item.url}
+                      className={collapsed ? "justify-center" : ""}
+                    >
+                      <NavLink
+                        to={item.url}
+                        end={item.url === "/financeiro"}
+                        className={`hover:bg-sidebar-accent ${collapsed ? "justify-center" : ""}`}
+                        activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                      >
+                        <item.icon className={`h-4 w-4 ${collapsed ? "" : "mr-2"}`} />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4 space-y-2">

@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      categorias_financeiras: {
+        Row: {
+          ativo: boolean
+          cor: string
+          created_at: string
+          icone: string
+          id: string
+          nome: string
+          sistema: boolean
+          tipo: Database["public"]["Enums"]["tipo_categoria_financeira"]
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cor?: string
+          created_at?: string
+          icone?: string
+          id?: string
+          nome: string
+          sistema?: boolean
+          tipo: Database["public"]["Enums"]["tipo_categoria_financeira"]
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cor?: string
+          created_at?: string
+          icone?: string
+          id?: string
+          nome?: string
+          sistema?: boolean
+          tipo?: Database["public"]["Enums"]["tipo_categoria_financeira"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           ativo: boolean
@@ -206,6 +242,48 @@ export type Database = {
         }
         Relationships: []
       }
+      contas_bancarias: {
+        Row: {
+          agencia: string | null
+          apelido: string
+          ativo: boolean
+          banco: string
+          conta: string | null
+          created_at: string
+          id: string
+          observacoes: string | null
+          saldo_inicial: number
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          agencia?: string | null
+          apelido: string
+          ativo?: boolean
+          banco: string
+          conta?: string | null
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          saldo_inicial?: number
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          agencia?: string | null
+          apelido?: string
+          ativo?: boolean
+          banco?: string
+          conta?: string | null
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          saldo_inicial?: number
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       diarias: {
         Row: {
           colaborador_id: string
@@ -318,6 +396,66 @@ export type Database = {
           variables?: Json
         }
         Relationships: []
+      }
+      extrato_inter: {
+        Row: {
+          conciliado: boolean
+          conta_id: string
+          contraparte: string | null
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+          id_transacao: string
+          movimentacao_id: string | null
+          raw: Json | null
+          tipo: string
+          valor: number
+        }
+        Insert: {
+          conciliado?: boolean
+          conta_id: string
+          contraparte?: string | null
+          created_at?: string
+          data: string
+          descricao?: string | null
+          id?: string
+          id_transacao: string
+          movimentacao_id?: string | null
+          raw?: Json | null
+          tipo: string
+          valor: number
+        }
+        Update: {
+          conciliado?: boolean
+          conta_id?: string
+          contraparte?: string | null
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          id_transacao?: string
+          movimentacao_id?: string | null
+          raw?: Json | null
+          tipo?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extrato_inter_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas_bancarias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extrato_inter_movimentacao_id_fkey"
+            columns: ["movimentacao_id"]
+            isOneToOne: false
+            referencedRelation: "movimentacoes_financeiras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fechamentos: {
         Row: {
@@ -472,6 +610,124 @@ export type Database = {
           },
           {
             foreignKeyName: "lancamentos_fechamento_id_fkey"
+            columns: ["fechamento_id"]
+            isOneToOne: false
+            referencedRelation: "fechamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movimentacoes_financeiras: {
+        Row: {
+          categoria_id: string | null
+          cliente_id: string | null
+          colaborador_id: string | null
+          comprovante_url: string | null
+          conta_destino_id: string | null
+          conta_id: string
+          created_at: string
+          created_by: string | null
+          data_pagamento: string | null
+          data_vencimento: string | null
+          descricao: string
+          fechamento_id: string | null
+          id: string
+          id_externo: string | null
+          observacoes: string | null
+          origem: Database["public"]["Enums"]["origem_movimentacao"]
+          recorrencia_config: Json | null
+          recorrente: boolean
+          status: Database["public"]["Enums"]["status_movimentacao"]
+          tipo: Database["public"]["Enums"]["tipo_movimentacao"]
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          categoria_id?: string | null
+          cliente_id?: string | null
+          colaborador_id?: string | null
+          comprovante_url?: string | null
+          conta_destino_id?: string | null
+          conta_id: string
+          created_at?: string
+          created_by?: string | null
+          data_pagamento?: string | null
+          data_vencimento?: string | null
+          descricao: string
+          fechamento_id?: string | null
+          id?: string
+          id_externo?: string | null
+          observacoes?: string | null
+          origem?: Database["public"]["Enums"]["origem_movimentacao"]
+          recorrencia_config?: Json | null
+          recorrente?: boolean
+          status?: Database["public"]["Enums"]["status_movimentacao"]
+          tipo: Database["public"]["Enums"]["tipo_movimentacao"]
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          categoria_id?: string | null
+          cliente_id?: string | null
+          colaborador_id?: string | null
+          comprovante_url?: string | null
+          conta_destino_id?: string | null
+          conta_id?: string
+          created_at?: string
+          created_by?: string | null
+          data_pagamento?: string | null
+          data_vencimento?: string | null
+          descricao?: string
+          fechamento_id?: string | null
+          id?: string
+          id_externo?: string | null
+          observacoes?: string | null
+          origem?: Database["public"]["Enums"]["origem_movimentacao"]
+          recorrencia_config?: Json | null
+          recorrente?: boolean
+          status?: Database["public"]["Enums"]["status_movimentacao"]
+          tipo?: Database["public"]["Enums"]["tipo_movimentacao"]
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_financeiras_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_financeiras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_financeiras_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_financeiras_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_financeiras_conta_destino_id_fkey"
+            columns: ["conta_destino_id"]
+            isOneToOne: false
+            referencedRelation: "contas_bancarias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_financeiras_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas_bancarias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_financeiras_fechamento_id_fkey"
             columns: ["fechamento_id"]
             isOneToOne: false
             referencedRelation: "fechamentos"
@@ -792,6 +1048,10 @@ export type Database = {
           razao_social: string
         }[]
       }
+      get_saldo_conta: {
+        Args: { _conta_id: string; _data_ref?: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -803,6 +1063,10 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "gerente" | "visualizador"
+      origem_movimentacao: "manual" | "fechamento" | "inter_api"
+      status_movimentacao: "pendente" | "pago" | "atrasado" | "cancelado"
+      tipo_categoria_financeira: "receita" | "despesa"
+      tipo_movimentacao: "entrada" | "saida" | "transferencia"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -931,6 +1195,10 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "gerente", "visualizador"],
+      origem_movimentacao: ["manual", "fechamento", "inter_api"],
+      status_movimentacao: ["pendente", "pago", "atrasado", "cancelado"],
+      tipo_categoria_financeira: ["receita", "despesa"],
+      tipo_movimentacao: ["entrada", "saida", "transferencia"],
     },
   },
 } as const

@@ -1,76 +1,101 @@
-## Objetivo
+# Módulo Financeiro — Fluxo de Caixa Empresarial
 
-Adicionar, em cada fechamento pendente, um botão **"Pagar via PIX"** que envie o pagamento para a `chave_pix` do colaborador usando o banco marcado como **ativo** nas integrações.
+Transformar a plataforma em um sistema completo de controle financeiro com integração ao Banco Inter, dashboard analítico e contas a pagar/receber. Os fechamentos quinzenais já pagos viram automaticamente saídas no fluxo.
 
-## Situação atual
+## 1. Novas tabelas no banco
 
-- Já existe a edge function `c6-pix-pagamento` (C6 Bank, opera em modo MOCK sem credenciais).
-- A memória do projeto cita **Banco Inter** como banco padrão para PIX.
-- **Não existe** tabela de integrações bancárias nem tela para gerenciá-las.
-- A coluna `colaboradores.chave_pix` já existe.
+**`contas_bancarias`** — apenas a conta Inter por enquanto, mas estrutura preparada para múltiplas
+- nome, banco, agencia, conta, tipo (corrente/caixa), saldo_atual, ativo
 
-## Plano
+**`categorias_financeiras`** — plano de contas
+- nome, tipo (`receita` | `despesa`), cor, icone, ativo
+- Seed inicial: Pagamento Diaristas, Material, Aluguel, Fornecedores, Receita Cliente, Impostos, etc.
 
-### 1. Banco de dados — nova tabela `integracoes_bancarias`
+**`movimentacoes_financeiras`** — entradas e saídas (núcleo do módulo)
+- conta_id, categoria_id, tipo (`entrada`|`saida`|`transferencia`)
+- valor, data_movimento, data_vencimento, data_pagamento
+- status (`pendente`|`pago`|`atrasado`|`cancelado`)
+- descricao, cliente_id (opcional), colaborador_id (opcional), fechamento_id (opcional — vínculo automático)
+- origem (`manual`|`fechamento`|`inter_api`), id_externo_inter
+- comprovante_url, recorrente (bool), recorrencia_config (jsonb)
 
-Campos principais (sem incluir id/timestamps):
-- `banco` (text: `inter` | `c6`)
-- `apelido` (text)
-- `ativo` (boolean) — apenas **uma** integração ativa por vez (trigger garante)
-- `ambiente` (text: `homolog` | `producao`)
-- `conta_corrente` (text)
-- `observacoes` (text, opcional)
+**`extrato_inter`** — cache do extrato bruto puxado do Inter
+- conta_id, id_transacao, data, valor, tipo, descricao, conciliado (bool), movimentacao_id (FK)
 
-RLS: somente `admin` (select, insert, update, delete). Credenciais sensíveis (client_id, client_secret, certificados) **continuam em secrets** do Supabase, nunca no banco.
+## 2. Integração Banco Inter
 
-### 2. Edge function `inter-pix-pagamento`
+Edge function `inter-sync-extrato` que:
+- Usa as credenciais Open Banking do Inter (mTLS com certificado + client_id/secret)
+- Puxa extrato dos últimos N dias via `/banking/v2/extrato`
+- Salva cada transação em `extrato_inter`
+- Faz conciliação automática quando casa com `movimentacoes_financeiras` (mesmo valor + data próxima)
+- Pode ser disparada manualmente (botão "Sincronizar") ou via cron diário
 
-Nova função no padrão da `c6-pix-pagamento`:
-- Valida JWT e papel `admin`.
-- Lê secrets `INTER_CLIENT_ID`, `INTER_CLIENT_SECRET`, `INTER_CERT_PEM`, `INTER_KEY_PEM`, `INTER_CONTA_CORRENTE`.
-- Sem credenciais → modo MOCK (igual à C6).
-- Grava em `transacoes_log` e marca `fechamentos.status = 'pago'` em sucesso real.
+**Secrets necessários** (a pedir depois de aprovação do plano):
+- `INTER_CLIENT_ID`, `INTER_CLIENT_SECRET`
+- `INTER_CERTIFICATE` (PEM), `INTER_PRIVATE_KEY` (PEM)
+- `INTER_CONTA_CORRENTE`
 
-### 3. Edge function despachante `pix-pagamento`
+## 3. Integração com fechamentos existentes
 
-Função única chamada pelo frontend. Ela:
-1. Lê `integracoes_bancarias` onde `ativo = true`.
-2. Encaminha o payload para `inter-pix-pagamento` ou `c6-pix-pagamento` conforme o banco ativo.
-3. Retorna erro claro se nenhuma integração ativa.
+Quando um fechamento é marcado como **pago**:
+- Trigger no banco cria automaticamente uma `movimentacao_financeira` do tipo `saida`, categoria "Pagamento Diaristas", vinculada ao `fechamento_id` e `colaborador_id`
+- Evita duplicidade via UNIQUE em `(fechamento_id)` quando origem = `fechamento`
 
-Vantagem: o frontend não precisa saber qual banco está ativo.
+## 4. Páginas frontend
 
-### 4. Frontend — página `Fechamentos.tsx`
+**`/financeiro`** — Dashboard
+- Cards: Saldo Atual, Entradas do Mês, Saídas do Mês, Resultado Líquido
+- Gráfico de linha: Fluxo de caixa últimos 6 meses (entradas vs saídas)
+- Gráfico de pizza: Gastos por categoria no mês
+- Gráfico de barras: Comparativo mensal últimos 12 meses
+- Lista compacta: Próximos vencimentos (7 dias)
+- Botão "Sincronizar Inter"
 
-Para cada linha **pendente** com `colaborador.chave_pix` preenchida, adicionar botão **"Pagar via PIX"** ao lado de "Marcar Pago":
-- Abre `AlertDialog` mostrando colaborador, valor, chave PIX e banco ativo.
-- Ao confirmar, chama `supabase.functions.invoke('pix-pagamento', { body: { fechamento_id, valor, chave_pix, favorecido } })`.
-- Toast de sucesso/erro; em sucesso, invalida queries de fechamentos.
-- Botão desabilitado (com tooltip) quando: sem chave PIX, sem integração ativa, ou enquanto a request está em andamento.
+**`/financeiro/movimentacoes`** — Lista completa
+- Filtros: período, tipo, categoria, status, conta
+- Tabela com edição inline de status
+- Botão "Nova entrada" / "Nova saída" / "Transferência"
+- Indicador visual de origem (manual / Inter / fechamento)
 
-Botão "Marcar Pago" continua existindo como fallback manual.
+**`/financeiro/contas-pagar`** — Contas a pagar e receber
+- Visão tipo kanban ou lista por status (pendente, vence em 7 dias, atrasado, pago)
+- Marcar como pago em 1 clique
+- Lançamentos recorrentes
 
-### 5. Nova página `Integrações` em Configurações
+**`/financeiro/categorias`** — Plano de contas (admin)
+- CRUD de categorias
 
-Tela admin para:
-- Listar `integracoes_bancarias`.
-- Criar/editar/excluir.
-- Toggle "Ativar" (deixa as outras inativas via trigger).
-- Botão "Configurar credenciais" que abre instruções para adicionar os secrets do banco escolhido.
+**`/financeiro/conciliacao`** — Conciliação Inter
+- Tabela lado a lado: extrato Inter vs movimentações do sistema
+- Botão para casar manualmente / criar movimentação a partir de transação não conciliada
 
-Item de menu na sidebar (apenas admin).
+## 5. Permissões (RLS)
 
-## Pontos técnicos
+- **Admin**: tudo (criar, editar, excluir, sincronizar)
+- **Gerente**: somente leitura em todo módulo financeiro
+- **Visualizador**: sem acesso
+- Sidebar: item "Financeiro" só aparece para admin e gerente
 
-- **Secrets necessários quando o usuário ativar Inter** (pediremos via `add_secret` apenas após confirmação): `INTER_CLIENT_ID`, `INTER_CLIENT_SECRET`, `INTER_CERT_PEM`, `INTER_KEY_PEM`, `INTER_CONTA_CORRENTE`.
-- mTLS no Deno edge runtime tem limitações conhecidas (mesma observação já presente em `c6-pix-pagamento`); até resolver via proxy ou runtime compatível, Inter operará em **modo MOCK** com log em `transacoes_log`.
-- Logs: toda transação (mock ou real) entra em `transacoes_log` com `tipo = 'pix'` e `resposta_api` contendo a resposta crua mascarada.
+## 6. Navegação
 
-## Entregáveis
+Adicionar na sidebar (após "Fechamentos"):
+- 💰 Financeiro (com submenu: Dashboard, Movimentações, Contas a Pagar, Conciliação, Categorias)
 
-1. Migration: tabela `integracoes_bancarias` + trigger de exclusividade + RLS.
-2. Edge functions: `inter-pix-pagamento`, `pix-pagamento` (despachante).
-3. UI: botão "Pagar via PIX" + dialog na página Fechamentos.
-4. UI: nova página `Integrações Bancárias` em Configurações + rota + item de sidebar.
+## 7. Detalhes técnicos
 
-Confirme para eu começar pela migration.
+- Saldo da conta calculado on-the-fly via SUM das movimentações pagas (não armazenado, evita inconsistência)
+- Função SQL `get_saldo_conta(conta_id, data_ref)` para consultas rápidas
+- View materializada `vw_fluxo_caixa_mensal` para os gráficos do dashboard (refresh via trigger)
+- Suporte a anexo de comprovante (bucket `comprovantes-financeiros`, privado)
+- Tudo em design tokens existentes (violet/green/orange)
+
+## Ordem de implementação
+
+1. Migration: tabelas + RLS + trigger fechamento→movimentação + seed de categorias
+2. Páginas Dashboard e Movimentações (CRUD manual funcional)
+3. Página Contas a Pagar/Receber + recorrência
+4. Edge function `inter-sync-extrato` + página de Conciliação (depois que você fornecer os secrets do Inter)
+5. Refinamentos de gráficos e relatórios
+
+Posso começar pela fundação (passos 1 a 3) sem precisar dos secrets do Inter — a integração entra no fim. Aprova?

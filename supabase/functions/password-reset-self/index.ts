@@ -27,9 +27,9 @@ Deno.serve(async (req) => {
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) return json({ error: "Payload inválido" }, 400);
 
-    // Normaliza telefone: remove não-dígitos e descarta DDI 55 se presente
-    let digits = parsed.data.telefone.replace(/\D/g, "");
-    if (digits.length > 11 && digits.startsWith("55")) digits = digits.slice(2);
+    // Normaliza telefone para comparar independente de máscara ou DDI 55
+    const digits = normalizeLocalPhone(parsed.data.telefone);
+    const internalEmail = `${withBrazilCountryCode(digits)}@jpcenografia.local`;
 
     // Busca comparando apenas dígitos (telefone pode estar formatado no banco)
     const { data: candidatos, error: colabErr } = await admin
@@ -37,12 +37,41 @@ Deno.serve(async (req) => {
       .select("id, nome, email, user_id, telefone")
       .not("telefone", "is", null);
     if (colabErr) throw colabErr;
-    const colab = (candidatos ?? []).find(
-      (c) => (c.telefone ?? "").replace(/\D/g, "").replace(/^55/, "") === digits
+    let colab = (candidatos ?? []).find(
+      (c) => normalizeLocalPhone(c.telefone ?? "") === digits
     );
-    if (!colab) return json({ error: "Celular não encontrado" }, 404);
-    if (!colab.email) return json({ error: "Colaborador não possui e-mail cadastrado" }, 400);
-    if (!colab.user_id) return json({ error: "Colaborador sem usuário de acesso vinculado" }, 400);
+
+    // Fallback: o login do diarista é um e-mail interno derivado do celular.
+    // Se o telefone cadastrado divergir, ainda tentamos localizar pelo Auth user.
+    if (!colab) {
+      let authUserId: string | null = null;
+      for (let page = 1; page <= 20 && !authUserId; page++) {
+        const { data: usersPage, error: listErr } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+        if (listErr) throw listErr;
+        const found = usersPage.users.find((u) => {
+          const emailMatches = (u.email ?? "").toLowerCase() === internalEmail;
+          const phoneMatches = normalizeLocalPhone(String(u.user_metadata?.phone ?? "")) === digits;
+          return emailMatches || phoneMatches;
+        });
+        authUserId = found?.id ?? null;
+        if (usersPage.users.length < 200) break;
+      }
+
+      if (authUserId) {
+        const { data: colabByUser, error: colabByUserErr } = await admin
+          .from("colaboradores")
+          .select("id, nome, email, user_id, telefone")
+          .eq("user_id", authUserId)
+          .maybeSingle();
+        if (colabByUserErr) throw colabByUserErr;
+        colab = colabByUser ?? undefined;
+      }
+    }
+
+    if (!colab || !colab.email || !colab.user_id) {
+      console.warn("Password reset skipped: colaborador not found or incomplete", { telefone: digits });
+      return json({ ok: true });
+    }
 
     // Gera token (32 bytes hex)
     const tokenBytes = crypto.getRandomValues(new Uint8Array(32));
@@ -115,4 +144,23 @@ function json(payload: unknown, status = 200) {
 
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+}
+
+function onlyDigits(input: string): string {
+  return (input || "").replace(/\D/g, "");
+}
+
+function normalizeLocalPhone(input: string): string {
+  const digits = onlyDigits(input);
+  if ((digits.length === 12 || digits.length === 13) && digits.startsWith("55")) {
+    return digits.slice(2);
+  }
+  return digits;
+}
+
+function withBrazilCountryCode(localDigits: string): string {
+  if ((localDigits.length === 12 || localDigits.length === 13) && localDigits.startsWith("55")) {
+    return localDigits;
+  }
+  return `55${localDigits}`;
 }

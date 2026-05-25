@@ -66,6 +66,7 @@ const App = () => (
             <Route path="/financeiro/contas-pagar" element={<Protected><Staff><ContasPagar /></Staff></Protected>} />
             <Route path="/financeiro/categorias" element={<Protected><Staff><CategoriasFinanceiras /></Staff></Protected>} />
             <Route path="/financeiro/contas-bancarias" element={<Protected><Staff><ContasBancarias /></Staff></Protected>} />
+            <Route path="/financeiro/relatorios" element={<Protected><Staff><RelatoriosFinanceiros /></Staff></Protected>} />
             <Route path="/configuracoes" element={<Protected><RequireAdmin><Configuracoes /></RequireAdmin></Protected>} />
             <Route path="/meu-extrato" element={<Protected><MeuExtrato /></Protected>} />
             <Route path="/minhas-notas" element={<Protected><MinhasNotasFiscais /></Protected>} />

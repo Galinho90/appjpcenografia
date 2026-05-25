@@ -515,6 +515,63 @@ export type Database = {
           },
         ]
       }
+      fornecedores: {
+        Row: {
+          agencia: string | null
+          ativo: boolean
+          banco: string | null
+          categoria_padrao_id: string | null
+          chave_pix: string | null
+          conta: string | null
+          contato: string | null
+          created_at: string
+          documento: string | null
+          email: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          telefone: string | null
+          tipo_documento: string
+          updated_at: string
+        }
+        Insert: {
+          agencia?: string | null
+          ativo?: boolean
+          banco?: string | null
+          categoria_padrao_id?: string | null
+          chave_pix?: string | null
+          conta?: string | null
+          contato?: string | null
+          created_at?: string
+          documento?: string | null
+          email?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          telefone?: string | null
+          tipo_documento?: string
+          updated_at?: string
+        }
+        Update: {
+          agencia?: string | null
+          ativo?: boolean
+          banco?: string | null
+          categoria_padrao_id?: string | null
+          chave_pix?: string | null
+          conta?: string | null
+          contato?: string | null
+          created_at?: string
+          documento?: string | null
+          email?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          telefone?: string | null
+          tipo_documento?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       integracoes_bancarias: {
         Row: {
           ambiente: string
@@ -639,6 +696,7 @@ export type Database = {
           data_vencimento: string | null
           descricao: string
           fechamento_id: string | null
+          fornecedor_id: string | null
           id: string
           id_externo: string | null
           observacoes: string | null
@@ -663,6 +721,7 @@ export type Database = {
           data_vencimento?: string | null
           descricao: string
           fechamento_id?: string | null
+          fornecedor_id?: string | null
           id?: string
           id_externo?: string | null
           observacoes?: string | null
@@ -687,6 +746,7 @@ export type Database = {
           data_vencimento?: string | null
           descricao?: string
           fechamento_id?: string | null
+          fornecedor_id?: string | null
           id?: string
           id_externo?: string | null
           observacoes?: string | null

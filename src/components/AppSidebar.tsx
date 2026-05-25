@@ -40,10 +40,10 @@ const operacionalSection: MenuSection = { title: "Operacional", icon: ClipboardL
 const cadastrosSection: MenuSection = { title: "Cadastros", icon: FolderKanban, items: cadastrosItems };
 
 const financeiroItems: MenuItem[] = [
-  { title: "Contas a Pagar", url: "/financeiro/contas-pagar", icon: CalendarClock },
-  { title: "Contas Bancárias", url: "/financeiro/contas-bancarias", icon: Landmark },
   { title: "Dashboard", url: "/financeiro", icon: DollarSign },
   { title: "Movimentações", url: "/financeiro/movimentacoes", icon: ArrowDownUp },
+  { title: "Contas a Pagar", url: "/financeiro/contas-pagar", icon: CalendarClock },
+  { title: "Contas Bancárias", url: "/financeiro/contas-bancarias", icon: Landmark },
   { title: "Plano de Contas", url: "/financeiro/categorias", icon: Tags },
   { title: "Relatórios", url: "/financeiro/relatorios", icon: BarChart3 },
 ];

@@ -46,6 +46,7 @@ const financeiroItems: MenuItem[] = [
   { title: "Contas a Pagar", url: "/financeiro/contas-pagar", icon: CalendarClock },
   { title: "Contas Bancárias", url: "/financeiro/contas-bancarias", icon: Landmark },
   { title: "Plano de Contas", url: "/financeiro/categorias", icon: Tags },
+  { title: "Relatórios", url: "/financeiro/relatorios", icon: BarChart3 },
 ];
 
 const diaristaMenuItems: MenuItem[] = [

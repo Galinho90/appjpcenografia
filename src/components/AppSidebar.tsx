@@ -202,7 +202,6 @@ export function AppSidebar() {
         className={cn(
           "py-3",
           collapsed ? "px-0" : "px-2",
-          isMobile && "[&_a]:justify-center [&_button]:justify-center",
         )}
       >
         <SidebarGroup>

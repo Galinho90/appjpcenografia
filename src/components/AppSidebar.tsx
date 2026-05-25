@@ -197,7 +197,7 @@ export function AppSidebar() {
         )}
       </SidebarHeader>
 
-      <SidebarContent className={cn("px-2 py-3", isMobile && "items-center")}>
+      <SidebarContent className="px-2 py-3">
         <SidebarGroup>
           {!collapsed && (
             <SidebarGroupLabel className="px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">

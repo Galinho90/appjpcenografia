@@ -370,6 +370,32 @@ export default function Movimentacoes() {
               )}
             </div>
 
+            {form.tipo === "saida" && (
+              <div className="space-y-1.5">
+                <Label>Fornecedor (para quem está pagando)</Label>
+                <Select
+                  value={form.fornecedor_id || "none"}
+                  onValueChange={(v) => {
+                    const id = v === "none" ? "" : v;
+                    const f = fornecedores.find((x) => x.id === id);
+                    setForm({
+                      ...form,
+                      fornecedor_id: id,
+                      categoria_id: form.categoria_id || (f?.categoria_padrao_id ?? ""),
+                      descricao: form.descricao || (f ? `Pagamento ${f.nome}` : ""),
+                    });
+                  }}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione um fornecedor" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {fornecedores.map((f) => <SelectItem key={f.id} value={f.id}>{f.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>Vencimento</Label>

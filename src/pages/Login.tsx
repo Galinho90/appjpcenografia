@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Phone, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
+import { ArrowRight, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { isValidPhoneBR, maskPhoneBR } from "@/lib/phone";
 import { toast } from "@/hooks/use-toast";
@@ -19,6 +19,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { data: empresa } = useCompanyLogo();
   const logoSrc = empresa?.logo_url || logoJpEventos;
+  const brandName = empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos";
 
   useEffect(() => {
     if (session) navigate("/", { replace: true });
@@ -53,53 +54,59 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4">
-      {/* Subtle light glow — monochrome */}
-      <div className="pointer-events-none absolute top-0 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-white/[0.03] blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-white/[0.02] blur-[100px]" />
+    <div className="min-h-screen w-full flex items-stretch bg-[#050505] text-slate-200">
+      {/* Left: Branding */}
+      <aside className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-950 via-zinc-900 to-[#121214]" />
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
+        <div
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)",
+            backgroundSize: "40px 40px",
+          }}
+        />
 
-      {/* Very faint dot pattern */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 0.5px, transparent 0.5px)",
-          backgroundSize: "24px 24px",
-        }}
-      />
-
-      <div className="relative w-full max-w-md">
-        {/* Glow halo behind card */}
-        <div className="absolute -inset-1 rounded-3xl bg-white/10 blur-xl" />
-
-        <div className="relative rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-2xl p-8 sm:p-10">
-          {/* Logo */}
-          <div className="flex flex-col items-center text-center mb-8">
-            <div className="relative mb-4">
-              <div className="absolute inset-0 rounded-2xl bg-white/20 blur-md opacity-50" />
-              <div className="relative h-24 w-24 rounded-2xl bg-white flex items-center justify-center shadow-lg p-2 ring-1 ring-white/20">
-                <img
-                  src={logoSrc}
-                  alt={empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"}
-                  className="h-full w-full object-contain"
-                />
-              </div>
+        <div className="relative z-10 p-12 text-center">
+          <div className="mb-8 inline-flex items-center justify-center w-24 h-24 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center p-1.5">
+              <img src={logoSrc} alt={brandName} className="h-full w-full object-contain" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white">
-              Bem-vindo de volta
-            </h1>
-            <p className="mt-1 text-sm text-slate-400 flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-slate-300" />
-              Acesse sua conta para continuar
-            </p>
+          </div>
+          <h1 className="text-4xl font-semibold tracking-tight text-white mb-4">{brandName}</h1>
+          <p className="text-lg text-zinc-400 max-w-sm mx-auto font-light leading-relaxed">
+            Excelência em gestão para os melhores profissionais de eventos.
+          </p>
+        </div>
+      </aside>
+
+      {/* Right: Form */}
+      <main className="flex-1 flex flex-col justify-center px-6 sm:px-16 lg:px-24 xl:px-32 bg-[#0A0A0B]">
+        <div className="max-w-md w-full mx-auto">
+          {/* Mobile brand */}
+          <div className="lg:hidden flex items-center gap-3 mb-10">
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
+              <img src={logoSrc} alt={brandName} className="h-full w-full object-contain" />
+            </div>
+            <span className="text-white font-semibold text-xl tracking-tight">{brandName}</span>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <header className="mb-10">
+            <h2 className="text-3xl font-semibold text-white mb-2 tracking-tight">Bem-vindo de volta</h2>
+            <p className="text-zinc-500">Acesse sua conta para gerenciar seus serviços.</p>
+          </header>
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2 group">
+              <Label
+                htmlFor="phone"
+                className="text-xs font-medium uppercase tracking-widest text-zinc-500 ml-1 group-focus-within:text-white transition-colors"
+              >
                 Celular
               </Label>
-              <div className="relative group">
-                <Phone className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+              <div className="relative">
+                <Phone className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-zinc-600" />
                 <Input
                   id="phone"
                   type="tel"
@@ -108,17 +115,22 @@ export default function Login() {
                   value={phone}
                   onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
                   autoComplete="tel"
-                  className="h-12 pl-10 bg-background/60 border-border/60 focus-visible:ring-primary/40 transition-all"
+                  className="h-auto w-full bg-zinc-900/50 border border-zinc-800 text-white pl-12 pr-4 py-4 rounded-xl focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-0 focus-visible:border-zinc-500 transition-all outline-none placeholder:text-zinc-700"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Senha
-              </Label>
-              <div className="relative group">
-                <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+            <div className="space-y-2 group">
+              <div className="flex justify-between items-center">
+                <Label
+                  htmlFor="password"
+                  className="text-xs font-medium uppercase tracking-widest text-zinc-500 ml-1 group-focus-within:text-white transition-colors"
+                >
+                  Senha
+                </Label>
+              </div>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-zinc-600" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -126,15 +138,15 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
-                  className="h-12 pl-10 pr-10 bg-background/60 border-border/60 focus-visible:ring-primary/40 transition-all"
+                  className="h-auto w-full bg-zinc-900/50 border border-zinc-800 text-white pl-12 pr-12 py-4 rounded-xl focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-0 focus-visible:border-zinc-500 transition-all outline-none placeholder:text-zinc-700"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300 transition-colors"
                   aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
                 </button>
               </div>
             </div>
@@ -142,18 +154,20 @@ export default function Login() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 gap-2 text-base font-semibold bg-white text-slate-900 hover:bg-slate-100 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all"
+              className="group w-full h-auto bg-white text-[#050505] font-semibold py-4 rounded-xl hover:bg-zinc-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
             >
-              <LogIn className="h-4 w-4" />
               {submitting ? "Entrando..." : "Entrar"}
+              <ArrowRight className="h-[18px] w-[18px] group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            {empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"} · Plataforma de gestão
-          </p>
+          <footer className="mt-12 text-center border-t border-zinc-900 pt-8">
+            <p className="text-[10px] uppercase tracking-widest text-zinc-700 font-medium">
+              {brandName} · Plataforma de gestão
+            </p>
+          </footer>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -169,7 +169,8 @@ export function useMovimentacoes(filters: MovFilters = {}) {
         .select(`
           *,
           categoria:categorias_financeiras(*),
-          conta:contas_bancarias(*),
+          conta:contas_bancarias!movimentacoes_financeiras_conta_id_fkey(*),
+          conta_destino:contas_bancarias!movimentacoes_financeiras_conta_destino_id_fkey(*),
           colaborador:colaboradores(id, nome),
           cliente:clientes(id, razao_social)
         `)

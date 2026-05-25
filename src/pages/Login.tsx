@@ -52,15 +52,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#050505] p-4 selection:bg-white/20">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#0a1628] p-4 selection:bg-blue-400/20">
       {/* Sophisticated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Subtle Radial Vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(255,255,255,0.03)_0%,_transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(96,165,250,0.06)_0%,_transparent_60%)]" />
         {/* Fine Vertical Line */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[70%] w-[1px] bg-gradient-to-b from-transparent via-white/[0.07] to-transparent" />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[70%] w-[1px] bg-gradient-to-b from-transparent via-blue-200/[0.08] to-transparent" />
         {/* Micro Grain Texture */}
-        <svg className="absolute inset-1 opacity-[0.12] mix-blend-overlay" width="100%" height="100%">
+        <svg className="absolute inset-1 opacity-[0.08] mix-blend-overlay" width="100%" height="100%">
           <filter id="noise">
             <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch" />
           </filter>
@@ -69,13 +69,13 @@ export default function Login() {
       </div>
 
       {/* Login Card */}
-      <div className="relative w-full max-w-[420px] bg-[#0d0d0d] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,1)] p-8 sm:p-10">
+      <div className="relative w-full max-w-[420px] bg-[#0d1f38] border border-blue-200/10 shadow-[0_20px_50px_rgba(0,10,30,0.8)] p-8 sm:p-10">
         {/* Top Accent Line */}
-        <div className="absolute top-1 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute top-1 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-300/20 to-transparent" />
 
         {/* Logo */}
         <div className="mb-10 text-center">
-          <div className="inline-block mb-6 p-3 border border-white/10">
+          <div className="inline-block mb-6 p-3 border border-blue-200/10">
             <div className="relative h-16 w-16 bg-white flex items-center justify-center">
               <img
                 src={logoSrc}
@@ -87,14 +87,14 @@ export default function Login() {
           <h1 className="text-white text-lg font-light tracking-[0.2em] uppercase mb-2">
             {empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"}
           </h1>
-          <p className="text-white/30 text-[11px] tracking-wide">
+          <p className="text-blue-200/30 text-[11px] tracking-wide">
             Acesse sua conta para continuar
           </p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <label className="block text-[10px] uppercase tracking-[0.2em] text-white/30 ml-1 font-mono">
+            <label className="block text-[10px] uppercase tracking-[0.2em] text-blue-200/30 ml-1 font-mono">
               Celular
             </label>
             <Input
@@ -105,16 +105,16 @@ export default function Login() {
               value={phone}
               onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
               autoComplete="tel"
-              className="h-11 w-full bg-white/[0.03] border-white/10 text-white text-sm rounded-none px-4 focus:outline-none focus:border-white/30 focus-visible:ring-0 focus-visible:ring-transparent placeholder:text-white/10 transition-colors"
+              className="h-11 w-full bg-blue-200/[0.03] border-blue-200/10 text-white text-sm rounded-none px-4 focus:outline-none focus:border-blue-300/30 focus-visible:ring-0 focus-visible:ring-transparent placeholder:text-blue-200/10 transition-colors"
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-white/30 ml-1 font-mono">
+              <label className="block text-[10px] uppercase tracking-[0.2em] text-blue-200/30 ml-1 font-mono">
                 Senha
               </label>
-              <a href="#" className="text-[10px] text-white/20 hover:text-white transition-colors">
+              <a href="#" className="text-[10px] text-blue-200/20 hover:text-blue-100 transition-colors">
                 Esqueceu?
               </a>
             </div>
@@ -126,12 +126,12 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
-                className="h-11 w-full bg-white/[0.03] border-white/10 text-white text-sm rounded-none px-4 pr-10 focus:outline-none focus:border-white/30 focus-visible:ring-5 focus-visible:ring-transparent placeholder:text-white/10 transition-colors"
+                className="h-11 w-full bg-blue-200/[0.03] border-blue-200/10 text-white text-sm rounded-none px-4 pr-10 focus:outline-none focus:border-blue-300/30 focus-visible:ring-5 focus-visible:ring-transparent placeholder:text-blue-200/10 transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((s) => !s)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/60 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200/20 hover:text-blue-100/60 transition-colors"
                 aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -142,13 +142,13 @@ export default function Login() {
           <Button
             type="submit"
             disabled={submitting}
-            className="w-full h-12 bg-white text-black text-[11px] font-semibold uppercase tracking-[0.15em] rounded-none hover:bg-[#e5e5e5] transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
+            className="w-full h-12 bg-white text-[#0a1628] text-[11px] font-semibold uppercase tracking-[0.15em] rounded-none hover:bg-blue-50 transition-all active:scale-[0.98] disabled:opacity-50 mt-4"
           >
             {submitting ? "Entrando..." : "Entrar"}
           </Button>
         </form>
 
-        <p className="mt-10 pt-8 border-t border-white/[0.04] text-center text-[10px] text-white/20 tracking-wide">
+        <p className="mt-10 pt-8 border-t border-blue-200/[0.04] text-center text-[10px] text-blue-200/20 tracking-wide">
           {empresa?.nome_fantasia || empresa?.razao_social || "JP Eventos"} · Plataforma de gestão
         </p>
       </div>

@@ -157,6 +157,17 @@ export default function Login() {
                 >
                   Senha
                 </Label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotDialog(true);
+                    setForgotSent(false);
+                    setForgotPhone("");
+                  }}
+                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-medium"
+                >
+                  Esqueci minha senha?
+                </button>
               </div>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-slate-500" />

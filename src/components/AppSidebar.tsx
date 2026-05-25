@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Users, CalendarDays, FileBarChart, FileText,
   Settings, Building2, Tags, LogOut, Wallet, BarChart3, Receipt,
   DollarSign, ArrowDownUp, CalendarClock, Landmark, ChevronRight,
-  ClipboardList, FolderKanban,
+  ClipboardList, FolderKanban, Truck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";

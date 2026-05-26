@@ -185,20 +185,21 @@ export default function NotasFiscais() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Receipt className="h-7 w-7" /> Notas Fiscais
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <Receipt className="h-6 w-6 sm:h-7 sm:w-7" /> Notas Fiscais
           </h1>
-          <p className="text-muted-foreground">Recebimento de NF dos diaristas por quinzena.</p>
+          <p className="text-muted-foreground text-sm sm:text-base">Recebimento de NF dos diaristas por quinzena.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={atualizar} disabled={isFetching}>
             <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
-            Atualizar notas
+            <span className="hidden sm:inline">Atualizar notas</span>
+            <span className="sm:hidden">Atualizar</span>
           </Button>
           <Button variant="outline" size="icon" onClick={() => shift(-1)}><ChevronLeft className="h-4 w-4" /></Button>
-          <span className="text-sm font-medium px-3">
+          <span className="text-sm font-medium px-2 sm:px-3 whitespace-nowrap">
             {fmt(selecionada.inicio)} – {fmt(selecionada.fim)}
           </span>
           <Button variant="outline" size="icon" onClick={() => shift(1)}><ChevronRight className="h-4 w-4" /></Button>

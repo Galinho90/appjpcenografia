@@ -258,6 +258,9 @@ export default function Movimentacoes() {
                         {m.fornecedor && (
                           <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
                         )}
+                        {m.cliente && (
+                          <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
+                        )}
                         <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
                       </TableCell>
                       <TableCell>

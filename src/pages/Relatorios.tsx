@@ -240,51 +240,88 @@ export default function Relatorios() {
               Nenhum fechamento encontrado para os filtros selecionados.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Colaborador</TableHead>
-                    <TableHead className="text-right">Diárias</TableHead>
-                    <TableHead className="text-right">Vales</TableHead>
-                    <TableHead className="text-right">Reembolsos</TableHead>
-                    <TableHead className="text-right">Valor Final</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {linhas.map((f: any) => {
-                    const cfg = getStatusBadge(f.status);
-                    const Icon = cfg.icon;
-                    return (
-                      <TableRow key={f.id}>
-                        <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
-                        <TableCell className="text-right">{fmtBRL(f.total_diarias)}</TableCell>
-                        <TableCell className="text-right text-destructive">- {fmtBRL(f.total_vales)}</TableCell>
-                        <TableCell className="text-right text-success">+ {fmtBRL(f.total_reembolsos)}</TableCell>
-                        <TableCell className="text-right font-bold">{fmtBRL(f.valor_final)}</TableCell>
-                        <TableCell>
-                          <Badge className={`gap-1 ${cfg.className}`}>
-                            <Icon className="h-3 w-3" />
-                            {cfg.label}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-                <TableFooter>
-                  <TableRow>
-                    <TableCell className="font-semibold">Totais</TableCell>
-                    <TableCell className="text-right font-semibold">{fmtBRL(tot.diarias)}</TableCell>
-                    <TableCell className="text-right font-semibold text-destructive">- {fmtBRL(tot.vales)}</TableCell>
-                    <TableCell className="text-right font-semibold text-success">+ {fmtBRL(tot.reembolsos)}</TableCell>
-                    <TableCell className="text-right font-bold">{fmtBRL(tot.final)}</TableCell>
-                    <TableCell />
-                  </TableRow>
-                </TableFooter>
-              </Table>
-            </div>
+            <>
+              {/* Mobile cards */}
+              <div className="md:hidden divide-y">
+                {linhas.map((f: any) => {
+                  const cfg = getStatusBadge(f.status);
+                  const Icon = cfg.icon;
+                  return (
+                    <div key={f.id} className="p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{(f.colaborador as any)?.nome ?? "—"}</span>
+                        <Badge className={`gap-1 text-xs ${cfg.className}`}>
+                          <Icon className="h-3 w-3" />
+                          {cfg.label}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="text-right">Diárias: <span className="font-medium">{fmtBRL(f.total_diarias)}</span></div>
+                        <div className="text-right text-destructive">Vales: - {fmtBRL(f.total_vales)}</div>
+                        <div className="text-right text-success">Reemb.: + {fmtBRL(f.total_reembolsos)}</div>
+                        <div className="text-right font-bold">Final: {fmtBRL(f.valor_final)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="p-3 space-y-2 bg-muted/50">
+                  <div className="font-semibold text-sm">Totais</div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="text-right font-semibold">Diárias: {fmtBRL(tot.diarias)}</div>
+                    <div className="text-right font-semibold text-destructive">Vales: - {fmtBRL(tot.vales)}</div>
+                    <div className="text-right font-semibold text-success">Reemb.: + {fmtBRL(tot.reembolsos)}</div>
+                    <div className="text-right font-bold">Final: {fmtBRL(tot.final)}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Colaborador</TableHead>
+                      <TableHead className="text-right">Diárias</TableHead>
+                      <TableHead className="text-right">Vales</TableHead>
+                      <TableHead className="text-right">Reembolsos</TableHead>
+                      <TableHead className="text-right">Valor Final</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {linhas.map((f: any) => {
+                      const cfg = getStatusBadge(f.status);
+                      const Icon = cfg.icon;
+                      return (
+                        <TableRow key={f.id}>
+                          <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
+                          <TableCell className="text-right">{fmtBRL(f.total_diarias)}</TableCell>
+                          <TableCell className="text-right text-destructive">- {fmtBRL(f.total_vales)}</TableCell>
+                          <TableCell className="text-right text-success">+ {fmtBRL(f.total_reembolsos)}</TableCell>
+                          <TableCell className="text-right font-bold">{fmtBRL(f.valor_final)}</TableCell>
+                          <TableCell>
+                            <Badge className={`gap-1 ${cfg.className}`}>
+                              <Icon className="h-3 w-3" />
+                              {cfg.label}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TableCell className="font-semibold">Totais</TableCell>
+                      <TableCell className="text-right font-semibold">{fmtBRL(tot.diarias)}</TableCell>
+                      <TableCell className="text-right font-semibold text-destructive">- {fmtBRL(tot.vales)}</TableCell>
+                      <TableCell className="text-right font-semibold text-success">+ {fmtBRL(tot.reembolsos)}</TableCell>
+                      <TableCell className="text-right font-bold">{fmtBRL(tot.final)}</TableCell>
+                      <TableCell />
+                    </TableRow>
+                  </TableFooter>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

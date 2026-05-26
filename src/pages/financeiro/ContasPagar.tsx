@@ -54,6 +54,7 @@ export default function ContasPagar() {
                 <p className="font-medium truncate">{m.descricao}</p>
                 <p className="text-xs text-muted-foreground">
                   Vence {fmtDate(m.data_vencimento)} · {m.categoria?.nome ?? "Sem categoria"} · {m.conta?.apelido}
+                  {m.cliente && <> · <span className="font-medium">{m.cliente.razao_social}</span></>}
                 </p>
               </div>
               <div className="text-right">

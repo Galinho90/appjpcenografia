@@ -185,20 +185,21 @@ export default function NotasFiscais() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Receipt className="h-7 w-7" /> Notas Fiscais
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <Receipt className="h-6 w-6 sm:h-7 sm:w-7" /> Notas Fiscais
           </h1>
-          <p className="text-muted-foreground">Recebimento de NF dos diaristas por quinzena.</p>
+          <p className="text-muted-foreground text-sm sm:text-base">Recebimento de NF dos diaristas por quinzena.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={atualizar} disabled={isFetching}>
             <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
-            Atualizar notas
+            <span className="hidden sm:inline">Atualizar notas</span>
+            <span className="sm:hidden">Atualizar</span>
           </Button>
           <Button variant="outline" size="icon" onClick={() => shift(-1)}><ChevronLeft className="h-4 w-4" /></Button>
-          <span className="text-sm font-medium px-3">
+          <span className="text-sm font-medium px-2 sm:px-3 whitespace-nowrap">
             {fmt(selecionada.inicio)} – {fmt(selecionada.fim)}
           </span>
           <Button variant="outline" size="icon" onClick={() => shift(1)}><ChevronRight className="h-4 w-4" /></Button>
@@ -228,18 +229,9 @@ export default function NotasFiscais() {
           ) : notas.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma nota fiscal recebida nesta quinzena.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Diarista</TableHead>
-                  <TableHead>Número</TableHead>
-                  <TableHead>Emissão</TableHead>
-                  <TableHead>Valor</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile cards */}
+              <div className="md:hidden divide-y">
                 {[...notas].sort((a: any, b: any) => {
                   const na = a.colaborador?.nome ?? colNome(a.colaborador_id);
                   const nb = b.colaborador?.nome ?? colNome(b.colaborador_id);
@@ -248,49 +240,126 @@ export default function NotasFiscais() {
                   const cfg = getStatusBadge(n.status);
                   const Icon = cfg.icon;
                   return (
-                    <TableRow key={n.id}>
-                      <TableCell className="font-medium">{n.colaborador?.nome ?? colNome(n.colaborador_id)}</TableCell>
-                      <TableCell>{n.numero ?? "—"}</TableCell>
-                      <TableCell>{n.data_emissao ? new Date(n.data_emissao + "T00:00").toLocaleDateString("pt-BR") : "—"}</TableCell>
-                      <TableCell>{fmtBRL(Number(n.valor))}</TableCell>
-                      <TableCell>
-                        <Badge className={`gap-1 ${cfg.className}`}>
+                    <div key={n.id} className="p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{n.colaborador?.nome ?? colNome(n.colaborador_id)}</span>
+                        <Badge className={`gap-1 text-xs ${cfg.className}`}>
                           <Icon className="h-3 w-3" />{cfg.label}
                         </Badge>
-                        {n.status === "rejeitada" && (n.observacoes || n.rejeitada_em) && (
-                          <div className="text-xs text-muted-foreground mt-1 max-w-[260px] space-y-0.5">
-                            {n.rejeitada_em && (
-                              <div><span className="font-medium">Rejeitada em:</span> {new Date(n.rejeitada_em).toLocaleString("pt-BR")}</div>
-                            )}
-                            {n.observacoes && (
-                              <div><span className="font-medium">Motivo:</span> {n.observacoes}</div>
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right space-x-1">
-                        <Button size="icon" variant="ghost" onClick={() => visualizar(n)} title="Visualizar" disabled={viewerLoading}>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <div className="text-xs text-muted-foreground">Número</div>
+                          <div>{n.numero ?? "—"}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground">Emissão</div>
+                          <div>{n.data_emissao ? new Date(n.data_emissao + "T00:00").toLocaleDateString("pt-BR") : "—"}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground">Valor</div>
+                          <div className="font-medium">{fmtBRL(Number(n.valor))}</div>
+                        </div>
+                      </div>
+                      {n.status === "rejeitada" && (n.observacoes || n.rejeitada_em) && (
+                        <div className="text-xs text-muted-foreground space-y-0.5">
+                          {n.rejeitada_em && (
+                            <div><span className="font-medium">Rejeitada em:</span> {new Date(n.rejeitada_em).toLocaleString("pt-BR")}</div>
+                          )}
+                          {n.observacoes && (
+                            <div><span className="font-medium">Motivo:</span> {n.observacoes}</div>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex items-center justify-end gap-1 pt-1">
+                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => visualizar(n)} title="Visualizar" disabled={viewerLoading}>
                           <Eye className="h-4 w-4" />
                         </Button>
                         {n.status !== "aprovada" && (
-                          <Button size="icon" variant="ghost" onClick={() => aprovar(n.id)} title="Aprovar">
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => aprovar(n.id)} title="Aprovar">
                             <Check className="h-4 w-4 text-green-600" />
                           </Button>
                         )}
                         {n.status !== "rejeitada" && (
-                          <Button size="icon" variant="ghost" onClick={() => abrirRejeitar(n.id, n.colaborador?.nome ?? colNome(n.colaborador_id))} title="Rejeitar">
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => abrirRejeitar(n.id, n.colaborador?.nome ?? colNome(n.colaborador_id))} title="Rejeitar">
                             <X className="h-4 w-4 text-destructive" />
                           </Button>
                         )}
-                        <Button size="icon" variant="ghost" onClick={() => setConfirmDelete({ id: n.id, arquivo_url: n.arquivo_url })} title="Excluir">
+                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setConfirmDelete({ id: n.id, arquivo_url: n.arquivo_url })} title="Excluir">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </div>
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Diarista</TableHead>
+                      <TableHead>Número</TableHead>
+                      <TableHead>Emissão</TableHead>
+                      <TableHead>Valor</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {[...notas].sort((a: any, b: any) => {
+                      const na = a.colaborador?.nome ?? colNome(a.colaborador_id);
+                      const nb = b.colaborador?.nome ?? colNome(b.colaborador_id);
+                      return na.localeCompare(nb, "pt-BR", { sensitivity: "base" });
+                    }).map(n => {
+                      const cfg = getStatusBadge(n.status);
+                      const Icon = cfg.icon;
+                      return (
+                        <TableRow key={n.id}>
+                          <TableCell className="font-medium">{n.colaborador?.nome ?? colNome(n.colaborador_id)}</TableCell>
+                          <TableCell>{n.numero ?? "—"}</TableCell>
+                          <TableCell>{n.data_emissao ? new Date(n.data_emissao + "T00:00").toLocaleDateString("pt-BR") : "—"}</TableCell>
+                          <TableCell>{fmtBRL(Number(n.valor))}</TableCell>
+                          <TableCell>
+                            <Badge className={`gap-1 ${cfg.className}`}>
+                              <Icon className="h-3 w-3" />{cfg.label}
+                            </Badge>
+                            {n.status === "rejeitada" && (n.observacoes || n.rejeitada_em) && (
+                              <div className="text-xs text-muted-foreground mt-1 max-w-[260px] space-y-0.5">
+                                {n.rejeitada_em && (
+                                  <div><span className="font-medium">Rejeitada em:</span> {new Date(n.rejeitada_em).toLocaleString("pt-BR")}</div>
+                                )}
+                                {n.observacoes && (
+                                  <div><span className="font-medium">Motivo:</span> {n.observacoes}</div>
+                                )}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right space-x-1">
+                            <Button size="icon" variant="ghost" onClick={() => visualizar(n)} title="Visualizar" disabled={viewerLoading}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {n.status !== "aprovada" && (
+                              <Button size="icon" variant="ghost" onClick={() => aprovar(n.id)} title="Aprovar">
+                                <Check className="h-4 w-4 text-green-600" />
+                              </Button>
+                            )}
+                            {n.status !== "rejeitada" && (
+                              <Button size="icon" variant="ghost" onClick={() => abrirRejeitar(n.id, n.colaborador?.nome ?? colNome(n.colaborador_id))} title="Rejeitar">
+                                <X className="h-4 w-4 text-destructive" />
+                              </Button>
+                            )}
+                            <Button size="icon" variant="ghost" onClick={() => setConfirmDelete({ id: n.id, arquivo_url: n.arquivo_url })} title="Excluir">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -299,7 +368,17 @@ export default function NotasFiscais() {
         <Card>
           <CardHeader><CardTitle className="text-base">Diaristas que ainda não enviaram NF</CardTitle></CardHeader>
           <CardContent>
-            <ul className="text-sm space-y-1">
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y">
+              {pendentesEnvio.map((f: any) => (
+                <div key={f.id} className="py-2 flex items-center justify-between">
+                  <span className="text-sm font-medium">{colNome(f.colaborador_id)}</span>
+                  <span className="text-sm text-muted-foreground">{fmtBRL(Number(f.valor_final))}</span>
+                </div>
+              ))}
+            </div>
+            {/* Desktop list */}
+            <ul className="hidden md:block text-sm space-y-1">
               {pendentesEnvio.map((f: any) => (
                 <li key={f.id} className="flex justify-between">
                   <span>{colNome(f.colaborador_id)}</span>

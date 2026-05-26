@@ -214,56 +214,101 @@ export default function Fornecedores() {
           ) : filtered.length === 0 ? (
             <div className="text-center text-muted-foreground py-12">Nenhum fornecedor encontrado</div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Documento</TableHead>
-                    <TableHead>Contato</TableHead>
-                    <TableHead>Chave PIX</TableHead>
-                    <TableHead>Status</TableHead>
-                    {isAdmin && <TableHead className="text-right">Ações</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((f) => (
-                    <TableRow key={f.id}>
-                      <TableCell className="font-medium">{f.nome}</TableCell>
-                      <TableCell className="text-xs">
-                        {f.documento ? (
-                          <span><span className="uppercase text-muted-foreground mr-1">{f.tipo_documento}</span>{f.documento}</span>
-                        ) : "—"}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {f.contato || f.email || f.telefone || "—"}
-                      </TableCell>
-                      <TableCell className="text-xs">{f.chave_pix || "—"}</TableCell>
-                      <TableCell>
-                        <Badge variant={f.ativo ? "default" : "outline"} className={`text-[10px] ${!f.ativo ? "bg-red-500 text-white border-red-500 hover:bg-red-600" : ""}`}>
-                          {f.ativo ? "Ativo" : "Inativo"}
-                        </Badge>
-                      </TableCell>
+            <>
+              {/* Mobile: cards */}
+              <div className="md:hidden divide-y">
+                {filtered.map((f) => (
+                  <div key={f.id} className="p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-sm break-words">{f.nome}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {f.documento ? (
+                            <span><span className="uppercase">{f.tipo_documento}</span> {f.documento}</span>
+                          ) : "—"}
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          <Badge variant={f.ativo ? "default" : "outline"} className={`text-[10px] ${!f.ativo ? "bg-red-500 text-white border-red-500 hover:bg-red-600" : ""}`}>
+                            {f.ativo ? "Ativo" : "Inativo"}
+                          </Badge>
+                        </div>
+                      </div>
                       {isAdmin && (
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => toggleAtivo(f)} title={f.ativo ? "Desativar" : "Ativar"}>
-                              <Power className={`h-4 w-4 ${f.ativo ? "text-success" : "text-muted-foreground"}`} />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => openEdit(f)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(f.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                        <div className="flex gap-0.5 shrink-0">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleAtivo(f)} title={f.ativo ? "Desativar" : "Ativar"}>
+                            <Power className={`h-4 w-4 ${f.ativo ? "text-success" : "text-muted-foreground"}`} />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(f)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteId(f.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       )}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground space-y-0.5">
+                      {f.contato && <div>Contato: {f.contato}</div>}
+                      {f.email && <div>{f.email}</div>}
+                      {f.telefone && <div>{f.telefone}</div>}
+                      {f.chave_pix && <div>PIX: {f.chave_pix}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop: table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Documento</TableHead>
+                      <TableHead>Contato</TableHead>
+                      <TableHead>Chave PIX</TableHead>
+                      <TableHead>Status</TableHead>
+                      {isAdmin && <TableHead className="text-right">Ações</TableHead>}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((f) => (
+                      <TableRow key={f.id}>
+                        <TableCell className="font-medium">{f.nome}</TableCell>
+                        <TableCell className="text-xs">
+                          {f.documento ? (
+                            <span><span className="uppercase text-muted-foreground mr-1">{f.tipo_documento}</span>{f.documento}</span>
+                          ) : "—"}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {f.contato || f.email || f.telefone || "—"}
+                        </TableCell>
+                        <TableCell className="text-xs">{f.chave_pix || "—"}</TableCell>
+                        <TableCell>
+                          <Badge variant={f.ativo ? "default" : "outline"} className={`text-[10px] ${!f.ativo ? "bg-red-500 text-white border-red-500 hover:bg-red-600" : ""}`}>
+                            {f.ativo ? "Ativo" : "Inativo"}
+                          </Badge>
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button variant="ghost" size="icon" onClick={() => toggleAtivo(f)} title={f.ativo ? "Desativar" : "Ativar"}>
+                                <Power className={`h-4 w-4 ${f.ativo ? "text-success" : "text-muted-foreground"}`} />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => openEdit(f)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => setDeleteId(f.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

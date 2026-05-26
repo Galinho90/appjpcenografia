@@ -19,6 +19,7 @@ import {
   type MovimentacaoFinanceira, type TipoMovimentacao, type StatusMovimentacao,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/financeiro";
+import { useClientes } from "@/hooks/useSupabaseData";
 
 const emptyForm = {
   tipo: "saida" as TipoMovimentacao,
@@ -26,6 +27,7 @@ const emptyForm = {
   conta_destino_id: "",
   categoria_id: "",
   fornecedor_id: "",
+  cliente_id: "",
   valor: "",
   data_vencimento: todayISO(),
   data_pagamento: "",
@@ -47,6 +49,7 @@ export default function Movimentacoes() {
   const { data: contas = [] } = useContasBancarias();
   const { data: categorias = [] } = useCategoriasFinanceiras();
   const { data: fornecedores = [] } = useFornecedores(true);
+  const { data: clientes = [] } = useClientes();
 
   const createMutation = useCreateMovimentacao();
   const updateMutation = useUpdateMovimentacao();
@@ -71,6 +74,7 @@ export default function Movimentacoes() {
       conta_destino_id: m.conta_destino_id ?? "",
       categoria_id: m.categoria_id ?? "",
       fornecedor_id: m.fornecedor_id ?? "",
+      cliente_id: m.cliente_id ?? "",
       valor: String(m.valor),
       data_vencimento: m.data_vencimento ?? todayISO(),
       data_pagamento: m.data_pagamento ?? "",
@@ -96,6 +100,7 @@ export default function Movimentacoes() {
       conta_destino_id: form.tipo === "transferencia" ? form.conta_destino_id : null,
       categoria_id: form.tipo === "transferencia" ? null : (form.categoria_id || null),
       fornecedor_id: form.tipo === "saida" ? (form.fornecedor_id || null) : null,
+      cliente_id: form.tipo === "entrada" ? (form.cliente_id || null) : null,
       valor: Number(form.valor),
       data_vencimento: form.data_vencimento || null,
       data_pagamento: form.status === "pago" ? (form.data_pagamento || todayISO()) : (form.data_pagamento || null),
@@ -253,6 +258,9 @@ export default function Movimentacoes() {
                         {m.fornecedor && (
                           <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
                         )}
+                        {m.cliente && (
+                          <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
+                        )}
                         <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
                       </TableCell>
                       <TableCell>
@@ -398,8 +406,32 @@ export default function Movimentacoes() {
               </div>
             )}
 
+            {form.tipo === "entrada" && (
+              <div className="space-y-1.5">
+                <Label>Cliente (de quem está recebendo)</Label>
+                <Select
+                  value={form.cliente_id || "none"}
+                  onValueChange={(v) => {
+                    const id = v === "none" ? "" : v;
+                    const c = clientes.find((x) => x.id === id);
+                    setForm({
+                      ...form,
+                      cliente_id: id,
+                      descricao: form.descricao || (c ? `Recebimento ${c.razao_social}` : ""),
+                    });
+                  }}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione um cliente" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {clientes.map((c) => <SelectItem key={c.id} value={c.id}>{c.razao_social}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="grid gap-3 sm:grid-cols-2">
+
               <div className="space-y-1.5">
                 <Label>Vencimento</Label>
                 <Input type="date" value={form.data_vencimento} onChange={(e) => setForm({ ...form, data_vencimento: e.target.value })} />

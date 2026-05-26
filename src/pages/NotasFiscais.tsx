@@ -368,7 +368,17 @@ export default function NotasFiscais() {
         <Card>
           <CardHeader><CardTitle className="text-base">Diaristas que ainda não enviaram NF</CardTitle></CardHeader>
           <CardContent>
-            <ul className="text-sm space-y-1">
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y">
+              {pendentesEnvio.map((f: any) => (
+                <div key={f.id} className="py-2 flex items-center justify-between">
+                  <span className="text-sm font-medium">{colNome(f.colaborador_id)}</span>
+                  <span className="text-sm text-muted-foreground">{fmtBRL(Number(f.valor_final))}</span>
+                </div>
+              ))}
+            </div>
+            {/* Desktop list */}
+            <ul className="hidden md:block text-sm space-y-1">
               {pendentesEnvio.map((f: any) => (
                 <li key={f.id} className="flex justify-between">
                   <span>{colNome(f.colaborador_id)}</span>

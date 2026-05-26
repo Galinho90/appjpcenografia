@@ -19,6 +19,7 @@ import {
   type MovimentacaoFinanceira, type TipoMovimentacao, type StatusMovimentacao,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/financeiro";
+import { useClientes } from "@/hooks/useSupabaseData";
 
 const emptyForm = {
   tipo: "saida" as TipoMovimentacao,
@@ -26,6 +27,7 @@ const emptyForm = {
   conta_destino_id: "",
   categoria_id: "",
   fornecedor_id: "",
+  cliente_id: "",
   valor: "",
   data_vencimento: todayISO(),
   data_pagamento: "",

@@ -250,79 +250,142 @@ export default function Fechamentos() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Colaborador</TableHead>
-                    <TableHead>Diárias</TableHead>
-                    <TableHead>Vales</TableHead>
-                    <TableHead>Reembolsos</TableHead>
-                    <TableHead>Valor Final</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {fechamentosQ.map((f) => {
-                    const cfg = getStatusBadge(f.status);
-                    const Icon = cfg.icon;
-                    return (
-                      <TableRow key={f.id}>
-                        <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
-                        <TableCell>{fmtBRL(f.total_diarias)}</TableCell>
-                        <TableCell className="text-destructive">- {fmtBRL(f.total_vales)}</TableCell>
-                        <TableCell className="text-success">+ {fmtBRL(f.total_reembolsos)}</TableCell>
-                        <TableCell className="font-bold">{fmtBRL(f.valor_final)}</TableCell>
-                        <TableCell>
-                          <Badge className={`gap-1 ${cfg.className}`}>
-                            <Icon className="h-3 w-3" />
-                            {cfg.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {isAdmin && f.status === "pendente" && (
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                className="gap-1"
-                                onClick={() => setPixTarget(f)}
-                                disabled={!(f.colaborador as any)?.chave_pix || !integAtiva}
-                                title={
-                                  !integAtiva
-                                    ? "Nenhuma integração bancária ativa"
-                                    : !(f.colaborador as any)?.chave_pix
-                                    ? "Colaborador sem chave PIX"
-                                    : `Pagar via ${integAtiva.banco.toUpperCase()}`
-                                }
-                              >
-                                <Send className="h-3 w-3" /> Pagar PIX
-                              </Button>
-                            )}
-                            {isAdmin && f.status === "pendente" && (
-                              <Button size="sm" className="gap-1" onClick={() => handleMarcarPago(f.id)} disabled={updateStatus.isPending}>
-                                <DollarSign className="h-3 w-3" /> Marcar Pago
-                              </Button>
-                            )}
-                            {canEdit && f.status === "pago" && (
-                              <Button size="sm" variant="outline" className="gap-1" onClick={() => handleReabrir(f.id)} disabled={updateStatus.isPending}>
-                                <RotateCcw className="h-3 w-3" /> Reabrir
-                              </Button>
-                            )}
-                            {canEdit && (
-                              <Button size="icon" variant="ghost" onClick={() => setConfirmDelete(f.id)}>
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+            <>
+              {/* Mobile cards */}
+              <div className="md:hidden divide-y">
+                {fechamentosQ.map((f) => {
+                  const cfg = getStatusBadge(f.status);
+                  const Icon = cfg.icon;
+                  return (
+                    <div key={f.id} className="p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{(f.colaborador as any)?.nome ?? "—"}</span>
+                        <Badge className={`gap-1 text-xs ${cfg.className}`}>
+                          <Icon className="h-3 w-3" />
+                          {cfg.label}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                        <div>Diárias: <span className="text-foreground font-medium">{fmtBRL(f.total_diarias)}</span></div>
+                        <div>Vales: <span className="text-destructive font-medium">- {fmtBRL(f.total_vales)}</span></div>
+                        <div>Reemb.: <span className="text-success font-medium">+ {fmtBRL(f.total_reembolsos)}</span></div>
+                        <div>Final: <span className="text-foreground font-bold">{fmtBRL(f.valor_final)}</span></div>
+                      </div>
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {isAdmin && f.status === "pendente" && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="gap-1 h-8 text-xs"
+                            onClick={() => setPixTarget(f)}
+                            disabled={!(f.colaborador as any)?.chave_pix || !integAtiva}
+                            title={
+                              !integAtiva
+                                ? "Nenhuma integração bancária ativa"
+                                : !(f.colaborador as any)?.chave_pix
+                                ? "Colaborador sem chave PIX"
+                                : `Pagar via ${integAtiva.banco.toUpperCase()}`
+                            }
+                          >
+                            <Send className="h-3 w-3" /> Pagar PIX
+                          </Button>
+                        )}
+                        {isAdmin && f.status === "pendente" && (
+                          <Button size="sm" className="gap-1 h-8 text-xs" onClick={() => handleMarcarPago(f.id)} disabled={updateStatus.isPending}>
+                            <DollarSign className="h-3 w-3" /> Pagar
+                          </Button>
+                        )}
+                        {canEdit && f.status === "pago" && (
+                          <Button size="sm" variant="outline" className="gap-1 h-8 text-xs" onClick={() => handleReabrir(f.id)} disabled={updateStatus.isPending}>
+                            <RotateCcw className="h-3 w-3" /> Reabrir
+                          </Button>
+                        )}
+                        {canEdit && (
+                          <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => setConfirmDelete(f.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Colaborador</TableHead>
+                      <TableHead>Diárias</TableHead>
+                      <TableHead>Vales</TableHead>
+                      <TableHead>Reembolsos</TableHead>
+                      <TableHead>Valor Final</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {fechamentosQ.map((f) => {
+                      const cfg = getStatusBadge(f.status);
+                      const Icon = cfg.icon;
+                      return (
+                        <TableRow key={f.id}>
+                          <TableCell className="font-medium">{(f.colaborador as any)?.nome ?? "—"}</TableCell>
+                          <TableCell>{fmtBRL(f.total_diarias)}</TableCell>
+                          <TableCell className="text-destructive">- {fmtBRL(f.total_vales)}</TableCell>
+                          <TableCell className="text-success">+ {fmtBRL(f.total_reembolsos)}</TableCell>
+                          <TableCell className="font-bold">{fmtBRL(f.valor_final)}</TableCell>
+                          <TableCell>
+                            <Badge className={`gap-1 ${cfg.className}`}>
+                              <Icon className="h-3 w-3" />
+                              {cfg.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              {isAdmin && f.status === "pendente" && (
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  className="gap-1"
+                                  onClick={() => setPixTarget(f)}
+                                  disabled={!(f.colaborador as any)?.chave_pix || !integAtiva}
+                                  title={
+                                    !integAtiva
+                                      ? "Nenhuma integração bancária ativa"
+                                      : !(f.colaborador as any)?.chave_pix
+                                      ? "Colaborador sem chave PIX"
+                                      : `Pagar via ${integAtiva.banco.toUpperCase()}`
+                                  }
+                                >
+                                  <Send className="h-3 w-3" /> Pagar PIX
+                                </Button>
+                              )}
+                              {isAdmin && f.status === "pendente" && (
+                                <Button size="sm" className="gap-1" onClick={() => handleMarcarPago(f.id)} disabled={updateStatus.isPending}>
+                                  <DollarSign className="h-3 w-3" /> Marcar Pago
+                                </Button>
+                              )}
+                              {canEdit && f.status === "pago" && (
+                                <Button size="sm" variant="outline" className="gap-1" onClick={() => handleReabrir(f.id)} disabled={updateStatus.isPending}>
+                                  <RotateCcw className="h-3 w-3" /> Reabrir
+                                </Button>
+                              )}
+                              {canEdit && (
+                                <Button size="icon" variant="ghost" onClick={() => setConfirmDelete(f.id)}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

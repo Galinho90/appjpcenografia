@@ -235,78 +235,144 @@ export default function Movimentacoes() {
           ) : movs.length === 0 ? (
             <div className="text-center text-muted-foreground py-12">Nenhuma movimentação encontrada</div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Descrição</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Conta</TableHead>
-                    <TableHead>Vencimento</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                    {isAdmin && <TableHead className="text-right">Ações</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {movs.map((m) => (
-                    <TableRow key={m.id}>
-                      <TableCell>{tipoIcon(m.tipo)}</TableCell>
-                      <TableCell>
-                        <div className="font-medium">{m.descricao}</div>
-                        {m.fornecedor && (
-                          <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
-                        )}
-                        {m.cliente && (
-                          <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
-                        )}
-                        <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
-                      </TableCell>
-                      <TableCell>
-                        {m.categoria ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs">
-                            <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
-                            {m.categoria.nome}
-                          </span>
-                        ) : "—"}
-                      </TableCell>
-                      <TableCell className="text-xs">{m.conta?.apelido ?? "—"}</TableCell>
-                      <TableCell className="text-xs">{fmtDate(m.data_vencimento)}</TableCell>
-                      <TableCell>
-                        <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent hover:opacity-90`}>
+            <>
+              {/* Mobile: cards */}
+              <div className="md:hidden divide-y">
+                {movs.map((m) => (
+                  <div key={m.id} className="p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2 min-w-0">
+                        <div className="mt-0.5">{tipoIcon(m.tipo)}</div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm break-words">{m.descricao}</div>
+                          {m.fornecedor && (
+                            <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
+                          )}
+                          {m.cliente && (
+                            <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
+                          )}
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {m.categoria && (
+                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
+                                {m.categoria.nome}
+                              </span>
+                            )}
+                            {origemBadge(m.origem)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className={`text-right font-semibold text-sm whitespace-nowrap ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
+                        {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span>{m.conta?.apelido ?? "—"}</span>
+                        <span>•</span>
+                        <span>Venc. {fmtDate(m.data_vencimento)}</span>
+                        <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent`}>
                           {statusLabel[m.status]}
                         </Badge>
-                      </TableCell>
-                      <TableCell className={`text-right font-semibold ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
-                        {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
-                      </TableCell>
-                      {isAdmin && (
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            {m.status !== "pago" && (
-                              <Button variant="ghost" size="sm" onClick={() => marcarPago(m)} className="text-success">
-                                Pagar
-                              </Button>
-                            )}
-                            {m.origem !== "fechamento" && (
-                              <>
-                                <Button variant="ghost" size="icon" onClick={() => openEdit(m)}>
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon" onClick={() => setDeleteId(m.id)}>
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
-                      )}
+                      </div>
+                    </div>
+                    {isAdmin && (
+                      <div className="flex justify-end gap-1 pt-1">
+                        {m.status !== "pago" && (
+                          <Button variant="ghost" size="sm" onClick={() => marcarPago(m)} className="text-success h-8">
+                            Pagar
+                          </Button>
+                        )}
+                        {m.origem !== "fechamento" && (
+                          <>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteId(m.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop: table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Descrição</TableHead>
+                      <TableHead>Categoria</TableHead>
+                      <TableHead>Conta</TableHead>
+                      <TableHead>Vencimento</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                      {isAdmin && <TableHead className="text-right">Ações</TableHead>}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {movs.map((m) => (
+                      <TableRow key={m.id}>
+                        <TableCell>{tipoIcon(m.tipo)}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">{m.descricao}</div>
+                          {m.fornecedor && (
+                            <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
+                          )}
+                          {m.cliente && (
+                            <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
+                          )}
+                          <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
+                        </TableCell>
+                        <TableCell>
+                          {m.categoria ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs">
+                              <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
+                              {m.categoria.nome}
+                            </span>
+                          ) : "—"}
+                        </TableCell>
+                        <TableCell className="text-xs">{m.conta?.apelido ?? "—"}</TableCell>
+                        <TableCell className="text-xs">{fmtDate(m.data_vencimento)}</TableCell>
+                        <TableCell>
+                          <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent hover:opacity-90`}>
+                            {statusLabel[m.status]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className={`text-right font-semibold ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
+                          {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              {m.status !== "pago" && (
+                                <Button variant="ghost" size="sm" onClick={() => marcarPago(m)} className="text-success">
+                                  Pagar
+                                </Button>
+                              )}
+                              {m.origem !== "fechamento" && (
+                                <>
+                                  <Button variant="ghost" size="icon" onClick={() => openEdit(m)}>
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" onClick={() => setDeleteId(m.id)}>
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

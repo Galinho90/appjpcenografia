@@ -75,7 +75,7 @@ export default function CategoriasFinanceiras() {
           <p className="text-sm text-muted-foreground">Plano de contas usado nas movimentações</p>
         </div>
         {isAdmin && (
-          <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> Nova Categoria</Button>
+          <Button onClick={openCreate} className="gap-2 w-full sm:w-auto"><Plus className="h-4 w-4" /> Nova Categoria</Button>
         )}
       </div>
 
@@ -89,12 +89,12 @@ export default function CategoriasFinanceiras() {
           ) : (
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {categorias.map((c) => (
-                <div key={c.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                  <div className="flex items-center gap-3 min-w-0">
+                <div key={c.id} className="flex items-center justify-between gap-2 p-3 rounded-lg border bg-card">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <span className="h-4 w-4 rounded-full shrink-0" style={{ background: c.cor }} />
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{c.nome}</p>
-                      <div className="flex gap-1 mt-0.5">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate text-sm">{c.nome}</p>
+                      <div className="flex flex-wrap gap-1 mt-0.5">
                         <Badge variant="outline" className="text-[10px]">
                           {c.tipo === "receita" ? "Receita" : "Despesa"}
                         </Badge>
@@ -104,12 +104,12 @@ export default function CategoriasFinanceiras() {
                     </div>
                   </div>
                   {isAdmin && (
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
+                    <div className="flex gap-0.5 shrink-0">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                       {!c.sistema && (
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteId(c.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       )}

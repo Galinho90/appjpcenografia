@@ -403,8 +403,32 @@ export default function Movimentacoes() {
               </div>
             )}
 
+            {form.tipo === "entrada" && (
+              <div className="space-y-1.5">
+                <Label>Cliente (de quem está recebendo)</Label>
+                <Select
+                  value={form.cliente_id || "none"}
+                  onValueChange={(v) => {
+                    const id = v === "none" ? "" : v;
+                    const c = clientes.find((x) => x.id === id);
+                    setForm({
+                      ...form,
+                      cliente_id: id,
+                      descricao: form.descricao || (c ? `Recebimento ${c.razao_social}` : ""),
+                    });
+                  }}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione um cliente" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {clientes.map((c) => <SelectItem key={c.id} value={c.id}>{c.razao_social}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="grid gap-3 sm:grid-cols-2">
+
               <div className="space-y-1.5">
                 <Label>Vencimento</Label>
                 <Input type="date" value={form.data_vencimento} onChange={(e) => setForm({ ...form, data_vencimento: e.target.value })} />

@@ -73,6 +73,7 @@ export default function Movimentacoes() {
       conta_destino_id: m.conta_destino_id ?? "",
       categoria_id: m.categoria_id ?? "",
       fornecedor_id: m.fornecedor_id ?? "",
+      cliente_id: m.cliente_id ?? "",
       valor: String(m.valor),
       data_vencimento: m.data_vencimento ?? todayISO(),
       data_pagamento: m.data_pagamento ?? "",

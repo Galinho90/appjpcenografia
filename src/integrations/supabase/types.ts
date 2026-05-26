@@ -801,6 +801,13 @@ export type Database = {
             referencedRelation: "fechamentos"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "movimentacoes_financeiras_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
         ]
       }
       notas_fiscais: {

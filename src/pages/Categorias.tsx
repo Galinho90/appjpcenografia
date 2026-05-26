@@ -138,34 +138,34 @@ export default function Categorias() {
           ) : (
             <>
               {/* Mobile: cards */}
-              <div className="space-y-3 md:hidden">
+              <div className="space-y-2 md:hidden">
                 {filtered.map((c) => (
                   <Card key={c.id} className="border shadow-sm">
-                    <CardContent className="p-4 space-y-3">
+                    <CardContent className="p-2.5 space-y-2">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1 flex items-center gap-2">
+                        <div className="min-w-0 flex-1 flex items-center gap-1.5">
                           <Badge
                             className={cn(
-                              "text-[10px] px-1.5 py-0 shrink-0 border-transparent text-white hover:opacity-90",
+                              "text-[10px] px-1 py-0 shrink-0 border-transparent text-white hover:opacity-90",
                               c.tipo === "C" ? "bg-success" : "bg-destructive"
                             )}
                           >
                             {c.tipo === "C" ? "Crédito" : "Débito"}
                           </Badge>
-                          <span className="truncate font-medium">{c.descricao}</span>
+                          <span className="truncate font-medium text-sm">{c.descricao}</span>
                         </div>
                         {canEdit && (
-                          <div className="flex gap-1 shrink-0">
-                            <Button variant="ghost" size="icon" onClick={() => openEdit(c)}>
-                              <Pencil className="h-4 w-4" />
+                          <div className="flex gap-0.5 shrink-0">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(c)}>
+                              <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDeleteId(c.id)}>
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
                             </Button>
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 pt-2 border-t">
+                      <div className="flex items-center gap-2 pt-1.5 border-t">
                         <Switch checked={c.ativo} disabled={!canEdit} onCheckedChange={() => toggleAtivo(c)} />
                         <span className="text-xs text-muted-foreground">
                           {c.ativo ? "Ativo" : "Inativo"}

@@ -133,6 +133,16 @@ export default function Diarias() {
     return mins / 60;
   };
 
+  const arredondaValor = (valor: number): number => {
+    const intPart = Math.floor(valor);
+    const decimalPart = valor - intPart;
+    if (decimalPart <= 0.495) {
+      return Math.round((intPart + 0.50) * 100) / 100;
+    } else {
+      return Math.round((intPart + 1.00) * 100) / 100;
+    }
+  };
+
   const colaboradorSelecionado = colaboradores.find((c) => c.id === form.colaborador_id);
   const horasHE = isHoraExtra ? calcHoras(form.hora_entrada, form.hora_saida) : 0;
 
@@ -140,7 +150,8 @@ export default function Diarias() {
     if (!isHoraExtra) return;
     const diaria = Number(colaboradorSelecionado?.valor_diaria_padrao ?? 0);
     if (diaria <= 0 || horasHE <= 0) return;
-    const novo = Math.round((diaria / 9) * horasHE * 100) / 100;
+    const bruto = (diaria / 9) * horasHE;
+    const novo = arredondaValor(bruto);
     setForm((f) => (f.valor === novo ? f : { ...f, valor: novo }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHoraExtra, colaboradorSelecionado?.valor_diaria_padrao, horasHE]);

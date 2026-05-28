@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, Trash2, Pencil, Check, ChevronsUpDown, ChevronLeft, ChevronRight, CalendarDays, CheckCircle2, DollarSign } from "lucide-react";
+import { Plus, Search, Trash2, Pencil, Check, ChevronsUpDown, ChevronLeft, ChevronRight, CalendarDays, CheckCircle2, DollarSign, X } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +95,16 @@ export default function Diarias() {
   const deleteMutation = useDeleteLancamento();
 
   const [form, setForm] = useState(emptyForm);
+  type QueueItem = {
+    categoria_id: string;
+    categoria_desc: string;
+    categoria_tipo: string;
+    hora_entrada: string;
+    hora_saida: string;
+    valor: number;
+    descricao: string;
+  };
+  const [queue, setQueue] = useState<QueueItem[]>([]);
 
   const categoriasAtivas = useMemo(() => categorias.filter((c) => c.ativo), [categorias]);
   const colaboradoresAtivos = useMemo(() => colaboradores.filter((c) => c.ativo), [colaboradores]);
@@ -115,6 +125,7 @@ export default function Diarias() {
   const openCreate = () => {
     setEditingId(null);
     setForm({ ...emptyForm, data: toISO(new Date()) });
+    setQueue([]);
     setDialogOpen(true);
   };
 
@@ -175,41 +186,100 @@ export default function Diarias() {
   const totalDebitos = filtered.filter((l) => l.categoria?.tipo === "D").reduce((s, l) => s + l.valor, 0);
   const saldo = totalCreditos - totalDebitos;
 
-  const handleSave = async (continueAfterSave = false) => {
-    if (!form.colaborador_id || !form.categoria_id || !form.data) {
-      toast({ title: "Preencha colaborador, categoria e data", variant: "destructive" });
+  const addToQueue = () => {
+    if (!form.categoria_id) {
+      toast({ title: "Selecione a categoria antes de adicionar", variant: "destructive" });
+      return;
+    }
+    const cat = categorias.find((c) => c.id === form.categoria_id);
+    setQueue([
+      ...queue,
+      {
+        categoria_id: form.categoria_id,
+        categoria_desc: cat?.descricao || "—",
+        categoria_tipo: cat?.tipo || "D",
+        hora_entrada: isDiaria ? form.hora_entrada : "",
+        hora_saida: isDiaria ? form.hora_saida : "",
+        valor: Number(form.valor) || 0,
+        descricao: form.descricao || "",
+      },
+    ]);
+    setForm({ ...form, categoria_id: "", hora_entrada: "", hora_saida: "", valor: 0, descricao: "" });
+  };
+
+  const removeFromQueue = (idx: number) => {
+    setQueue(queue.filter((_, i) => i !== idx));
+  };
+
+  const handleSave = async () => {
+    if (!form.colaborador_id || !form.data) {
+      toast({ title: "Preencha diarista e data", variant: "destructive" });
+      return;
+    }
+
+    // Edit mode: single update
+    if (editingId) {
+      if (!form.categoria_id) {
+        toast({ title: "Selecione a categoria", variant: "destructive" });
+        return;
+      }
+      try {
+        await updateMutation.mutateAsync({
+          id: editingId,
+          colaborador_id: form.colaborador_id,
+          categoria_id: form.categoria_id,
+          cliente_id: form.cliente_id || null,
+          data: form.data,
+          hora_entrada: isDiaria && form.hora_entrada ? form.hora_entrada : null,
+          hora_saida: isDiaria && form.hora_saida ? form.hora_saida : null,
+          valor: Number(form.valor) || 0,
+          descricao: form.descricao || null,
+        } as any);
+        toast({ title: "Lançamento atualizado!" });
+        setDialogOpen(false);
+        setForm(emptyForm);
+        setEditingId(null);
+      } catch (e: any) {
+        toast({ title: "Erro", description: e.message, variant: "destructive" });
+      }
+      return;
+    }
+
+    // Create mode: queue + current form
+    const items = [...queue];
+    if (form.categoria_id) {
+      const cat = categorias.find((c) => c.id === form.categoria_id);
+      items.push({
+        categoria_id: form.categoria_id,
+        categoria_desc: cat?.descricao || "—",
+        categoria_tipo: cat?.tipo || "D",
+        hora_entrada: isDiaria ? form.hora_entrada : "",
+        hora_saida: isDiaria ? form.hora_saida : "",
+        valor: Number(form.valor) || 0,
+        descricao: form.descricao || "",
+      });
+    }
+    if (items.length === 0) {
+      toast({ title: "Adicione ao menos um lançamento", variant: "destructive" });
       return;
     }
     try {
-      const payload = {
-        colaborador_id: form.colaborador_id,
-        categoria_id: form.categoria_id,
-        cliente_id: form.cliente_id || null,
-        data: form.data,
-        hora_entrada: isDiaria && form.hora_entrada ? form.hora_entrada : null,
-        hora_saida: isDiaria && form.hora_saida ? form.hora_saida : null,
-        valor: Number(form.valor) || 0,
-        descricao: form.descricao || null,
-      };
-      if (editingId) {
-        await updateMutation.mutateAsync({ id: editingId, ...payload });
-        toast({ title: "Lançamento atualizado!" });
-      } else {
-        await createMutation.mutateAsync(payload as any);
-        toast({ title: "Lançamento registrado!" });
-        if (continueAfterSave) {
-          setForm({
-            ...form,
-            categoria_id: "",
-            hora_entrada: "",
-            hora_saida: "",
-            valor: 0,
-          });
-          return;
-        }
+      for (const it of items) {
+        await createMutation.mutateAsync({
+          colaborador_id: form.colaborador_id,
+          categoria_id: it.categoria_id,
+          cliente_id: form.cliente_id || null,
+          data: form.data,
+          hora_entrada: it.hora_entrada || null,
+          hora_saida: it.hora_saida || null,
+          valor: it.valor,
+          descricao: it.descricao || null,
+        } as any);
       }
+      toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });
       setDialogOpen(false);
       setForm(emptyForm);
+      setQueue([]);
       setEditingId(null);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
@@ -250,7 +320,7 @@ export default function Diarias() {
         </div>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setForm(emptyForm); } }}>
+      <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setForm(emptyForm); setQueue([]); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>{editingId ? "Editar Lançamento" : "Novo Lançamento"}</DialogTitle></DialogHeader>
           <div className="grid gap-4 py-4">
@@ -350,12 +420,48 @@ export default function Diarias() {
               </Select>
             </div>
             <div className="space-y-2"><Label>Descrição</Label><Textarea value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Descrição opcional..." /></div>
+
+            {!editingId && queue.length > 0 && (
+              <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+                <p className="text-xs font-medium text-muted-foreground">Lançamentos a salvar ({queue.length})</p>
+                <div className="space-y-1.5">
+                  {queue.map((it, idx) => (
+                    <div key={idx} className="flex items-center justify-between gap-2 rounded bg-background border px-2 py-1.5 text-sm">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Badge className={cn("text-[10px] px-1.5 py-0 shrink-0 border-transparent text-white", it.categoria_tipo === "C" ? "bg-success" : "bg-destructive")}>
+                          {it.categoria_tipo === "C" ? "C" : "D"}
+                        </Badge>
+                        <span className="truncate">{it.categoria_desc}</span>
+                        {(it.hora_entrada || it.hora_saida) && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">{it.hora_entrada || "—"}/{it.hora_saida || "—"}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="font-medium">R$ {it.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFromQueue(idx)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="grid gap-2 sm:grid-cols-2">
-              <Button variant="outline" onClick={() => handleSave(true)} disabled={isPending || !!editingId}>
-                {isPending ? "Salvando..." : "Salvar e lançar outro"}
-              </Button>
-              <Button onClick={() => handleSave(false)} disabled={isPending}>
-                {isPending ? "Salvando..." : (editingId ? "Atualizar Lançamento" : "Salvar Lançamento")}
+              {!editingId && (
+                <Button variant="outline" onClick={addToQueue} disabled={isPending} className="gap-2">
+                  <Plus className="h-4 w-4" /> Adicionar à lista
+                </Button>
+              )}
+              <Button onClick={handleSave} disabled={isPending} className={cn(!editingId ? "" : "sm:col-span-2")}>
+                {isPending
+                  ? "Salvando..."
+                  : editingId
+                    ? "Atualizar Lançamento"
+                    : queue.length > 0
+                      ? `Salvar todos (${queue.length + (form.categoria_id ? 1 : 0)})`
+                      : "Salvar Lançamento"}
               </Button>
             </div>
           </div>

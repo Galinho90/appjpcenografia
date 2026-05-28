@@ -122,6 +122,9 @@ export default function Diarias() {
   );
   const isDiaria = usaHorario;
   const isHoraExtra = !isPagamento && (descCat.includes("HORA EXTRA") || descCat.includes("HORAS EXTRA"));
+  const isDiariaOuDobra = !isPagamento && !isHoraExtra && (
+    descCat.includes("DIÁRIA") || descCat.includes("DIARIA") || descCat.includes("DOBRA")
+  );
 
   const calcHoras = (entrada: string, saida: string): number => {
     if (!entrada || !saida) return 0;

@@ -476,6 +476,9 @@ export default function Diarias() {
 
                       {canEdit && (
                         <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => openDuplicate(l)} title="Duplicar (mesmo diarista/data)">
+                            <Copy className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
                             <Pencil className="h-4 w-4" />
                           </Button>

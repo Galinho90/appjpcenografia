@@ -122,6 +122,9 @@ export default function Diarias() {
   );
   const isDiaria = usaHorario;
   const isHoraExtra = !isPagamento && (descCat.includes("HORA EXTRA") || descCat.includes("HORAS EXTRA"));
+  const isDiariaOuDobra = !isPagamento && !isHoraExtra && (
+    descCat.includes("DIÁRIA") || descCat.includes("DIARIA") || descCat.includes("DOBRA")
+  );
 
   const calcHoras = (entrada: string, saida: string): number => {
     if (!entrada || !saida) return 0;
@@ -155,6 +158,14 @@ export default function Diarias() {
     setForm((f) => (f.valor === novo ? f : { ...f, valor: novo }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHoraExtra, colaboradorSelecionado?.valor_diaria_padrao, horasHE]);
+
+  useEffect(() => {
+    if (!isDiariaOuDobra) return;
+    const diaria = Number(colaboradorSelecionado?.valor_diaria_padrao ?? 0);
+    if (diaria <= 0) return;
+    setForm((f) => (f.valor === diaria ? f : { ...f, valor: diaria }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDiariaOuDobra, colaboradorSelecionado?.valor_diaria_padrao]);
 
 
   const openCreate = () => {

@@ -136,11 +136,11 @@ export default function Diarias() {
   const arredondaValor = (valor: number): number => {
     const intPart = Math.floor(valor);
     const decimalPart = valor - intPart;
-    if (decimalPart <= 0.495) {
-      return Math.round((intPart + 0.50) * 100) / 100;
-    } else {
-      return Math.round((intPart + 1.00) * 100) / 100;
+    if (decimalPart === 0) return valor;
+    if (decimalPart <= 0.49) {
+      return intPart + 0.50;
     }
+    return intPart + 1.00;
   };
 
   const colaboradorSelecionado = colaboradores.find((c) => c.id === form.colaborador_id);

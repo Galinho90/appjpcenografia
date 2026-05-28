@@ -430,7 +430,15 @@ export default function Diarias() {
               <div className="space-y-2"><Label>Data</Label><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></div>
             )}
 
-            <div className="space-y-2"><Label>Valor (R$)</Label><Input type="number" step="0.01" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} /></div>
+            <div className="space-y-2">
+              <Label>Valor (R$)</Label>
+              <Input type="number" step="0.01" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
+              {isHoraExtra && horasHE > 0 && (colaboradorSelecionado?.valor_diaria_padrao ?? 0) > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Calculado: diária ÷ 9 × {horasHE.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} h
+                </p>
+              )}
+            </div>
             <div className="space-y-2">
               <Label>Cliente</Label>
               <Select value={form.cliente_id || "none"} onValueChange={(v) => setForm({ ...form, cliente_id: v === "none" ? "" : v })}>

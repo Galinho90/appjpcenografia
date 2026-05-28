@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, Trash2, Pencil, Check, ChevronsUpDown, ChevronLeft, ChevronRight, CalendarDays, CheckCircle2, DollarSign } from "lucide-react";
+import { Plus, Search, Trash2, Pencil, Check, ChevronsUpDown, ChevronLeft, ChevronRight, CalendarDays, CheckCircle2, DollarSign, Copy } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,6 +132,21 @@ export default function Diarias() {
     });
     setDialogOpen(true);
   };
+  const openDuplicate = (l: any) => {
+    setEditingId(null);
+    setForm({
+      colaborador_id: l.colaborador_id,
+      categoria_id: "",
+      cliente_id: (l as any).cliente_id || "",
+      data: l.data,
+      hora_entrada: "",
+      hora_saida: "",
+      valor: 0,
+      descricao: l.descricao || "",
+    });
+    setDialogOpen(true);
+  };
+
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -461,6 +476,9 @@ export default function Diarias() {
 
                       {canEdit && (
                         <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => openDuplicate(l)} title="Duplicar (mesmo diarista/data)">
+                            <Copy className="h-4 w-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -507,6 +525,9 @@ export default function Diarias() {
                         <TableCell>
                           {canEdit && (
                             <div className="flex gap-1">
+                              <Button variant="ghost" size="icon" onClick={() => openDuplicate(l)} title="Duplicar (mesmo diarista/data)">
+                                <Copy className="h-4 w-4" />
+                              </Button>
                               <Button variant="ghost" size="icon" onClick={() => openEdit(l)}>
                                 <Pencil className="h-4 w-4" />
                               </Button>

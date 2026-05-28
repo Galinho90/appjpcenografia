@@ -95,6 +95,16 @@ export default function Diarias() {
   const deleteMutation = useDeleteLancamento();
 
   const [form, setForm] = useState(emptyForm);
+  type QueueItem = {
+    categoria_id: string;
+    categoria_desc: string;
+    categoria_tipo: string;
+    hora_entrada: string;
+    hora_saida: string;
+    valor: number;
+    descricao: string;
+  };
+  const [queue, setQueue] = useState<QueueItem[]>([]);
 
   const categoriasAtivas = useMemo(() => categorias.filter((c) => c.ativo), [categorias]);
   const colaboradoresAtivos = useMemo(() => colaboradores.filter((c) => c.ativo), [colaboradores]);

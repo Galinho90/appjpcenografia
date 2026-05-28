@@ -503,7 +503,7 @@ export default function Diarias() {
                       <TableHead className="whitespace-nowrap">Saída</TableHead>
                       <TableHead className="whitespace-nowrap">Valor</TableHead>
                       <TableHead className="whitespace-nowrap">Descrição</TableHead>
-                      <TableHead className="w-[90px]"></TableHead>
+                      <TableHead className="w-[140px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

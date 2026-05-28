@@ -132,6 +132,21 @@ export default function Diarias() {
     });
     setDialogOpen(true);
   };
+  const openDuplicate = (l: any) => {
+    setEditingId(null);
+    setForm({
+      colaborador_id: l.colaborador_id,
+      categoria_id: "",
+      cliente_id: (l as any).cliente_id || "",
+      data: l.data,
+      hora_entrada: "",
+      hora_saida: "",
+      valor: 0,
+      descricao: l.descricao || "",
+    });
+    setDialogOpen(true);
+  };
+
 
   const handleDelete = async () => {
     if (!deleteId) return;

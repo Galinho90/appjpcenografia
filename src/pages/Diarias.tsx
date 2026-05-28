@@ -125,6 +125,7 @@ export default function Diarias() {
   const openCreate = () => {
     setEditingId(null);
     setForm({ ...emptyForm, data: toISO(new Date()) });
+    setQueue([]);
     setDialogOpen(true);
   };
 

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Plus, Search, Trash2, Pencil, Check, ChevronsUpDown, ChevronLeft, ChevronRight, CalendarDays, CheckCircle2, DollarSign, X } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -121,6 +121,30 @@ export default function Diarias() {
     descCat.includes("HORAS EXTRA")
   );
   const isDiaria = usaHorario;
+  const isHoraExtra = !isPagamento && (descCat.includes("HORA EXTRA") || descCat.includes("HORAS EXTRA"));
+
+  const calcHoras = (entrada: string, saida: string): number => {
+    if (!entrada || !saida) return 0;
+    const [eh, em] = entrada.split(":").map(Number);
+    const [sh, sm] = saida.split(":").map(Number);
+    if ([eh, em, sh, sm].some((n) => Number.isNaN(n))) return 0;
+    let mins = sh * 60 + sm - (eh * 60 + em);
+    if (mins <= 0) mins += 24 * 60;
+    return mins / 60;
+  };
+
+  const colaboradorSelecionado = colaboradores.find((c) => c.id === form.colaborador_id);
+  const horasHE = isHoraExtra ? calcHoras(form.hora_entrada, form.hora_saida) : 0;
+
+  useEffect(() => {
+    if (!isHoraExtra) return;
+    const diaria = Number(colaboradorSelecionado?.valor_diaria_padrao ?? 0);
+    if (diaria <= 0 || horasHE <= 0) return;
+    const novo = Math.round((diaria / 9) * horasHE * 100) / 100;
+    setForm((f) => (f.valor === novo ? f : { ...f, valor: novo }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHoraExtra, colaboradorSelecionado?.valor_diaria_padrao, horasHE]);
+
 
   const openCreate = () => {
     setEditingId(null);
@@ -406,7 +430,15 @@ export default function Diarias() {
               <div className="space-y-2"><Label>Data</Label><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></div>
             )}
 
-            <div className="space-y-2"><Label>Valor (R$)</Label><Input type="number" step="0.01" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} /></div>
+            <div className="space-y-2">
+              <Label>Valor (R$)</Label>
+              <Input type="number" step="0.01" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
+              {isHoraExtra && horasHE > 0 && (colaboradorSelecionado?.valor_diaria_padrao ?? 0) > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Calculado: diária ÷ 9 × {horasHE.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} h
+                </p>
+              )}
+            </div>
             <div className="space-y-2">
               <Label>Cliente</Label>
               <Select value={form.cliente_id || "none"} onValueChange={(v) => setForm({ ...form, cliente_id: v === "none" ? "" : v })}>

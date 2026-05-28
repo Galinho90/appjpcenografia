@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, Trash2, Pencil, Check, ChevronsUpDown, ChevronLeft, ChevronRight, CalendarDays, CheckCircle2, DollarSign, Copy } from "lucide-react";
+import { Plus, Search, Trash2, Pencil, Check, ChevronsUpDown, ChevronLeft, ChevronRight, CalendarDays, CheckCircle2, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,22 +132,6 @@ export default function Diarias() {
     });
     setDialogOpen(true);
   };
-  const openDuplicate = (l: any) => {
-    setEditingId(null);
-    setForm({
-      colaborador_id: l.colaborador_id,
-      categoria_id: "",
-      cliente_id: (l as any).cliente_id || "",
-      data: l.data,
-      hora_entrada: "",
-      hora_saida: "",
-      valor: 0,
-      descricao: l.descricao || "",
-    });
-    setDialogOpen(true);
-  };
-
-
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
@@ -191,7 +175,7 @@ export default function Diarias() {
   const totalDebitos = filtered.filter((l) => l.categoria?.tipo === "D").reduce((s, l) => s + l.valor, 0);
   const saldo = totalCreditos - totalDebitos;
 
-  const handleSave = async () => {
+  const handleSave = async (continueAfterSave = false) => {
     if (!form.colaborador_id || !form.categoria_id || !form.data) {
       toast({ title: "Preencha colaborador, categoria e data", variant: "destructive" });
       return;
@@ -213,6 +197,16 @@ export default function Diarias() {
       } else {
         await createMutation.mutateAsync(payload as any);
         toast({ title: "Lançamento registrado!" });
+        if (continueAfterSave) {
+          setForm({
+            ...form,
+            categoria_id: "",
+            hora_entrada: "",
+            hora_saida: "",
+            valor: 0,
+          });
+          return;
+        }
       }
       setDialogOpen(false);
       setForm(emptyForm);

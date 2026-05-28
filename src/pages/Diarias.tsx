@@ -186,41 +186,100 @@ export default function Diarias() {
   const totalDebitos = filtered.filter((l) => l.categoria?.tipo === "D").reduce((s, l) => s + l.valor, 0);
   const saldo = totalCreditos - totalDebitos;
 
-  const handleSave = async (continueAfterSave = false) => {
-    if (!form.colaborador_id || !form.categoria_id || !form.data) {
-      toast({ title: "Preencha colaborador, categoria e data", variant: "destructive" });
+  const addToQueue = () => {
+    if (!form.categoria_id) {
+      toast({ title: "Selecione a categoria antes de adicionar", variant: "destructive" });
+      return;
+    }
+    const cat = categorias.find((c) => c.id === form.categoria_id);
+    setQueue([
+      ...queue,
+      {
+        categoria_id: form.categoria_id,
+        categoria_desc: cat?.descricao || "—",
+        categoria_tipo: cat?.tipo || "D",
+        hora_entrada: isDiaria ? form.hora_entrada : "",
+        hora_saida: isDiaria ? form.hora_saida : "",
+        valor: Number(form.valor) || 0,
+        descricao: form.descricao || "",
+      },
+    ]);
+    setForm({ ...form, categoria_id: "", hora_entrada: "", hora_saida: "", valor: 0, descricao: "" });
+  };
+
+  const removeFromQueue = (idx: number) => {
+    setQueue(queue.filter((_, i) => i !== idx));
+  };
+
+  const handleSave = async () => {
+    if (!form.colaborador_id || !form.data) {
+      toast({ title: "Preencha diarista e data", variant: "destructive" });
+      return;
+    }
+
+    // Edit mode: single update
+    if (editingId) {
+      if (!form.categoria_id) {
+        toast({ title: "Selecione a categoria", variant: "destructive" });
+        return;
+      }
+      try {
+        await updateMutation.mutateAsync({
+          id: editingId,
+          colaborador_id: form.colaborador_id,
+          categoria_id: form.categoria_id,
+          cliente_id: form.cliente_id || null,
+          data: form.data,
+          hora_entrada: isDiaria && form.hora_entrada ? form.hora_entrada : null,
+          hora_saida: isDiaria && form.hora_saida ? form.hora_saida : null,
+          valor: Number(form.valor) || 0,
+          descricao: form.descricao || null,
+        });
+        toast({ title: "Lançamento atualizado!" });
+        setDialogOpen(false);
+        setForm(emptyForm);
+        setEditingId(null);
+      } catch (e: any) {
+        toast({ title: "Erro", description: e.message, variant: "destructive" });
+      }
+      return;
+    }
+
+    // Create mode: queue + current form
+    const items = [...queue];
+    if (form.categoria_id) {
+      const cat = categorias.find((c) => c.id === form.categoria_id);
+      items.push({
+        categoria_id: form.categoria_id,
+        categoria_desc: cat?.descricao || "—",
+        categoria_tipo: cat?.tipo || "D",
+        hora_entrada: isDiaria ? form.hora_entrada : "",
+        hora_saida: isDiaria ? form.hora_saida : "",
+        valor: Number(form.valor) || 0,
+        descricao: form.descricao || "",
+      });
+    }
+    if (items.length === 0) {
+      toast({ title: "Adicione ao menos um lançamento", variant: "destructive" });
       return;
     }
     try {
-      const payload = {
-        colaborador_id: form.colaborador_id,
-        categoria_id: form.categoria_id,
-        cliente_id: form.cliente_id || null,
-        data: form.data,
-        hora_entrada: isDiaria && form.hora_entrada ? form.hora_entrada : null,
-        hora_saida: isDiaria && form.hora_saida ? form.hora_saida : null,
-        valor: Number(form.valor) || 0,
-        descricao: form.descricao || null,
-      };
-      if (editingId) {
-        await updateMutation.mutateAsync({ id: editingId, ...payload });
-        toast({ title: "Lançamento atualizado!" });
-      } else {
-        await createMutation.mutateAsync(payload as any);
-        toast({ title: "Lançamento registrado!" });
-        if (continueAfterSave) {
-          setForm({
-            ...form,
-            categoria_id: "",
-            hora_entrada: "",
-            hora_saida: "",
-            valor: 0,
-          });
-          return;
-        }
+      for (const it of items) {
+        await createMutation.mutateAsync({
+          colaborador_id: form.colaborador_id,
+          categoria_id: it.categoria_id,
+          cliente_id: form.cliente_id || null,
+          data: form.data,
+          hora_entrada: it.hora_entrada || null,
+          hora_saida: it.hora_saida || null,
+          valor: it.valor,
+          descricao: it.descricao || null,
+        } as any);
       }
+      toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });
       setDialogOpen(false);
       setForm(emptyForm);
+      setQueue([]);
       setEditingId(null);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });

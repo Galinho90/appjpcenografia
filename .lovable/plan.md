@@ -1,23 +1,23 @@
-## Adicionar botão "Duplicar" na lista de lançamentos
+## Cálculo automático do valor para Hora Extra
 
-Permite lançar rapidamente Diária + Dobra + Hora Extra (ou qualquer combinação) no mesmo dia, para o mesmo diarista, com 1 clique.
+Quando a categoria selecionada for "Hora Extra" (ou "Horas Extra"), calcular o campo **Valor (R$)** automaticamente como:
+
+```
+valor = (valor_diaria_padrao do colaborador / 9) * quantidade de horas
+```
 
 ### Como vai funcionar
 
-1. Em cada linha da tabela (e em cada card no mobile) de `src/pages/Diarias.tsx`, adicionar um ícone **Copy** ao lado dos botões Editar/Excluir.
-2. Ao clicar, abre o modal de Novo Lançamento **pré-preenchido** com:
-   - `colaborador_id`, `data`, `cliente_id`, `descricao` copiados do lançamento de origem
-   - `categoria_id` **vazio** (usuário escolhe Dobra ou Hora Extra)
-   - `valor` **vazio** (preenchido automaticamente quando escolher diarista/categoria)
-   - `hora_entrada` / `hora_saida` vazios
-3. `editingId` fica `null` → ao salvar, cria um **novo** registro (não sobrescreve o original).
-4. Permissão: só aparece para quem tem `canEdit` (mesma regra do Editar).
+1. Em `src/pages/Diarias.tsx`, criar um helper `isHoraExtra` baseado em `descCat.includes("HORA EXTRA") || descCat.includes("HORAS EXTRA")`.
+2. Calcular a quantidade de horas a partir de `form.hora_entrada` e `form.hora_saida` (diferença em minutos / 60, suportando virada de meia-noite — se saída ≤ entrada, somar 24h).
+3. Buscar `valor_diaria_padrao` do colaborador selecionado (`colaboradores.find(c => c.id === form.colaborador_id)`).
+4. Adicionar um `useEffect` que, sempre que mudar `colaborador_id`, `categoria_id`, `hora_entrada` ou `hora_saida`, e `isHoraExtra === true` com ambos horários preenchidos e `valor_diaria_padrao > 0`, atualiza `form.valor` para `(valor_diaria / 9) * horas` (arredondado a 2 casas).
+5. O campo Valor continua editável — o usuário pode sobrescrever manualmente depois do cálculo. O cálculo só dispara quando entrada/saída/colaborador/categoria mudam.
+6. Para Diária e Dobra: nada muda (valor segue vindo do `valor_diaria_padrao` ao escolher o colaborador, como já funciona hoje).
+7. Exibir uma dica pequena abaixo do campo Valor quando for Hora Extra: "Calculado: diária ÷ 9 × N horas" (apenas informativo).
 
-### Observação técnica
+### Arquivo alterado
 
-- O banco já aceita múltiplos lançamentos para `colaborador_id + data` (sem `UNIQUE`), e o filtro/listagem já ordena por data + created_at, então os 3 lançamentos aparecem agrupados naturalmente.
-- Sem mudanças de schema, sem migration, sem mudança em hooks. Edição apenas em `src/pages/Diarias.tsx`.
+- `src/pages/Diarias.tsx` — helper `isHoraExtra`, função `calcHoras`, `useEffect` de cálculo, hint visual no campo Valor.
 
-### Arquivos alterados
-
-- `src/pages/Diarias.tsx` — função `openDuplicate(l)` + botão Copy na tabela desktop e nos cards mobile.
+Sem mudança de schema, hooks ou outras telas.

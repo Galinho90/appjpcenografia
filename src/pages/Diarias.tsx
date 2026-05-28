@@ -234,7 +234,7 @@ export default function Diarias() {
           hora_saida: isDiaria && form.hora_saida ? form.hora_saida : null,
           valor: Number(form.valor) || 0,
           descricao: form.descricao || null,
-        });
+        } as any);
         toast({ title: "Lançamento atualizado!" });
         setDialogOpen(false);
         setForm(emptyForm);

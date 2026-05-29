@@ -147,6 +147,7 @@ export default function Colaboradores() {
         const oldDigits = (original?.telefone ?? "").replace(/\D/g, "");
         const newDigits = (form.telefone ?? "").replace(/\D/g, "");
         const phoneChanged = !!original?.user_id && oldDigits !== newDigits && newDigits.length >= 10;
+        const senhaChanged = !!original?.user_id && !!senha && senha.trim().length >= 6;
 
         await updateMutation.mutateAsync({ id: editingId, ...payload });
 
@@ -168,6 +169,24 @@ export default function Colaboradores() {
         } else {
           toast({ title: "Diarista atualizado!" });
         }
+
+        if (senhaChanged) {
+          try {
+            const { data: pwd, error: pwdErr } = await supabase.functions.invoke("admin-reset-password", {
+              body: { user_id: original!.user_id, new_password: senha!.trim() },
+            });
+            if (pwdErr) throw pwdErr;
+            if ((pwd as any)?.error) throw new Error((pwd as any).error);
+            toast({ title: "Senha atualizada!", description: `Nova senha: ${senha!.trim()}` });
+          } catch (e: any) {
+            toast({
+              title: "Falhou atualizar a senha",
+              description: e.message ?? "Tente novamente.",
+              variant: "destructive",
+            });
+          }
+        }
+
       } else {
         if (!form.telefone?.trim()) {
           toast({ title: "Celular obrigatório", description: "Informe o celular para criar o acesso do diarista.", variant: "destructive" });

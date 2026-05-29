@@ -595,7 +595,10 @@ function RelatorioPorCliente() {
           </div>
           <div className="mt-4 flex justify-end gap-2 flex-wrap">
             <Button variant="outline" className="gap-2" onClick={exportCSV} disabled={!porColaborador.length}>
-              <Download className="h-4 w-4" /> CSV
+              <Download className="h-4 w-4" /> CSV Resumo
+            </Button>
+            <Button variant="outline" className="gap-2" onClick={exportCSVDetalhado} disabled={!linhas.length}>
+              <Download className="h-4 w-4" /> CSV Detalhado
             </Button>
             <Button className="gap-2" onClick={() => window.print()} disabled={!porColaborador.length}>
               <Printer className="h-4 w-4" /> Imprimir / PDF

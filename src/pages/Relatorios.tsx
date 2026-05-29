@@ -456,11 +456,7 @@ function RelatorioPorCliente() {
   const linhas = useMemo(
     () =>
       (lancs as any[]).slice().sort((a, b) => {
-        const n = (a.colaborador?.nome ?? "").localeCompare(b.colaborador?.nome ?? "", "pt-BR", {
-          sensitivity: "base",
-        });
-        if (n !== 0) return n;
-        return b.data.localeCompare(a.data);
+        return a.data.localeCompare(b.data);
       }),
     [lancs],
   );

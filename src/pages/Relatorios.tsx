@@ -507,6 +507,19 @@ function RelatorioPorCliente() {
         clientes.find((c) => c.id === clienteId)?.razao_social ||
         "—";
 
+  const downloadCSV = (rows: (string | number)[][], filename: string) => {
+    const csv = rows
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";"))
+      .join("\n");
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const exportCSV = () => {
     const header = ["Colaborador", "Diárias", "Vales", "Reembolsos", "Valor Final"];
     const rows = porColaborador.map((r) => [
@@ -516,16 +529,24 @@ function RelatorioPorCliente() {
       r.reembolsos.toFixed(2).replace(".", ","),
       r.final.toFixed(2).replace(".", ","),
     ]);
-    const csv = [header, ...rows]
-      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";"))
-      .join("\n");
-    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `relatorio_cliente_${dataInicio}_a_${dataFim}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadCSV([header, ...rows], `relatorio_cliente_${dataInicio}_a_${dataFim}.csv`);
+  };
+
+  const exportCSVDetalhado = () => {
+    const header = ["Data", "Colaborador", "Categoria", "Cliente", "Descrição", "Valor"];
+    const rows = (linhas as any[]).map((l) => {
+      const valor = Number(l.valor) || 0;
+      const sinal = l.categoria?.tipo === "D" ? -1 : 1;
+      return [
+        fmtData(l.data),
+        l.colaborador?.nome ?? "",
+        l.categoria?.descricao ?? "",
+        l.cliente?.nome_fantasia || l.cliente?.razao_social || "",
+        l.descricao || "",
+        (sinal * valor).toFixed(2).replace(".", ","),
+      ];
+    });
+    downloadCSV([header, ...rows], `lancamentos_detalhados_${dataInicio}_a_${dataFim}.csv`);
   };
 
   return (
@@ -574,7 +595,10 @@ function RelatorioPorCliente() {
           </div>
           <div className="mt-4 flex justify-end gap-2 flex-wrap">
             <Button variant="outline" className="gap-2" onClick={exportCSV} disabled={!porColaborador.length}>
-              <Download className="h-4 w-4" /> CSV
+              <Download className="h-4 w-4" /> CSV Resumo
+            </Button>
+            <Button variant="outline" className="gap-2" onClick={exportCSVDetalhado} disabled={!linhas.length}>
+              <Download className="h-4 w-4" /> CSV Detalhado
             </Button>
             <Button className="gap-2" onClick={() => window.print()} disabled={!porColaborador.length}>
               <Printer className="h-4 w-4" /> Imprimir / PDF

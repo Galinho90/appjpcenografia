@@ -245,6 +245,7 @@ export default function Diarias() {
         categoria_id: form.categoria_id,
         categoria_desc: cat?.descricao || "—",
         categoria_tipo: cat?.tipo || "D",
+        data: form.data,
         hora_entrada: isDiaria ? form.hora_entrada : "",
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,

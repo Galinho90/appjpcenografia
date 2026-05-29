@@ -146,8 +146,31 @@ export default function Colaboradores() {
       if (!payload.data_nascimento) payload.data_nascimento = null;
 
       if (mode === "edit" && editingId) {
+        const original = colaboradores.find((c) => c.id === editingId);
+        const oldDigits = (original?.telefone ?? "").replace(/\D/g, "");
+        const newDigits = (form.telefone ?? "").replace(/\D/g, "");
+        const phoneChanged = !!original?.user_id && oldDigits !== newDigits && newDigits.length >= 10;
+
         await updateMutation.mutateAsync({ id: editingId, ...payload });
-        toast({ title: "Diarista atualizado!" });
+
+        if (phoneChanged) {
+          try {
+            const { data: upd, error: updErr } = await supabase.functions.invoke("update-diarista-phone", {
+              body: { colaborador_id: editingId, phone: form.telefone },
+            });
+            if (updErr) throw updErr;
+            if ((upd as any)?.error) throw new Error((upd as any).error);
+            toast({ title: "Diarista atualizado!", description: `Novo login: ${form.telefone}` });
+          } catch (e: any) {
+            toast({
+              title: "Diarista salvo, mas falhou atualizar o acesso",
+              description: e.message ?? "Tente novamente.",
+              variant: "destructive",
+            });
+          }
+        } else {
+          toast({ title: "Diarista atualizado!" });
+        }
       } else {
         if (!form.telefone?.trim()) {
           toast({ title: "Celular obrigatório", description: "Informe o celular para criar o acesso do diarista.", variant: "destructive" });

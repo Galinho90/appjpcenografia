@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.create-diarista-user]
 verify_jwt = false
 
+[functions.update-diarista-phone]
+verify_jwt = false
+
 [functions.smtp-send]
 verify_jwt = false
 

@@ -14,6 +14,7 @@ export type Lancamento = {
   id: string;
   colaborador_id: string;
   categoria_id: string;
+  cliente_id?: string | null;
   data: string;
   valor: number;
   hora_entrada?: string | null;
@@ -21,6 +22,7 @@ export type Lancamento = {
   descricao?: string | null;
   categoria?: Categoria;
   colaborador?: { id: string; nome: string };
+  cliente?: { id: string; razao_social: string; nome_fantasia?: string | null };
 };
 
 type LancamentosFilters = {
@@ -28,7 +30,9 @@ type LancamentosFilters = {
   dataFim?: string;
   colaboradorId?: string;
   categoriaId?: string;
+  clienteId?: string;
 };
+
 
 // ── Categorias ──
 export function useCategorias() {

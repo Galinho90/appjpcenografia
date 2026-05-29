@@ -140,9 +140,6 @@ export default function Colaboradores() {
     try {
       const { senha, ...rest } = form;
       const payload: any = { ...rest };
-      if (senha && senha.trim()) {
-        payload.senha_hash = btoa(unescape(encodeURIComponent(senha)));
-      }
       if (!payload.data_nascimento) payload.data_nascimento = null;
 
       if (mode === "edit" && editingId) {

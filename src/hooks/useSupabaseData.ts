@@ -90,7 +90,7 @@ export function useLancamentos(filters: LancamentosFilters = {}) {
       for (let from = 0; ; from += pageSize) {
         let query = supabase
           .from("lancamentos")
-          .select("*, categoria:categorias(*), colaborador:colaboradores(id, nome)")
+          .select("*, categoria:categorias(*), colaborador:colaboradores(id, nome), cliente:clientes(id, razao_social, nome_fantasia)")
           .order("data", { ascending: false })
           .order("created_at", { ascending: false });
 
@@ -98,9 +98,11 @@ export function useLancamentos(filters: LancamentosFilters = {}) {
         if (filters.dataFim) query = query.lte("data", filters.dataFim);
         if (filters.colaboradorId && filters.colaboradorId !== "all") query = query.eq("colaborador_id", filters.colaboradorId);
         if (filters.categoriaId && filters.categoriaId !== "all") query = query.eq("categoria_id", filters.categoriaId);
+        if (filters.clienteId && filters.clienteId !== "all") query = query.eq("cliente_id", filters.clienteId);
 
         const { data, error } = await query.range(from, from + pageSize - 1);
         if (error) throw error;
+
 
         all.push(...(data ?? []));
         if (!data || data.length < pageSize) break;

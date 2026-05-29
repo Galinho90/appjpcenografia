@@ -114,10 +114,11 @@ export function useLancamentos(filters: LancamentosFilters = {}) {
 export function useCreateLancamento() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Omit<Lancamento, "id" | "categoria" | "colaborador">) => {
+    mutationFn: async (data: Omit<Lancamento, "id" | "categoria" | "colaborador" | "cliente">) => {
       const { error } = await supabase.from("lancamentos").insert(data);
       if (error) throw error;
     },
+
     onSuccess: () => qc.invalidateQueries({ queryKey: ["lancamentos"] }),
   });
 }

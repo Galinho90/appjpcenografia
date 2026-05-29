@@ -99,6 +99,7 @@ export default function Diarias() {
     categoria_id: string;
     categoria_desc: string;
     categoria_tipo: string;
+    data: string;
     hora_entrada: string;
     hora_saida: string;
     valor: number;
@@ -244,6 +245,7 @@ export default function Diarias() {
         categoria_id: form.categoria_id,
         categoria_desc: cat?.descricao || "—",
         categoria_tipo: cat?.tipo || "D",
+        data: form.data,
         hora_entrada: isDiaria ? form.hora_entrada : "",
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
@@ -299,6 +301,7 @@ export default function Diarias() {
         categoria_id: form.categoria_id,
         categoria_desc: cat?.descricao || "—",
         categoria_tipo: cat?.tipo || "D",
+        data: form.data,
         hora_entrada: isDiaria ? form.hora_entrada : "",
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
@@ -315,7 +318,7 @@ export default function Diarias() {
           colaborador_id: form.colaborador_id,
           categoria_id: it.categoria_id,
           cliente_id: form.cliente_id || null,
-          data: form.data,
+          data: it.data || form.data,
           hora_entrada: it.hora_entrada || null,
           hora_saida: it.hora_saida || null,
           valor: it.valor,
@@ -486,6 +489,9 @@ export default function Diarias() {
                           {it.categoria_tipo === "C" ? "C" : "D"}
                         </Badge>
                         <span className="truncate">{it.categoria_desc}</span>
+                        {it.data && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDateBR(it.data)}</span>
+                        )}
                         {(it.hora_entrada || it.hora_saida) && (
                           <span className="text-xs text-muted-foreground whitespace-nowrap">{it.hora_entrada || "—"}/{it.hora_saida || "—"}</span>
                         )}

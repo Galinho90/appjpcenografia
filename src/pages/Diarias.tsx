@@ -318,7 +318,7 @@ export default function Diarias() {
           colaborador_id: form.colaborador_id,
           categoria_id: it.categoria_id,
           cliente_id: form.cliente_id || null,
-          data: form.data,
+          data: it.data || form.data,
           hora_entrada: it.hora_entrada || null,
           hora_saida: it.hora_saida || null,
           valor: it.valor,

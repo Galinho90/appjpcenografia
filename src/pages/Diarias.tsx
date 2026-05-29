@@ -489,6 +489,9 @@ export default function Diarias() {
                           {it.categoria_tipo === "C" ? "C" : "D"}
                         </Badge>
                         <span className="truncate">{it.categoria_desc}</span>
+                        {it.data && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDateBR(it.data)}</span>
+                        )}
                         {(it.hora_entrada || it.hora_saida) && (
                           <span className="text-xs text-muted-foreground whitespace-nowrap">{it.hora_entrada || "—"}/{it.hora_saida || "—"}</span>
                         )}

@@ -14,6 +14,7 @@ export type Lancamento = {
   id: string;
   colaborador_id: string;
   categoria_id: string;
+  cliente_id?: string | null;
   data: string;
   valor: number;
   hora_entrada?: string | null;
@@ -21,6 +22,7 @@ export type Lancamento = {
   descricao?: string | null;
   categoria?: Categoria;
   colaborador?: { id: string; nome: string };
+  cliente?: { id: string; razao_social: string; nome_fantasia?: string | null };
 };
 
 type LancamentosFilters = {
@@ -28,7 +30,9 @@ type LancamentosFilters = {
   dataFim?: string;
   colaboradorId?: string;
   categoriaId?: string;
+  clienteId?: string;
 };
+
 
 // ── Categorias ──
 export function useCategorias() {
@@ -86,7 +90,7 @@ export function useLancamentos(filters: LancamentosFilters = {}) {
       for (let from = 0; ; from += pageSize) {
         let query = supabase
           .from("lancamentos")
-          .select("*, categoria:categorias(*), colaborador:colaboradores(id, nome)")
+          .select("*, categoria:categorias(*), colaborador:colaboradores(id, nome), cliente:clientes(id, razao_social, nome_fantasia)")
           .order("data", { ascending: false })
           .order("created_at", { ascending: false });
 
@@ -94,9 +98,11 @@ export function useLancamentos(filters: LancamentosFilters = {}) {
         if (filters.dataFim) query = query.lte("data", filters.dataFim);
         if (filters.colaboradorId && filters.colaboradorId !== "all") query = query.eq("colaborador_id", filters.colaboradorId);
         if (filters.categoriaId && filters.categoriaId !== "all") query = query.eq("categoria_id", filters.categoriaId);
+        if (filters.clienteId && filters.clienteId !== "all") query = query.eq("cliente_id", filters.clienteId);
 
         const { data, error } = await query.range(from, from + pageSize - 1);
         if (error) throw error;
+
 
         all.push(...(data ?? []));
         if (!data || data.length < pageSize) break;
@@ -110,10 +116,11 @@ export function useLancamentos(filters: LancamentosFilters = {}) {
 export function useCreateLancamento() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (data: Omit<Lancamento, "id" | "categoria" | "colaborador">) => {
+    mutationFn: async (data: Omit<Lancamento, "id" | "categoria" | "colaborador" | "cliente">) => {
       const { error } = await supabase.from("lancamentos").insert(data);
       if (error) throw error;
     },
+
     onSuccess: () => qc.invalidateQueries({ queryKey: ["lancamentos"] }),
   });
 }

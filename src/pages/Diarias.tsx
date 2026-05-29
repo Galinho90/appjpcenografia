@@ -99,6 +99,7 @@ export default function Diarias() {
     categoria_id: string;
     categoria_desc: string;
     categoria_tipo: string;
+    data: string;
     hora_entrada: string;
     hora_saida: string;
     valor: number;

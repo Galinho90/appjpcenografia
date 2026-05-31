@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { FileText, FileSpreadsheet, ChevronLeft, ChevronRight, DollarSign, CalendarDays, CheckCircle2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { FileText, FileSpreadsheet, ChevronLeft, ChevronRight, DollarSign, CalendarDays, CheckCircle2, Plus, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {
   useColaboradores, useFechamentos,
-  useCategorias, useLancamentos, useCreateLancamento,
+  useCategorias, useLancamentos, useCreateLancamento, useClientes,
 } from "@/hooks/useSupabaseData";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useCompanyLogo } from "@/hooks/useCompanyLogo";
@@ -76,6 +76,7 @@ export default function ExtratoDiarista() {
   const { data: categorias = [] } = useCategorias();
   const { data: lancamentos = [] } = useLancamentos();
   const { data: fechamentos = [] } = useFechamentos();
+  const { data: clientes = [] } = useClientes();
   const createLancamento = useCreateLancamento();
 
   const [colaboradorId, setColaboradorId] = useState<string>("");
@@ -133,20 +134,80 @@ export default function ExtratoDiarista() {
   const [catPopoverOpen, setCatPopoverOpen] = useState(false);
   const hoje = toISO(new Date());
   const categoriasAtivas = categorias.filter(c => c.ativo);
-  const [form, setForm] = useState({
+  const emptyForm = {
     categoria_id: "",
+    cliente_id: "",
     data: hoje,
     valor: 0,
     hora_entrada: "",
     hora_saida: "",
     descricao: "",
-  });
+  };
+  const [form, setForm] = useState(emptyForm);
+
+  type QueueItem = {
+    categoria_id: string;
+    categoria_desc: string;
+    categoria_tipo: string;
+    data: string;
+    hora_entrada: string;
+    hora_saida: string;
+    valor: number;
+    descricao: string;
+  };
+  const [queue, setQueue] = useState<QueueItem[]>([]);
 
   const categoriaSelecionada = categorias.find(c => c.id === form.categoria_id);
   const descCategoria = categoriaSelecionada?.descricao.toUpperCase() ?? "";
-  const usaHorario = !descCategoria.includes("PAGAMENTO") && (
-    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") || descCategoria.includes("DOBRA") || descCategoria.includes("HORAS EXTRAS")
+  const isPagamento = descCategoria.includes("PAGAMENTO");
+  const usaHorario = !isPagamento && (
+    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") ||
+    descCategoria.includes("DOBRA") ||
+    descCategoria.includes("HORA EXTRA") || descCategoria.includes("HORAS EXTRA")
   );
+  const isDiaria = usaHorario;
+  const isHoraExtra = !isPagamento && (descCategoria.includes("HORA EXTRA") || descCategoria.includes("HORAS EXTRA"));
+  const isDiariaOuDobra = !isPagamento && !isHoraExtra && (
+    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") || descCategoria.includes("DOBRA")
+  );
+
+  const calcHoras = (entrada: string, saida: string): number => {
+    if (!entrada || !saida) return 0;
+    const [eh, em] = entrada.split(":").map(Number);
+    const [sh, sm] = saida.split(":").map(Number);
+    if ([eh, em, sh, sm].some((n) => Number.isNaN(n))) return 0;
+    let mins = sh * 60 + sm - (eh * 60 + em);
+    if (mins <= 0) mins += 24 * 60;
+    return mins / 60;
+  };
+
+  const arredondaValor = (valor: number): number => {
+    const intPart = Math.floor(valor);
+    const decimalPart = valor - intPart;
+    if (decimalPart === 0) return valor;
+    if (decimalPart <= 0.49) return intPart + 0.50;
+    return intPart + 1.00;
+  };
+
+  const horasHE = isHoraExtra ? calcHoras(form.hora_entrada, form.hora_saida) : 0;
+
+  useEffect(() => {
+    if (!isHoraExtra) return;
+    const diaria = Number(colaboradorSel?.valor_diaria_padrao ?? 0);
+    if (diaria <= 0 || horasHE <= 0) return;
+    const bruto = (diaria / 9) * horasHE;
+    const novo = arredondaValor(bruto);
+    setForm((f) => (f.valor === novo ? f : { ...f, valor: novo }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHoraExtra, colaboradorSel?.valor_diaria_padrao, horasHE]);
+
+  useEffect(() => {
+    if (!isDiariaOuDobra) return;
+    const diaria = Number(colaboradorSel?.valor_diaria_padrao ?? 0);
+    if (diaria <= 0) return;
+    setForm((f) => (f.valor === diaria ? f : { ...f, valor: diaria }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDiariaOuDobra, colaboradorSel?.valor_diaria_padrao]);
 
   const abrirModal = () => {
     if (!colaboradorId) {
@@ -154,33 +215,76 @@ export default function ExtratoDiarista() {
       return;
     }
     setForm({
-      categoria_id: "",
+      ...emptyForm,
       data: hoje,
       valor: colaboradorSel?.valor_diaria_padrao ?? 0,
-      hora_entrada: "",
-      hora_saida: "",
-      descricao: "",
     });
+    setQueue([]);
     setDialogOpen(true);
   };
 
-  const handleSalvar = async () => {
+  const addToQueue = () => {
     if (!form.categoria_id) {
-      toast({ title: "Selecione uma categoria", variant: "destructive" });
+      toast({ title: "Selecione a categoria antes de adicionar", variant: "destructive" });
+      return;
+    }
+    const cat = categorias.find((c) => c.id === form.categoria_id);
+    setQueue([
+      ...queue,
+      {
+        categoria_id: form.categoria_id,
+        categoria_desc: cat?.descricao || "—",
+        categoria_tipo: cat?.tipo || "D",
+        data: form.data,
+        hora_entrada: isDiaria ? form.hora_entrada : "",
+        hora_saida: isDiaria ? form.hora_saida : "",
+        valor: Number(form.valor) || 0,
+        descricao: form.descricao || "",
+      },
+    ]);
+    setForm({ ...form, categoria_id: "", hora_entrada: "", hora_saida: "", valor: 0, descricao: "" });
+  };
+
+  const removeFromQueue = (idx: number) => {
+    setQueue(queue.filter((_, i) => i !== idx));
+  };
+
+  const handleSalvar = async () => {
+    const items = [...queue];
+    if (form.categoria_id) {
+      const cat = categorias.find((c) => c.id === form.categoria_id);
+      items.push({
+        categoria_id: form.categoria_id,
+        categoria_desc: cat?.descricao || "—",
+        categoria_tipo: cat?.tipo || "D",
+        data: form.data,
+        hora_entrada: isDiaria ? form.hora_entrada : "",
+        hora_saida: isDiaria ? form.hora_saida : "",
+        valor: Number(form.valor) || 0,
+        descricao: form.descricao || "",
+      });
+    }
+    if (items.length === 0) {
+      toast({ title: "Adicione ao menos um lançamento", variant: "destructive" });
       return;
     }
     try {
-      await createLancamento.mutateAsync({
-        colaborador_id: colaboradorId,
-        categoria_id: form.categoria_id,
-        data: form.data,
-        valor: Number(form.valor),
-        hora_entrada: usaHorario && form.hora_entrada ? form.hora_entrada : null,
-        hora_saida: usaHorario && form.hora_saida ? form.hora_saida : null,
-        descricao: form.descricao || null,
-      });
-      toast({ title: "Lançamento registrado!" });
+      for (const it of items) {
+        await createLancamento.mutateAsync({
+          colaborador_id: colaboradorId,
+          categoria_id: it.categoria_id,
+          cliente_id: form.cliente_id || null,
+          data: it.data || form.data,
+          valor: it.valor,
+          hora_entrada: it.hora_entrada || null,
+          hora_saida: it.hora_saida || null,
+          descricao: it.descricao || null,
+        } as any);
+      }
+      toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });
       setDialogOpen(false);
+      setForm(emptyForm);
+      setQueue([]);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
@@ -449,46 +553,87 @@ export default function ExtratoDiarista() {
               </Popover>
             </div>
 
-            <div className={cn("grid gap-3", usaHorario ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2")}>
-              <div className="space-y-2">
-                <Label>Data</Label>
-                <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
+            {isDiaria ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2"><Label>Data</Label><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Entrada</Label><Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Saída</Label><Input type="time" value={form.hora_saida} onChange={(e) => setForm({ ...form, hora_saida: e.target.value })} /></div>
               </div>
-              {usaHorario && (
-                <>
-                  <div className="space-y-2">
-                    <Label>Entrada</Label>
-                    <Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Saída</Label>
-                    <Input type="time" value={form.hora_saida} onChange={(e) => setForm({ ...form, hora_saida: e.target.value })} />
-                  </div>
-                </>
-              )}
-              {!usaHorario && (
-                <div className="space-y-2">
-                  <Label>Valor (R$)</Label>
-                  <Input type="number" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
-                </div>
-              )}
-            </div>
-
-            {usaHorario && (
-              <div className="space-y-2">
-                <Label>Valor (R$)</Label>
-                <Input type="number" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
-              </div>
+            ) : (
+              <div className="space-y-2"><Label>Data</Label><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></div>
             )}
 
             <div className="space-y-2">
-              <Label>Descrição</Label>
-              <Textarea value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Opcional..." />
+              <Label>Valor (R$)</Label>
+              <Input type="number" step="0.01" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
+              {isHoraExtra && horasHE > 0 && (colaboradorSel?.valor_diaria_padrao ?? 0) > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Calculado: diária ÷ 9 × {horasHE.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} h
+                </p>
+              )}
             </div>
 
-            <Button className="w-full" onClick={handleSalvar} disabled={createLancamento.isPending}>
-              {createLancamento.isPending ? "Salvando..." : "Salvar Lançamento"}
-            </Button>
+            <div className="space-y-2">
+              <Label>Cliente</Label>
+              <Select value={form.cliente_id || "none"} onValueChange={(v) => setForm({ ...form, cliente_id: v === "none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione um cliente..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum</SelectItem>
+                  {clientes.filter((c) => c.ativo).map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.nome_fantasia || c.razao_social}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Descrição</Label>
+              <Textarea value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Descrição opcional..." />
+            </div>
+
+            {queue.length > 0 && (
+              <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+                <p className="text-xs font-medium text-muted-foreground">Lançamentos a salvar ({queue.length})</p>
+                <div className="space-y-1.5">
+                  {queue.map((it, idx) => (
+                    <div key={idx} className="flex items-center justify-between gap-2 rounded bg-background border px-2 py-1.5 text-sm">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Badge className={cn("text-[10px] px-1.5 py-0 shrink-0 border-transparent text-white", it.categoria_tipo === "C" ? "bg-success" : "bg-destructive")}>
+                          {it.categoria_tipo === "C" ? "C" : "D"}
+                        </Badge>
+                        <span className="truncate">{it.categoria_desc}</span>
+                        {it.data && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDateBR(it.data)}</span>
+                        )}
+                        {(it.hora_entrada || it.hora_saida) && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">{it.hora_entrada || "—"}/{it.hora_saida || "—"}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="font-medium">R$ {it.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFromQueue(idx)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button variant="outline" onClick={addToQueue} disabled={createLancamento.isPending} className="gap-2">
+                <Plus className="h-4 w-4" /> Adicionar à lista
+              </Button>
+              <Button onClick={handleSalvar} disabled={createLancamento.isPending}>
+                {createLancamento.isPending
+                  ? "Salvando..."
+                  : queue.length > 0
+                    ? `Salvar todos (${queue.length + (form.categoria_id ? 1 : 0)})`
+                    : "Salvar Lançamento"}
+              </Button>
+            </div>
+
           </div>
         </DialogContent>
       </Dialog>

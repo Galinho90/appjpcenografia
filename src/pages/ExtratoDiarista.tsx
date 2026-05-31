@@ -553,46 +553,87 @@ export default function ExtratoDiarista() {
               </Popover>
             </div>
 
-            <div className={cn("grid gap-3", usaHorario ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2")}>
-              <div className="space-y-2">
-                <Label>Data</Label>
-                <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
+            {isDiaria ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2"><Label>Data</Label><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Entrada</Label><Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Saída</Label><Input type="time" value={form.hora_saida} onChange={(e) => setForm({ ...form, hora_saida: e.target.value })} /></div>
               </div>
-              {usaHorario && (
-                <>
-                  <div className="space-y-2">
-                    <Label>Entrada</Label>
-                    <Input type="time" value={form.hora_entrada} onChange={(e) => setForm({ ...form, hora_entrada: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Saída</Label>
-                    <Input type="time" value={form.hora_saida} onChange={(e) => setForm({ ...form, hora_saida: e.target.value })} />
-                  </div>
-                </>
-              )}
-              {!usaHorario && (
-                <div className="space-y-2">
-                  <Label>Valor (R$)</Label>
-                  <Input type="number" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
-                </div>
-              )}
-            </div>
-
-            {usaHorario && (
-              <div className="space-y-2">
-                <Label>Valor (R$)</Label>
-                <Input type="number" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
-              </div>
+            ) : (
+              <div className="space-y-2"><Label>Data</Label><Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></div>
             )}
 
             <div className="space-y-2">
-              <Label>Descrição</Label>
-              <Textarea value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Opcional..." />
+              <Label>Valor (R$)</Label>
+              <Input type="number" step="0.01" value={form.valor || ""} onChange={(e) => setForm({ ...form, valor: Number(e.target.value) })} />
+              {isHoraExtra && horasHE > 0 && (colaboradorSel?.valor_diaria_padrao ?? 0) > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Calculado: diária ÷ 9 × {horasHE.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} h
+                </p>
+              )}
             </div>
 
-            <Button className="w-full" onClick={handleSalvar} disabled={createLancamento.isPending}>
-              {createLancamento.isPending ? "Salvando..." : "Salvar Lançamento"}
-            </Button>
+            <div className="space-y-2">
+              <Label>Cliente</Label>
+              <Select value={form.cliente_id || "none"} onValueChange={(v) => setForm({ ...form, cliente_id: v === "none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione um cliente..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum</SelectItem>
+                  {clientes.filter((c) => c.ativo).map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.nome_fantasia || c.razao_social}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Descrição</Label>
+              <Textarea value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Descrição opcional..." />
+            </div>
+
+            {queue.length > 0 && (
+              <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+                <p className="text-xs font-medium text-muted-foreground">Lançamentos a salvar ({queue.length})</p>
+                <div className="space-y-1.5">
+                  {queue.map((it, idx) => (
+                    <div key={idx} className="flex items-center justify-between gap-2 rounded bg-background border px-2 py-1.5 text-sm">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Badge className={cn("text-[10px] px-1.5 py-0 shrink-0 border-transparent text-white", it.categoria_tipo === "C" ? "bg-success" : "bg-destructive")}>
+                          {it.categoria_tipo === "C" ? "C" : "D"}
+                        </Badge>
+                        <span className="truncate">{it.categoria_desc}</span>
+                        {it.data && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDateBR(it.data)}</span>
+                        )}
+                        {(it.hora_entrada || it.hora_saida) && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">{it.hora_entrada || "—"}/{it.hora_saida || "—"}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="font-medium">R$ {it.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFromQueue(idx)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button variant="outline" onClick={addToQueue} disabled={createLancamento.isPending} className="gap-2">
+                <Plus className="h-4 w-4" /> Adicionar à lista
+              </Button>
+              <Button onClick={handleSalvar} disabled={createLancamento.isPending}>
+                {createLancamento.isPending
+                  ? "Salvando..."
+                  : queue.length > 0
+                    ? `Salvar todos (${queue.length + (form.categoria_id ? 1 : 0)})`
+                    : "Salvar Lançamento"}
+              </Button>
+            </div>
+
           </div>
         </DialogContent>
       </Dialog>

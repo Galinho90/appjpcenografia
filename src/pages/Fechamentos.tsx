@@ -49,6 +49,7 @@ export default function Fechamentos() {
   const deleteFech = useDeleteFechamento();
 
   const [refDate, setRefDate] = useState<Date>(new Date());
+  const [sortValor, setSortValor] = useState<"default" | "menor" | "maior">("default");
   const selecionada = useMemo(() => getQuinzena(refDate), [refDate]);
   const hojeQ = useMemo(() => getQuinzena(new Date()), []);
   const isAtual =

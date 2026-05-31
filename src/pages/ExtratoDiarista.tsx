@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { FileText, FileSpreadsheet, ChevronLeft, ChevronRight, DollarSign, CalendarDays, CheckCircle2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { FileText, FileSpreadsheet, ChevronLeft, ChevronRight, DollarSign, CalendarDays, CheckCircle2, Plus, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import {
   useColaboradores, useFechamentos,
-  useCategorias, useLancamentos, useCreateLancamento,
+  useCategorias, useLancamentos, useCreateLancamento, useClientes,
 } from "@/hooks/useSupabaseData";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useCompanyLogo } from "@/hooks/useCompanyLogo";

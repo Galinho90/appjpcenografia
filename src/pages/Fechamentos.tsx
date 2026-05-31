@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Calculator, DollarSign, Clock, CheckCircle2, ChevronLeft, ChevronRight, Trash2, RotateCcw, Send } from "lucide-react";
+import { Calculator, DollarSign, Clock, CheckCircle2, ChevronLeft, ChevronRight, Trash2, RotateCcw, Send, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { getStatusBadge } from "@/lib/statusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,7 @@ export default function Fechamentos() {
   const deleteFech = useDeleteFechamento();
 
   const [refDate, setRefDate] = useState<Date>(new Date());
+  const [sortValor, setSortValor] = useState<"default" | "menor" | "maior">("default");
   const selecionada = useMemo(() => getQuinzena(refDate), [refDate]);
   const hojeQ = useMemo(() => getQuinzena(new Date()), []);
   const isAtual =
@@ -69,6 +70,10 @@ export default function Fechamentos() {
         .filter((f: any) => !(f.status === "pendente" && Math.abs(Number(f.valor_final) || 0) < 0.005))
         .slice()
         .sort((a: any, b: any) => {
+          if (sortValor !== "default") {
+            const diff = Number(a.valor_final || 0) - Number(b.valor_final || 0);
+            return sortValor === "menor" ? diff : -diff;
+          }
           // Pendentes primeiro, pagos depois
           const statusOrder = (s: string) => (s === "pago" ? 1 : 0);
           const diff = statusOrder(a.status) - statusOrder(b.status);
@@ -79,7 +84,7 @@ export default function Fechamentos() {
             { sensitivity: "base" },
           );
         }),
-    [fechamentos, inicioISO, fimISO],
+    [fechamentos, inicioISO, fimISO, sortValor],
   );
 
   const totalPendente = fechamentosQ.filter(f => f.status === 'pendente').reduce((s, f) => s + f.valor_final, 0);
@@ -236,8 +241,37 @@ export default function Fechamentos() {
       </div>
 
       <Card className="shadow-md">
-        <CardHeader>
+        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Fechamentos da Quinzena</CardTitle>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant={sortValor === "menor" ? "default" : "outline"}
+              className="gap-1 h-8 text-xs"
+              onClick={() => setSortValor("menor")}
+            >
+              <ArrowDown className="h-3 w-3" /> Menor valor
+            </Button>
+            <Button
+              size="sm"
+              variant={sortValor === "maior" ? "default" : "outline"}
+              className="gap-1 h-8 text-xs"
+              onClick={() => setSortValor("maior")}
+            >
+              <ArrowUp className="h-3 w-3" /> Maior valor
+            </Button>
+            {sortValor !== "default" && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-2 text-xs"
+                onClick={() => setSortValor("default")}
+                title="Restaurar ordenação padrão"
+              >
+                <ArrowUpDown className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (

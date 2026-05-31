@@ -91,7 +91,6 @@ export default function Fechamentos() {
   const totalPago = fechamentosQ.filter(f => f.status === 'pago').reduce((s, f) => s + f.valor_final, 0);
 
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [sortValor, setSortValor] = useState<"default" | "menor" | "maior">("default");
   const [pixTarget, setPixTarget] = useState<any | null>(null);
   const [pixSending, setPixSending] = useState(false);
   const qc = useQueryClient();

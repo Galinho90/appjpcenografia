@@ -69,6 +69,10 @@ export default function Fechamentos() {
         .filter((f: any) => !(f.status === "pendente" && Math.abs(Number(f.valor_final) || 0) < 0.005))
         .slice()
         .sort((a: any, b: any) => {
+          if (sortValor !== "default") {
+            const diff = Number(a.valor_final || 0) - Number(b.valor_final || 0);
+            return sortValor === "menor" ? diff : -diff;
+          }
           // Pendentes primeiro, pagos depois
           const statusOrder = (s: string) => (s === "pago" ? 1 : 0);
           const diff = statusOrder(a.status) - statusOrder(b.status);
@@ -79,7 +83,7 @@ export default function Fechamentos() {
             { sensitivity: "base" },
           );
         }),
-    [fechamentos, inicioISO, fimISO],
+    [fechamentos, inicioISO, fimISO, sortValor],
   );
 
   const totalPendente = fechamentosQ.filter(f => f.status === 'pendente').reduce((s, f) => s + f.valor_final, 0);

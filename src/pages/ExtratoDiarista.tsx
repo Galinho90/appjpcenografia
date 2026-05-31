@@ -76,6 +76,7 @@ export default function ExtratoDiarista() {
   const { data: categorias = [] } = useCategorias();
   const { data: lancamentos = [] } = useLancamentos();
   const { data: fechamentos = [] } = useFechamentos();
+  const { data: clientes = [] } = useClientes();
   const createLancamento = useCreateLancamento();
 
   const [colaboradorId, setColaboradorId] = useState<string>("");

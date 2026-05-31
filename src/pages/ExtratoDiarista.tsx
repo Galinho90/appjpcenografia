@@ -134,20 +134,80 @@ export default function ExtratoDiarista() {
   const [catPopoverOpen, setCatPopoverOpen] = useState(false);
   const hoje = toISO(new Date());
   const categoriasAtivas = categorias.filter(c => c.ativo);
-  const [form, setForm] = useState({
+  const emptyForm = {
     categoria_id: "",
+    cliente_id: "",
     data: hoje,
     valor: 0,
     hora_entrada: "",
     hora_saida: "",
     descricao: "",
-  });
+  };
+  const [form, setForm] = useState(emptyForm);
+
+  type QueueItem = {
+    categoria_id: string;
+    categoria_desc: string;
+    categoria_tipo: string;
+    data: string;
+    hora_entrada: string;
+    hora_saida: string;
+    valor: number;
+    descricao: string;
+  };
+  const [queue, setQueue] = useState<QueueItem[]>([]);
 
   const categoriaSelecionada = categorias.find(c => c.id === form.categoria_id);
   const descCategoria = categoriaSelecionada?.descricao.toUpperCase() ?? "";
-  const usaHorario = !descCategoria.includes("PAGAMENTO") && (
-    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") || descCategoria.includes("DOBRA") || descCategoria.includes("HORAS EXTRAS")
+  const isPagamento = descCategoria.includes("PAGAMENTO");
+  const usaHorario = !isPagamento && (
+    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") ||
+    descCategoria.includes("DOBRA") ||
+    descCategoria.includes("HORA EXTRA") || descCategoria.includes("HORAS EXTRA")
   );
+  const isDiaria = usaHorario;
+  const isHoraExtra = !isPagamento && (descCategoria.includes("HORA EXTRA") || descCategoria.includes("HORAS EXTRA"));
+  const isDiariaOuDobra = !isPagamento && !isHoraExtra && (
+    descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") || descCategoria.includes("DOBRA")
+  );
+
+  const calcHoras = (entrada: string, saida: string): number => {
+    if (!entrada || !saida) return 0;
+    const [eh, em] = entrada.split(":").map(Number);
+    const [sh, sm] = saida.split(":").map(Number);
+    if ([eh, em, sh, sm].some((n) => Number.isNaN(n))) return 0;
+    let mins = sh * 60 + sm - (eh * 60 + em);
+    if (mins <= 0) mins += 24 * 60;
+    return mins / 60;
+  };
+
+  const arredondaValor = (valor: number): number => {
+    const intPart = Math.floor(valor);
+    const decimalPart = valor - intPart;
+    if (decimalPart === 0) return valor;
+    if (decimalPart <= 0.49) return intPart + 0.50;
+    return intPart + 1.00;
+  };
+
+  const horasHE = isHoraExtra ? calcHoras(form.hora_entrada, form.hora_saida) : 0;
+
+  useEffect(() => {
+    if (!isHoraExtra) return;
+    const diaria = Number(colaboradorSel?.valor_diaria_padrao ?? 0);
+    if (diaria <= 0 || horasHE <= 0) return;
+    const bruto = (diaria / 9) * horasHE;
+    const novo = arredondaValor(bruto);
+    setForm((f) => (f.valor === novo ? f : { ...f, valor: novo }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHoraExtra, colaboradorSel?.valor_diaria_padrao, horasHE]);
+
+  useEffect(() => {
+    if (!isDiariaOuDobra) return;
+    const diaria = Number(colaboradorSel?.valor_diaria_padrao ?? 0);
+    if (diaria <= 0) return;
+    setForm((f) => (f.valor === diaria ? f : { ...f, valor: diaria }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDiariaOuDobra, colaboradorSel?.valor_diaria_padrao]);
 
   const abrirModal = () => {
     if (!colaboradorId) {
@@ -155,33 +215,76 @@ export default function ExtratoDiarista() {
       return;
     }
     setForm({
-      categoria_id: "",
+      ...emptyForm,
       data: hoje,
       valor: colaboradorSel?.valor_diaria_padrao ?? 0,
-      hora_entrada: "",
-      hora_saida: "",
-      descricao: "",
     });
+    setQueue([]);
     setDialogOpen(true);
   };
 
-  const handleSalvar = async () => {
+  const addToQueue = () => {
     if (!form.categoria_id) {
-      toast({ title: "Selecione uma categoria", variant: "destructive" });
+      toast({ title: "Selecione a categoria antes de adicionar", variant: "destructive" });
+      return;
+    }
+    const cat = categorias.find((c) => c.id === form.categoria_id);
+    setQueue([
+      ...queue,
+      {
+        categoria_id: form.categoria_id,
+        categoria_desc: cat?.descricao || "—",
+        categoria_tipo: cat?.tipo || "D",
+        data: form.data,
+        hora_entrada: isDiaria ? form.hora_entrada : "",
+        hora_saida: isDiaria ? form.hora_saida : "",
+        valor: Number(form.valor) || 0,
+        descricao: form.descricao || "",
+      },
+    ]);
+    setForm({ ...form, categoria_id: "", hora_entrada: "", hora_saida: "", valor: 0, descricao: "" });
+  };
+
+  const removeFromQueue = (idx: number) => {
+    setQueue(queue.filter((_, i) => i !== idx));
+  };
+
+  const handleSalvar = async () => {
+    const items = [...queue];
+    if (form.categoria_id) {
+      const cat = categorias.find((c) => c.id === form.categoria_id);
+      items.push({
+        categoria_id: form.categoria_id,
+        categoria_desc: cat?.descricao || "—",
+        categoria_tipo: cat?.tipo || "D",
+        data: form.data,
+        hora_entrada: isDiaria ? form.hora_entrada : "",
+        hora_saida: isDiaria ? form.hora_saida : "",
+        valor: Number(form.valor) || 0,
+        descricao: form.descricao || "",
+      });
+    }
+    if (items.length === 0) {
+      toast({ title: "Adicione ao menos um lançamento", variant: "destructive" });
       return;
     }
     try {
-      await createLancamento.mutateAsync({
-        colaborador_id: colaboradorId,
-        categoria_id: form.categoria_id,
-        data: form.data,
-        valor: Number(form.valor),
-        hora_entrada: usaHorario && form.hora_entrada ? form.hora_entrada : null,
-        hora_saida: usaHorario && form.hora_saida ? form.hora_saida : null,
-        descricao: form.descricao || null,
-      });
-      toast({ title: "Lançamento registrado!" });
+      for (const it of items) {
+        await createLancamento.mutateAsync({
+          colaborador_id: colaboradorId,
+          categoria_id: it.categoria_id,
+          cliente_id: form.cliente_id || null,
+          data: it.data || form.data,
+          valor: it.valor,
+          hora_entrada: it.hora_entrada || null,
+          hora_saida: it.hora_saida || null,
+          descricao: it.descricao || null,
+        } as any);
+      }
+      toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });
       setDialogOpen(false);
+      setForm(emptyForm);
+      setQueue([]);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }

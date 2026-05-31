@@ -241,8 +241,37 @@ export default function Fechamentos() {
       </div>
 
       <Card className="shadow-md">
-        <CardHeader>
+        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Fechamentos da Quinzena</CardTitle>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant={sortValor === "menor" ? "default" : "outline"}
+              className="gap-1 h-8 text-xs"
+              onClick={() => setSortValor("menor")}
+            >
+              <ArrowDown className="h-3 w-3" /> Menor valor
+            </Button>
+            <Button
+              size="sm"
+              variant={sortValor === "maior" ? "default" : "outline"}
+              className="gap-1 h-8 text-xs"
+              onClick={() => setSortValor("maior")}
+            >
+              <ArrowUp className="h-3 w-3" /> Maior valor
+            </Button>
+            {sortValor !== "default" && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-2 text-xs"
+                onClick={() => setSortValor("default")}
+                title="Restaurar ordenação padrão"
+              >
+                <ArrowUpDown className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (

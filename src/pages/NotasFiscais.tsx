@@ -368,23 +368,30 @@ export default function NotasFiscais() {
         <Card>
           <CardHeader><CardTitle className="text-base">Diaristas que ainda não enviaram NF</CardTitle></CardHeader>
           <CardContent>
+            {/* Valor da NF = total de crédito recebido (valor_final) - reembolsos */}
             {/* Mobile cards */}
             <div className="md:hidden divide-y">
-              {pendentesEnvio.map((f: any) => (
-                <div key={f.id} className="py-2 flex items-center justify-between">
-                  <span className="text-sm font-medium">{colNome(f.colaborador_id)}</span>
-                  <span className="text-sm text-muted-foreground">{fmtBRL(Number(f.valor_final))}</span>
-                </div>
-              ))}
+              {pendentesEnvio.map((f: any) => {
+                const valorNF = Number(f.valor_final ?? 0) - Number(f.total_reembolsos ?? 0);
+                return (
+                  <div key={f.id} className="py-2 flex items-center justify-between">
+                    <span className="text-sm font-medium">{colNome(f.colaborador_id)}</span>
+                    <span className="text-sm text-muted-foreground">{fmtBRL(valorNF)}</span>
+                  </div>
+                );
+              })}
             </div>
             {/* Desktop list */}
             <ul className="hidden md:block text-sm space-y-1">
-              {pendentesEnvio.map((f: any) => (
-                <li key={f.id} className="flex justify-between">
-                  <span>{colNome(f.colaborador_id)}</span>
-                  <span className="text-muted-foreground">{fmtBRL(Number(f.valor_final))}</span>
-                </li>
-              ))}
+              {pendentesEnvio.map((f: any) => {
+                const valorNF = Number(f.valor_final ?? 0) - Number(f.total_reembolsos ?? 0);
+                return (
+                  <li key={f.id} className="flex justify-between">
+                    <span>{colNome(f.colaborador_id)}</span>
+                    <span className="text-muted-foreground">{fmtBRL(valorNF)}</span>
+                  </li>
+                );
+              })}
             </ul>
           </CardContent>
         </Card>

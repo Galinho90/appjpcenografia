@@ -389,7 +389,7 @@ export function useUpdateFechamentoStatus() {
         .single();
       if (fErr) throw fErr;
 
-      const hojeISO = new Date().toISOString().slice(0, 10);
+      const hojeISO = todayISO();
       const updatePayload: Record<string, unknown> = { status };
       if (status === "pago") updatePayload.data_pagamento = hojeISO;
       else updatePayload.data_pagamento = null;

@@ -54,6 +54,7 @@ export default function Relatorios() {
   const [colaboradorId, setColaboradorId] = useState<string>("all");
   const [statusFiltro, setStatusFiltro] = useState<string>("all");
   const [clienteIdQ, setClienteIdQ] = useState<string>("all");
+  const [porDataPagamento, setPorDataPagamento] = useState<boolean>(false);
 
   const selecionada = useMemo(() => getQuinzena(refDate), [refDate]);
   const hojeQ = useMemo(() => getQuinzena(new Date()), []);

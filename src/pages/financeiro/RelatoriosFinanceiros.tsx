@@ -52,14 +52,20 @@ export default function RelatoriosFinanceiros() {
   const [statusFiltro, setStatusFiltro] = useState<"pago" | "all">("pago");
 
   const { data: movs = [], isLoading } = useMovimentacoes({
-    dataInicio,
-    dataFim,
     contaId: contaId === "all" ? undefined : contaId,
   });
 
+  const dataEfetiva = (m: any) =>
+    m.status === "pago" ? (m.data_pagamento ?? m.data_vencimento) : m.data_vencimento;
+
   const movsFiltradas = useMemo(
-    () => (statusFiltro === "all" ? movs : movs.filter((m) => m.status === statusFiltro)),
-    [movs, statusFiltro]
+    () => movs.filter((m) => {
+      if (statusFiltro !== "all" && m.status !== statusFiltro) return false;
+      const d = dataEfetiva(m);
+      if (!d) return false;
+      return d >= dataInicio && d <= dataFim;
+    }),
+    [movs, statusFiltro, dataInicio, dataFim]
   );
 
   // ── KPIs ──
@@ -71,7 +77,7 @@ export default function RelatoriosFinanceiros() {
   const fluxoDiario = useMemo(() => {
     const map = new Map<string, { data: string; entradas: number; saidas: number; saldo: number }>();
     movsFiltradas.forEach((m) => {
-      const d = m.data_pagamento ?? m.data_vencimento;
+      const d = dataEfetiva(m);
       if (!d) return;
       const cur = map.get(d) ?? { data: d, entradas: 0, saidas: 0, saldo: 0 };
       if (m.tipo === "entrada") cur.entradas += m.valor;

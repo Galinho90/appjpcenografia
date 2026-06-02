@@ -410,7 +410,9 @@ export function useUpdateFechamentoStatus() {
           await supabase.from("lancamentos").insert({
             colaborador_id: fech.colaborador_id,
             categoria_id: cat.id,
-            data: hojeISO,
+            // Usa o último dia da quinzena do fechamento para que o lançamento
+            // apareça dentro do período do diarista, e não na data de pagamento.
+            data: fech.periodo_fim,
             valor: Number(fech.valor_final),
             descricao: "Pagamento de fechamento",
             fechamento_id: fech.id,

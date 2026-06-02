@@ -38,25 +38,37 @@ export default function FinanceiroDashboard() {
   const contaSelecionada = contaId === "all" ? contas[0]?.id ?? null : contaId;
   const { data: saldo = 0 } = useSaldoConta(contaSelecionada, fimStr);
 
-  const { data: movs = [], isLoading } = useMovimentacoes({
-    dataInicio: inicioStr,
-    dataFim: fimStr,
+  // Buscamos sem filtro de data e filtramos no cliente usando a data efetiva
+  // (data_pagamento para pagos, data_vencimento para os demais)
+  const { data: todasMovs = [], isLoading } = useMovimentacoes({
     contaId: contaId === "all" ? undefined : contaId,
   });
+
+  const dataEfetiva = (m: typeof todasMovs[number]) =>
+    m.status === "pago" ? (m.data_pagamento ?? m.data_vencimento) : m.data_vencimento;
+
+  const movs = useMemo(
+    () => todasMovs.filter((m) => {
+      const d = dataEfetiva(m);
+      return d ? d >= inicioStr && d <= fimStr : false;
+    }),
+    [todasMovs, inicioStr, fimStr],
+  );
 
   const entradasPeriodo = movs.filter((m) => m.tipo === "entrada" && m.status === "pago").reduce((s, m) => s + m.valor, 0);
   const saidasPeriodo = movs.filter((m) => m.tipo === "saida" && m.status === "pago").reduce((s, m) => s + m.valor, 0);
   const resultadoPeriodo = entradasPeriodo - saidasPeriodo;
 
-  // Próximos vencimentos (7 dias)
+  // Próximos vencimentos (7 dias) — usamos a lista completa, não restrita ao período
+  const hojeStr = hoje.toISOString().slice(0, 10);
   const em7Dias = new Date(hoje.getTime() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 10);
-  const proximosVencimentos = movs
-    .filter((m) => m.status === "pendente" && m.data_vencimento && m.data_vencimento >= hoje.toISOString().slice(0, 10) && m.data_vencimento <= em7Dias)
+  const proximosVencimentos = todasMovs
+    .filter((m) => m.status === "pendente" && m.data_vencimento && m.data_vencimento >= hojeStr && m.data_vencimento <= em7Dias)
     .sort((a, b) => (a.data_vencimento ?? "").localeCompare(b.data_vencimento ?? ""))
     .slice(0, 5);
 
-  const atrasadas = movs.filter(
-    (m) => m.status === "pendente" && m.data_vencimento && m.data_vencimento < hoje.toISOString().slice(0, 10)
+  const atrasadas = todasMovs.filter(
+    (m) => m.status === "pendente" && m.data_vencimento && m.data_vencimento < hojeStr
   );
 
   // Fluxo de caixa mensal no período filtrado

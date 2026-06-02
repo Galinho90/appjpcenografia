@@ -7,7 +7,9 @@ export const fmtDate = (iso: string | null | undefined) => {
   return `${d}/${m}/${y}`;
 };
 
-export const todayISO = () => new Date().toISOString().slice(0, 10);
+// Retorna a data atual no fuso horário de São Paulo (Brasil) no formato YYYY-MM-DD
+export const todayISO = () =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
 
 export const statusLabel: Record<string, string> = {
   pendente: "Pendente",

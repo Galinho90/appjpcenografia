@@ -266,6 +266,19 @@ export default function Relatorios() {
                   </Button>
                 </div>
               </div>
+              <div className="mt-4 flex items-center gap-2">
+                <input
+                  id="porDataPagamento"
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-input accent-primary"
+                  checked={porDataPagamento}
+                  onChange={(e) => setPorDataPagamento(e.target.checked)}
+                  disabled={clienteIdQ !== "all"}
+                />
+                <Label htmlFor="porDataPagamento" className="cursor-pointer text-sm">
+                  Filtrar pela data real do pagamento (mostra fechamentos pagos nesta quinzena, mesmo que de períodos anteriores)
+                </Label>
+              </div>
               {clienteIdQ !== "all" && (
                 <p className="mt-3 text-xs text-muted-foreground">
                   Filtrando por cliente: totais recalculados a partir dos lançamentos vinculados ao cliente.

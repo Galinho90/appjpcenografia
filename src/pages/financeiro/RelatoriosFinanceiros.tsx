@@ -52,14 +52,20 @@ export default function RelatoriosFinanceiros() {
   const [statusFiltro, setStatusFiltro] = useState<"pago" | "all">("pago");
 
   const { data: movs = [], isLoading } = useMovimentacoes({
-    dataInicio,
-    dataFim,
     contaId: contaId === "all" ? undefined : contaId,
   });
 
+  const dataEfetiva = (m: any) =>
+    m.status === "pago" ? (m.data_pagamento ?? m.data_vencimento) : m.data_vencimento;
+
   const movsFiltradas = useMemo(
-    () => (statusFiltro === "all" ? movs : movs.filter((m) => m.status === statusFiltro)),
-    [movs, statusFiltro]
+    () => movs.filter((m) => {
+      if (statusFiltro !== "all" && m.status !== statusFiltro) return false;
+      const d = dataEfetiva(m);
+      if (!d) return false;
+      return d >= dataInicio && d <= dataFim;
+    }),
+    [movs, statusFiltro, dataInicio, dataFim]
   );
 
   // ── KPIs ──

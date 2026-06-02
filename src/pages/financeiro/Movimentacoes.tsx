@@ -341,7 +341,13 @@ export default function Movimentacoes() {
                           ) : "—"}
                         </TableCell>
                         <TableCell className="text-xs">{m.conta?.apelido ?? "—"}</TableCell>
-                        <TableCell className="text-xs">{fmtDate(m.data_vencimento)}</TableCell>
+                        <TableCell className="text-xs">
+                          {m.status === "pago" && m.data_pagamento ? (
+                            <span title="Pago em">{fmtDate(m.data_pagamento)}</span>
+                          ) : (
+                            <span title="Vencimento">{fmtDate(m.data_vencimento)}</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent hover:opacity-90`}>
                             {statusLabel[m.status]}

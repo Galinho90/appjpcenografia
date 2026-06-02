@@ -54,6 +54,7 @@ export default function Relatorios() {
   const [colaboradorId, setColaboradorId] = useState<string>("all");
   const [statusFiltro, setStatusFiltro] = useState<string>("all");
   const [clienteIdQ, setClienteIdQ] = useState<string>("all");
+  const [porDataPagamento, setPorDataPagamento] = useState<boolean>(false);
 
   const selecionada = useMemo(() => getQuinzena(refDate), [refDate]);
   const hojeQ = useMemo(() => getQuinzena(new Date()), []);
@@ -78,7 +79,11 @@ export default function Relatorios() {
   const linhasFechamentos: Linha[] = useMemo(
     () =>
       (fechamentos as any[])
-        .filter((f) => f.periodo_inicio === inicioISO && f.periodo_fim === fimISO)
+        .filter((f) =>
+          porDataPagamento
+            ? f.status === "pago" && f.data_pagamento && f.data_pagamento >= inicioISO && f.data_pagamento <= fimISO
+            : f.periodo_inicio === inicioISO && f.periodo_fim === fimISO,
+        )
         .filter((f) => colaboradorId === "all" || f.colaborador_id === colaboradorId)
         .filter((f) => statusFiltro === "all" || f.status === statusFiltro)
         .filter((f) => !(f.status === "pendente" && Math.abs(Number(f.valor_final) || 0) < 0.005))
@@ -88,7 +93,7 @@ export default function Relatorios() {
             sensitivity: "base",
           }),
         ),
-    [fechamentos, inicioISO, fimISO, colaboradorId, statusFiltro],
+    [fechamentos, inicioISO, fimISO, colaboradorId, statusFiltro, porDataPagamento],
   );
 
   // Quando cliente está selecionado, recalcula a partir de lançamentos do cliente
@@ -261,6 +266,19 @@ export default function Relatorios() {
                   </Button>
                 </div>
               </div>
+              <div className="mt-4 flex items-center gap-2">
+                <input
+                  id="porDataPagamento"
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-input accent-primary"
+                  checked={porDataPagamento}
+                  onChange={(e) => setPorDataPagamento(e.target.checked)}
+                  disabled={clienteIdQ !== "all"}
+                />
+                <Label htmlFor="porDataPagamento" className="cursor-pointer text-sm">
+                  Filtrar pela data real do pagamento (mostra fechamentos pagos nesta quinzena, mesmo que de períodos anteriores)
+                </Label>
+              </div>
               {clienteIdQ !== "all" && (
                 <p className="mt-3 text-xs text-muted-foreground">
                   Filtrando por cliente: totais recalculados a partir dos lançamentos vinculados ao cliente.
@@ -383,6 +401,7 @@ export default function Relatorios() {
                           <TableHead className="text-right">Vales</TableHead>
                           <TableHead className="text-right">Reembolsos</TableHead>
                           <TableHead className="text-right">Valor Final</TableHead>
+                          {clienteIdQ === "all" && <TableHead>Pago em</TableHead>}
                           {clienteIdQ === "all" && <TableHead>Status</TableHead>}
                         </TableRow>
                       </TableHeader>
@@ -390,6 +409,7 @@ export default function Relatorios() {
                         {linhas.map((f) => {
                           const cfg = getStatusBadge(f.status);
                           const Icon = cfg.icon;
+                          const dataPag = (f as any).data_pagamento as string | null | undefined;
                           return (
                             <TableRow key={f.id}>
                               <TableCell className="font-medium">{f.colaborador?.nome ?? "—"}</TableCell>
@@ -397,6 +417,11 @@ export default function Relatorios() {
                               <TableCell className="text-right text-destructive">- {fmtBRL(f.total_vales)}</TableCell>
                               <TableCell className="text-right text-success">+ {fmtBRL(f.total_reembolsos)}</TableCell>
                               <TableCell className="text-right font-bold">{fmtBRL(f.valor_final)}</TableCell>
+                              {clienteIdQ === "all" && (
+                                <TableCell className="text-sm text-muted-foreground">
+                                  {dataPag ? fmtData(dataPag) : "—"}
+                                </TableCell>
+                              )}
                               {clienteIdQ === "all" && (
                                 <TableCell>
                                   <Badge className={`gap-1 ${cfg.className}`}>
@@ -416,6 +441,7 @@ export default function Relatorios() {
                           <TableCell className="text-right font-semibold text-destructive">- {fmtBRL(tot.vales)}</TableCell>
                           <TableCell className="text-right font-semibold text-success">+ {fmtBRL(tot.reembolsos)}</TableCell>
                           <TableCell className="text-right font-bold">{fmtBRL(tot.final)}</TableCell>
+                          {clienteIdQ === "all" && <TableCell />}
                           {clienteIdQ === "all" && <TableCell />}
                         </TableRow>
                       </TableFooter>

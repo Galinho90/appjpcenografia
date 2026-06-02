@@ -469,6 +469,7 @@ export type Database = {
         Row: {
           colaborador_id: string
           created_at: string
+          data_pagamento: string | null
           id: string
           periodo_fim: string
           periodo_inicio: string
@@ -482,6 +483,7 @@ export type Database = {
         Insert: {
           colaborador_id: string
           created_at?: string
+          data_pagamento?: string | null
           id?: string
           periodo_fim: string
           periodo_inicio: string
@@ -495,6 +497,7 @@ export type Database = {
         Update: {
           colaborador_id?: string
           created_at?: string
+          data_pagamento?: string | null
           id?: string
           periodo_fim?: string
           periodo_inicio?: string

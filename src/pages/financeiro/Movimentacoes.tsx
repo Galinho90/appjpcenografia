@@ -44,6 +44,8 @@ export default function Movimentacoes() {
     status: "all" as StatusMovimentacao | "all",
     categoriaId: "all",
     contaId: "all",
+    dataInicio: "",
+    dataFim: "",
   });
   const { data: movs = [], isLoading } = useMovimentacoes(filters);
   const { data: contas = [] } = useContasBancarias();

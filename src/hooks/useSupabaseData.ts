@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Colaborador, Diaria, Vale, Reembolso, Fechamento, Cliente } from "@/types";
+import { todayISO } from "@/lib/financeiro";
 
 export type Categoria = {
   id: string;

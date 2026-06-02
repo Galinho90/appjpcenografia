@@ -79,7 +79,11 @@ export default function Relatorios() {
   const linhasFechamentos: Linha[] = useMemo(
     () =>
       (fechamentos as any[])
-        .filter((f) => f.periodo_inicio === inicioISO && f.periodo_fim === fimISO)
+        .filter((f) =>
+          porDataPagamento
+            ? f.status === "pago" && f.data_pagamento && f.data_pagamento >= inicioISO && f.data_pagamento <= fimISO
+            : f.periodo_inicio === inicioISO && f.periodo_fim === fimISO,
+        )
         .filter((f) => colaboradorId === "all" || f.colaborador_id === colaboradorId)
         .filter((f) => statusFiltro === "all" || f.status === statusFiltro)
         .filter((f) => !(f.status === "pendente" && Math.abs(Number(f.valor_final) || 0) < 0.005))
@@ -89,7 +93,7 @@ export default function Relatorios() {
             sensitivity: "base",
           }),
         ),
-    [fechamentos, inicioISO, fimISO, colaboradorId, statusFiltro],
+    [fechamentos, inicioISO, fimISO, colaboradorId, statusFiltro, porDataPagamento],
   );
 
   // Quando cliente está selecionado, recalcula a partir de lançamentos do cliente

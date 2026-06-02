@@ -270,7 +270,11 @@ export default function Movimentacoes() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span>{m.conta?.apelido ?? "—"}</span>
                         <span>•</span>
-                        <span>Venc. {fmtDate(m.data_vencimento)}</span>
+                        <span>
+                          {m.status === "pago" && m.data_pagamento
+                            ? `Pago em ${fmtDate(m.data_pagamento)}`
+                            : `Venc. ${fmtDate(m.data_vencimento)}`}
+                        </span>
                         <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent`}>
                           {statusLabel[m.status]}
                         </Badge>
@@ -308,7 +312,7 @@ export default function Movimentacoes() {
                       <TableHead>Descrição</TableHead>
                       <TableHead>Categoria</TableHead>
                       <TableHead>Conta</TableHead>
-                      <TableHead>Vencimento</TableHead>
+                      <TableHead>Data</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                       {isAdmin && <TableHead className="text-right">Ações</TableHead>}
@@ -337,7 +341,13 @@ export default function Movimentacoes() {
                           ) : "—"}
                         </TableCell>
                         <TableCell className="text-xs">{m.conta?.apelido ?? "—"}</TableCell>
-                        <TableCell className="text-xs">{fmtDate(m.data_vencimento)}</TableCell>
+                        <TableCell className="text-xs">
+                          {m.status === "pago" && m.data_pagamento ? (
+                            <span title="Pago em">{fmtDate(m.data_pagamento)}</span>
+                          ) : (
+                            <span title="Vencimento">{fmtDate(m.data_vencimento)}</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent hover:opacity-90`}>
                             {statusLabel[m.status]}

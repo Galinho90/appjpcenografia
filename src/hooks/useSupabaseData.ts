@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Colaborador, Diaria, Vale, Reembolso, Fechamento, Cliente } from "@/types";
+import { todayISO } from "@/lib/financeiro";
 
 export type Categoria = {
   id: string;
@@ -388,7 +389,7 @@ export function useUpdateFechamentoStatus() {
         .single();
       if (fErr) throw fErr;
 
-      const hojeISO = new Date().toISOString().slice(0, 10);
+      const hojeISO = todayISO();
       const updatePayload: Record<string, unknown> = { status };
       if (status === "pago") updatePayload.data_pagamento = hojeISO;
       else updatePayload.data_pagamento = null;

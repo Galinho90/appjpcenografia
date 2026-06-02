@@ -401,6 +401,7 @@ export default function Relatorios() {
                           <TableHead className="text-right">Vales</TableHead>
                           <TableHead className="text-right">Reembolsos</TableHead>
                           <TableHead className="text-right">Valor Final</TableHead>
+                          {clienteIdQ === "all" && <TableHead>Pago em</TableHead>}
                           {clienteIdQ === "all" && <TableHead>Status</TableHead>}
                         </TableRow>
                       </TableHeader>
@@ -408,6 +409,7 @@ export default function Relatorios() {
                         {linhas.map((f) => {
                           const cfg = getStatusBadge(f.status);
                           const Icon = cfg.icon;
+                          const dataPag = (f as any).data_pagamento as string | null | undefined;
                           return (
                             <TableRow key={f.id}>
                               <TableCell className="font-medium">{f.colaborador?.nome ?? "—"}</TableCell>
@@ -415,6 +417,11 @@ export default function Relatorios() {
                               <TableCell className="text-right text-destructive">- {fmtBRL(f.total_vales)}</TableCell>
                               <TableCell className="text-right text-success">+ {fmtBRL(f.total_reembolsos)}</TableCell>
                               <TableCell className="text-right font-bold">{fmtBRL(f.valor_final)}</TableCell>
+                              {clienteIdQ === "all" && (
+                                <TableCell className="text-sm text-muted-foreground">
+                                  {dataPag ? fmtData(dataPag) : "—"}
+                                </TableCell>
+                              )}
                               {clienteIdQ === "all" && (
                                 <TableCell>
                                   <Badge className={`gap-1 ${cfg.className}`}>
@@ -434,6 +441,7 @@ export default function Relatorios() {
                           <TableCell className="text-right font-semibold text-destructive">- {fmtBRL(tot.vales)}</TableCell>
                           <TableCell className="text-right font-semibold text-success">+ {fmtBRL(tot.reembolsos)}</TableCell>
                           <TableCell className="text-right font-bold">{fmtBRL(tot.final)}</TableCell>
+                          {clienteIdQ === "all" && <TableCell />}
                           {clienteIdQ === "all" && <TableCell />}
                         </TableRow>
                       </TableFooter>

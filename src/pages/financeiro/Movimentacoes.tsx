@@ -213,7 +213,7 @@ export default function Movimentacoes() {
             <Filter className="h-4 w-4 text-primary" /> Filtros
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Select value={filters.tipo} onValueChange={(v: any) => setFilters({ ...filters, tipo: v })}>
             <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
             <SelectContent>
@@ -247,22 +247,6 @@ export default function Movimentacoes() {
               {categorias.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
             </SelectContent>
           </Select>
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs text-muted-foreground">Período de</Label>
-            <Input
-              type="date"
-              value={filters.dataInicio}
-              onChange={(e) => setFilters({ ...filters, dataInicio: e.target.value })}
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs text-muted-foreground">até</Label>
-            <Input
-              type="date"
-              value={filters.dataFim}
-              onChange={(e) => setFilters({ ...filters, dataFim: e.target.value })}
-            />
-          </div>
         </CardContent>
       </Card>
 

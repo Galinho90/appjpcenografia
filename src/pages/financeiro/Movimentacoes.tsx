@@ -170,19 +170,41 @@ export default function Movimentacoes() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Movimentações</h1>
           <p className="text-sm text-muted-foreground">Entradas, saídas e transferências entre contas</p>
         </div>
-        {isAdmin && (
-          <div className="flex gap-2 flex-wrap">
-            <Button onClick={() => openCreate("entrada")} className="gap-2 bg-success hover:bg-success/90 text-success-foreground">
-              <ArrowDownCircle className="h-4 w-4" /> Entrada
-            </Button>
-            <Button onClick={() => openCreate("saida")} variant="destructive" className="gap-2">
-              <ArrowUpCircle className="h-4 w-4" /> Saída
-            </Button>
-            <Button onClick={() => openCreate("transferencia")} variant="outline" className="gap-2">
-              <ArrowLeftRight className="h-4 w-4" /> Transferência
-            </Button>
+        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+          <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-0.5">
+              <Label className="text-[10px] text-muted-foreground leading-none">Período de</Label>
+              <Input
+                type="date"
+                className="h-8 text-xs px-2 py-1"
+                value={filters.dataInicio}
+                onChange={(e) => setFilters({ ...filters, dataInicio: e.target.value })}
+              />
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <Label className="text-[10px] text-muted-foreground leading-none">até</Label>
+              <Input
+                type="date"
+                className="h-8 text-xs px-2 py-1"
+                value={filters.dataFim}
+                onChange={(e) => setFilters({ ...filters, dataFim: e.target.value })}
+              />
+            </div>
           </div>
-        )}
+          {isAdmin && (
+            <div className="flex gap-2 flex-wrap">
+              <Button onClick={() => openCreate("entrada")} className="gap-2 bg-success hover:bg-success/90 text-success-foreground h-8 text-xs">
+                <ArrowDownCircle className="h-3.5 w-3.5" /> Entrada
+              </Button>
+              <Button onClick={() => openCreate("saida")} variant="destructive" className="gap-2 h-8 text-xs">
+                <ArrowUpCircle className="h-3.5 w-3.5" /> Saída
+              </Button>
+              <Button onClick={() => openCreate("transferencia")} variant="outline" className="gap-2 h-8 text-xs">
+                <ArrowLeftRight className="h-3.5 w-3.5" /> Transferência
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       <Card className="shadow-md">

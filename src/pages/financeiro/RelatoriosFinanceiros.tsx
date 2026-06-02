@@ -77,7 +77,7 @@ export default function RelatoriosFinanceiros() {
   const fluxoDiario = useMemo(() => {
     const map = new Map<string, { data: string; entradas: number; saidas: number; saldo: number }>();
     movsFiltradas.forEach((m) => {
-      const d = m.data_pagamento ?? m.data_vencimento;
+      const d = dataEfetiva(m);
       if (!d) return;
       const cur = map.get(d) ?? { data: d, entradas: 0, saidas: 0, saldo: 0 };
       if (m.tipo === "entrada") cur.entradas += m.valor;

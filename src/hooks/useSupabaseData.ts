@@ -388,7 +388,12 @@ export function useUpdateFechamentoStatus() {
         .single();
       if (fErr) throw fErr;
 
-      const { error } = await supabase.from("fechamentos").update({ status }).eq("id", id);
+      const hojeISO = new Date().toISOString().slice(0, 10);
+      const updatePayload: Record<string, unknown> = { status };
+      if (status === "pago") updatePayload.data_pagamento = hojeISO;
+      else updatePayload.data_pagamento = null;
+
+      const { error } = await supabase.from("fechamentos").update(updatePayload).eq("id", id);
       if (error) throw error;
 
       if (status === "pago" && fech.status !== "pago") {
@@ -404,7 +409,7 @@ export function useUpdateFechamentoStatus() {
           await supabase.from("lancamentos").insert({
             colaborador_id: fech.colaborador_id,
             categoria_id: cat.id,
-            data: fech.periodo_fim,
+            data: hojeISO,
             valor: Number(fech.valor_final),
             descricao: "Pagamento de fechamento",
             fechamento_id: fech.id,

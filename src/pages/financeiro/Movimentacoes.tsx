@@ -312,7 +312,7 @@ export default function Movimentacoes() {
                       <TableHead>Descrição</TableHead>
                       <TableHead>Categoria</TableHead>
                       <TableHead>Conta</TableHead>
-                      <TableHead>Vencimento</TableHead>
+                      <TableHead>Data</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                       {isAdmin && <TableHead className="text-right">Ações</TableHead>}

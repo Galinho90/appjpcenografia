@@ -270,7 +270,11 @@ export default function Movimentacoes() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span>{m.conta?.apelido ?? "—"}</span>
                         <span>•</span>
-                        <span>Venc. {fmtDate(m.data_vencimento)}</span>
+                        <span>
+                          {m.status === "pago" && m.data_pagamento
+                            ? `Pago em ${fmtDate(m.data_pagamento)}`
+                            : `Venc. ${fmtDate(m.data_vencimento)}`}
+                        </span>
                         <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent`}>
                           {statusLabel[m.status]}
                         </Badge>

@@ -393,7 +393,7 @@ export function useUpdateFechamentoStatus() {
       if (status === "pago") updatePayload.data_pagamento = hojeISO;
       else updatePayload.data_pagamento = null;
 
-      const { error } = await supabase.from("fechamentos").update(updatePayload).eq("id", id);
+      const { error } = await supabase.from("fechamentos").update(updatePayload as any).eq("id", id);
       if (error) throw error;
 
       if (status === "pago" && fech.status !== "pago") {

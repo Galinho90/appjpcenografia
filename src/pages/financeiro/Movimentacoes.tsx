@@ -417,10 +417,38 @@ export default function Movimentacoes() {
                   </TableBody>
                 </Table>
               </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
+                <div className="text-xs text-muted-foreground">
+                  Mostrando {(currentPage - 1) * pageSize + 1}
+                  –{Math.min(currentPage * pageSize, movs.length)} de {movs.length}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs text-muted-foreground">Por página</Label>
+                  <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+                    <SelectTrigger className="h-8 w-[80px] text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[10, 25, 50, 100].map((n) => (
+                        <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm" className="h-8" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
+                    Anterior
+                  </Button>
+                  <span className="text-xs whitespace-nowrap">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <Button variant="outline" size="sm" className="h-8" disabled={currentPage >= totalPages} onClick={() => setPage(currentPage + 1)}>
+                    Próxima
+                  </Button>
+                </div>
+              </div>
             </>
           )}
         </CardContent>
       </Card>
+
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">

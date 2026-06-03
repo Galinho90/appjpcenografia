@@ -354,7 +354,7 @@ export default function Movimentacoes() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {movs.map((m) => (
+                    {pagedMovs.map((m) => (
                       <TableRow key={m.id}>
                         <TableCell>{tipoIcon(m.tipo)}</TableCell>
                         <TableCell>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,17 @@ export default function Movimentacoes() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  useEffect(() => { setPage(1); }, [filters, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(movs.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pagedMovs = useMemo(
+    () => movs.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [movs, currentPage, pageSize]
+  );
 
   const openCreate = (tipo: TipoMovimentacao = "saida") => {
     setEditingId(null);
@@ -262,7 +273,7 @@ export default function Movimentacoes() {
             <>
               {/* Mobile: cards */}
               <div className="md:hidden divide-y">
-                {movs.map((m) => (
+                {pagedMovs.map((m) => (
                   <div key={m.id} className="p-3 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-start gap-2 min-w-0">
@@ -343,7 +354,7 @@ export default function Movimentacoes() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {movs.map((m) => (
+                    {pagedMovs.map((m) => (
                       <TableRow key={m.id}>
                         <TableCell>{tipoIcon(m.tipo)}</TableCell>
                         <TableCell>
@@ -406,10 +417,38 @@ export default function Movimentacoes() {
                   </TableBody>
                 </Table>
               </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
+                <div className="text-xs text-muted-foreground">
+                  Mostrando {(currentPage - 1) * pageSize + 1}
+                  –{Math.min(currentPage * pageSize, movs.length)} de {movs.length}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs text-muted-foreground">Por página</Label>
+                  <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+                    <SelectTrigger className="h-8 w-[80px] text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[10, 25, 50, 100].map((n) => (
+                        <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm" className="h-8" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
+                    Anterior
+                  </Button>
+                  <span className="text-xs whitespace-nowrap">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <Button variant="outline" size="sm" className="h-8" disabled={currentPage >= totalPages} onClick={() => setPage(currentPage + 1)}>
+                    Próxima
+                  </Button>
+                </div>
+              </div>
             </>
           )}
         </CardContent>
       </Card>
+
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">

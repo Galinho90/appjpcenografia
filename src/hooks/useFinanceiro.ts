@@ -194,9 +194,7 @@ export function useMovimentacoes(filters: MovFilters = {}) {
           colaborador:colaboradores(id, nome),
           cliente:clientes(id, razao_social),
           fornecedor:fornecedores(id, nome)
-        `)
-        .order("data_vencimento", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false });
+        `);
 
       if (filters.dataInicio) q = q.gte("data_vencimento", filters.dataInicio);
       if (filters.dataFim) q = q.lte("data_vencimento", filters.dataFim);
@@ -207,7 +205,17 @@ export function useMovimentacoes(filters: MovFilters = {}) {
 
       const { data, error } = await q.limit(1000);
       if (error) throw error;
-      return ((data ?? []) as any[]).map((m) => ({ ...m, valor: Number(m.valor) })) as MovimentacaoFinanceira[];
+      const mapped = ((data ?? []) as any[]).map((m) => ({ ...m, valor: Number(m.valor) })) as MovimentacaoFinanceira[];
+
+      // Ordena pela data efetiva do lançamento (data_pagamento quando pago, senão data_vencimento)
+      mapped.sort((a, b) => {
+        const dataA = (a.status === "pago" ? a.data_pagamento : a.data_vencimento) ?? "";
+        const dataB = (b.status === "pago" ? b.data_pagamento : b.data_vencimento) ?? "";
+        if (dataA !== dataB) return dataB.localeCompare(dataA); // descendente
+        return b.created_at.localeCompare(a.created_at);
+      });
+
+      return mapped;
     },
   });
 }

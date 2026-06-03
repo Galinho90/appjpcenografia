@@ -273,7 +273,7 @@ export default function Movimentacoes() {
             <>
               {/* Mobile: cards */}
               <div className="md:hidden divide-y">
-                {movs.map((m) => (
+                {pagedMovs.map((m) => (
                   <div key={m.id} className="p-3 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-start gap-2 min-w-0">

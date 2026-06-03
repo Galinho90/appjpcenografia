@@ -61,6 +61,17 @@ export default function Movimentacoes() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  useEffect(() => { setPage(1); }, [filters, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(movs.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pagedMovs = useMemo(
+    () => movs.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [movs, currentPage, pageSize]
+  );
 
   const openCreate = (tipo: TipoMovimentacao = "saida") => {
     setEditingId(null);

@@ -402,6 +402,7 @@ export default function Diarias() {
       setValeParcelamento("extrato");
       setValeParcelado(false);
       setValeNumParcelas(2);
+      setValeLancarMov("sim");
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }

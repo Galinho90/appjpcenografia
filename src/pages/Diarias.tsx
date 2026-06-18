@@ -338,8 +338,8 @@ export default function Diarias() {
           supabase.from("categorias_financeiras" as any).select("id").eq("nome", "Vales Diaristas").maybeSingle(),
           supabase.from("contas_bancarias" as any).select("id").eq("ativo", true).order("created_at", { ascending: true }).limit(1).maybeSingle(),
         ]);
-        valeCatFinId = catFin?.id ?? null;
-        contaId = conta?.id ?? null;
+        valeCatFinId = (catFin as any)?.id ?? null;
+        contaId = (conta as any)?.id ?? null;
       }
       const colabNome = colaboradores.find((c) => c.id === form.colaborador_id)?.nome || "diarista";
       for (const it of items) {

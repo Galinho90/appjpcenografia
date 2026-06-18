@@ -361,11 +361,9 @@ export default function Diarias() {
         for (let p = 0; p < n; p++) {
           const dt = new Date(baseDate);
           if (isParcelado) {
-            // Parcelas iniciam na PRÓXIMA quinzena/mês (nunca na data de lançamento)
-            if (it.parcelamento === "quinzena") dt.setDate(dt.getDate() + 15 * (p + 1));
-            else dt.setMonth(dt.getMonth() + (p + 1));
+            if (it.parcelamento === "quinzena") dt.setDate(dt.getDate() + 15 * p);
+            else dt.setMonth(dt.getMonth() + p);
           }
-
           const valorParcela = n > 1
             ? (p === n - 1 ? Math.round((it.valor - parcValor * (n - 1)) * 100) / 100 : parcValor)
             : it.valor;

@@ -112,6 +112,7 @@ export default function Diarias() {
     hora_saida: string;
     valor: number;
     descricao: string;
+    parcelamento?: "extrato" | "quinzena" | "mes";
   };
   const [queue, setQueue] = useState<QueueItem[]>([]);
 

@@ -22,6 +22,9 @@ import {
   useUpdateLancamento,
   useDeleteLancamento,
 } from "@/hooks/useSupabaseData";
+import { useCreateMovimentacao } from "@/hooks/useFinanceiro";
+import { supabase } from "@/integrations/supabase/client";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { cn, formatDateBR } from "@/lib/utils";
 import { usePermissions } from "@/hooks/usePermissions";

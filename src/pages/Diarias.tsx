@@ -349,7 +349,7 @@ export default function Diarias() {
       }
       const colabNome = colaboradores.find((c) => c.id === form.colaborador_id)?.nome || "diarista";
       for (const it of items) {
-        await createMutation.mutateAsync({
+        const created = await createMutation.mutateAsync({
           colaborador_id: form.colaborador_id,
           categoria_id: it.categoria_id,
           cliente_id: form.cliente_id || null,
@@ -359,6 +359,7 @@ export default function Diarias() {
           valor: it.valor,
           descricao: it.descricao || null,
         } as any);
+        const lancamentoId = (created as any)?.id ?? null;
         if (it.parcelamento && contaId) {
           const n = Math.max(1, it.parcelas || 1);
           const isExtrato = it.parcelamento === "extrato";
@@ -371,7 +372,6 @@ export default function Diarias() {
               if (it.parcelamento === "quinzena") venc.setDate(venc.getDate() + 15 * p);
               else venc.setMonth(venc.getMonth() + p);
             }
-            // Ajuste último valor para fechar centavos
             const valorParcela = p === n - 1 ? Math.round((it.valor - parcValor * (n - 1)) * 100) / 100 : parcValor;
             const desc = n > 1
               ? `Vale ${colabNome} (${p + 1}/${n} ${freqLabel})`
@@ -386,6 +386,7 @@ export default function Diarias() {
               descricao: desc,
               observacoes: n > 1 ? `Parcela ${p + 1} de ${n} (${freqLabel})` : `Pagamento ${freqLabel}`,
               colaborador_id: form.colaborador_id,
+              lancamento_id: lancamentoId,
               origem: "manual",
               recorrente: false,
             } as any);

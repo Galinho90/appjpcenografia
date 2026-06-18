@@ -360,20 +360,36 @@ export default function Diarias() {
           descricao: it.descricao || null,
         } as any);
         if (it.parcelamento && contaId) {
-          const parcelLabel = it.parcelamento === "extrato" ? "no extrato do diarista" : it.parcelamento === "quinzena" ? "a cada quinzena" : "a cada mês";
-          await createMovimentacao.mutateAsync({
-            conta_id: contaId,
-            categoria_id: valeCatFinId,
-            tipo: "saida",
-            valor: it.valor,
-            data_vencimento: it.data || form.data,
-            status: "pendente",
-            descricao: `Vale ${colabNome} (parcelar ${parcelLabel})`,
-            observacoes: `Parcelamento: ${parcelLabel}`,
-            colaborador_id: form.colaborador_id,
-            origem: "manual",
-            recorrente: false,
-          } as any);
+          const n = Math.max(1, it.parcelas || 1);
+          const isExtrato = it.parcelamento === "extrato";
+          const freqLabel = it.parcelamento === "quinzena" ? "quinzenal" : it.parcelamento === "mes" ? "mensal" : "no extrato";
+          const parcValor = Math.round((it.valor / n) * 100) / 100;
+          const baseDate = new Date(`${it.data || form.data}T00:00:00`);
+          for (let p = 0; p < n; p++) {
+            const venc = new Date(baseDate);
+            if (!isExtrato) {
+              if (it.parcelamento === "quinzena") venc.setDate(venc.getDate() + 15 * p);
+              else venc.setMonth(venc.getMonth() + p);
+            }
+            // Ajuste último valor para fechar centavos
+            const valorParcela = p === n - 1 ? Math.round((it.valor - parcValor * (n - 1)) * 100) / 100 : parcValor;
+            const desc = n > 1
+              ? `Vale ${colabNome} (${p + 1}/${n} ${freqLabel})`
+              : `Vale ${colabNome} (${freqLabel})`;
+            await createMovimentacao.mutateAsync({
+              conta_id: contaId,
+              categoria_id: valeCatFinId,
+              tipo: "saida",
+              valor: valorParcela,
+              data_vencimento: toISO(venc),
+              status: "pendente",
+              descricao: desc,
+              observacoes: n > 1 ? `Parcela ${p + 1} de ${n} (${freqLabel})` : `Pagamento ${freqLabel}`,
+              colaborador_id: form.colaborador_id,
+              origem: "manual",
+              recorrente: false,
+            } as any);
+          }
         }
       }
       toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });

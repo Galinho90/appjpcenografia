@@ -702,6 +702,7 @@ export type Database = {
           fornecedor_id: string | null
           id: string
           id_externo: string | null
+          lancamento_id: string | null
           observacoes: string | null
           origem: Database["public"]["Enums"]["origem_movimentacao"]
           recorrencia_config: Json | null
@@ -727,6 +728,7 @@ export type Database = {
           fornecedor_id?: string | null
           id?: string
           id_externo?: string | null
+          lancamento_id?: string | null
           observacoes?: string | null
           origem?: Database["public"]["Enums"]["origem_movimentacao"]
           recorrencia_config?: Json | null
@@ -752,6 +754,7 @@ export type Database = {
           fornecedor_id?: string | null
           id?: string
           id_externo?: string | null
+          lancamento_id?: string | null
           observacoes?: string | null
           origem?: Database["public"]["Enums"]["origem_movimentacao"]
           recorrencia_config?: Json | null
@@ -809,6 +812,13 @@ export type Database = {
             columns: ["fornecedor_id"]
             isOneToOne: false
             referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_financeiras_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "lancamentos"
             referencedColumns: ["id"]
           },
         ]

@@ -118,8 +118,9 @@ export function useCreateLancamento() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (data: Omit<Lancamento, "id" | "categoria" | "colaborador" | "cliente">) => {
-      const { error } = await supabase.from("lancamentos").insert(data);
+      const { data: inserted, error } = await supabase.from("lancamentos").insert(data).select("id").single();
       if (error) throw error;
+      return inserted as { id: string };
     },
 
     onSuccess: () => qc.invalidateQueries({ queryKey: ["lancamentos"] }),

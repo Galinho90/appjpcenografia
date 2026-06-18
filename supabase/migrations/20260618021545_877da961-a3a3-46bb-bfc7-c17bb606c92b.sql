@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "Diaristas can delete own notas fiscais files" ON storage.objects;
+CREATE POLICY "Diaristas can delete own notas fiscais files" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'notas-fiscais' AND (auth.uid())::text = (storage.foldername(name))[1]);

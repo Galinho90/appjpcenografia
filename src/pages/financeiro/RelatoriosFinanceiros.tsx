@@ -92,8 +92,10 @@ export default function RelatoriosFinanceiros() {
   const porCategoria = useMemo(() => {
     const map = new Map<string, { nome: string; cor: string; tipo: string; total: number }>();
     movsFiltradas.forEach((m) => {
-      const nome = m.categoria?.nome ?? "Sem categoria";
-      const cor = m.categoria?.cor ?? "#94a3b8";
+      let nome = m.categoria?.nome ?? "Sem categoria";
+      let cor = m.categoria?.cor ?? "#94a3b8";
+      // Agrupa "Vales Diaristas" junto com "Pagamento Diaristas" nos relatórios
+      if (nome === "Vales Diaristas") nome = "Pagamento Diaristas";
       const tipo = m.tipo;
       const key = `${tipo}:${nome}`;
       const cur = map.get(key) ?? { nome, cor, tipo, total: 0 };

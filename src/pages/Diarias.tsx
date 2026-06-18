@@ -129,6 +129,9 @@ export default function Diarias() {
     descCat.includes("HORA EXTRA") ||
     descCat.includes("HORAS EXTRA")
   );
+  const isVale = descCat === "VALE" || descCat.includes("VALE");
+  const [valeParcelamento, setValeParcelamento] = useState<"extrato" | "quinzena" | "mes">("extrato");
+  const createMovimentacao = useCreateMovimentacao();
   const isDiaria = usaHorario;
   const isHoraExtra = !isPagamento && (descCat.includes("HORA EXTRA") || descCat.includes("HORAS EXTRA"));
   const isDiariaOuDobra = !isPagamento && !isHoraExtra && (

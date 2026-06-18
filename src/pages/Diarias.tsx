@@ -251,6 +251,7 @@ export default function Diarias() {
       return;
     }
     const cat = categorias.find((c) => c.id === form.categoria_id);
+    const isItemVale = (cat?.descricao || "").toUpperCase().includes("VALE");
     setQueue([
       ...queue,
       {
@@ -262,6 +263,7 @@ export default function Diarias() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
+        parcelamento: isItemVale ? valeParcelamento : undefined,
       },
     ]);
     setForm({ ...form, categoria_id: "", hora_entrada: "", hora_saida: "", valor: 0, descricao: "" });

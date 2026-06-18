@@ -398,6 +398,8 @@ export default function Diarias() {
       setQueue([]);
       setEditingId(null);
       setValeParcelamento("extrato");
+      setValeParcelado(false);
+      setValeNumParcelas(2);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }

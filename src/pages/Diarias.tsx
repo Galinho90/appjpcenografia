@@ -350,50 +350,58 @@ export default function Diarias() {
       }
       const colabNome = colaboradores.find((c) => c.id === form.colaborador_id)?.nome || "diarista";
       for (const it of items) {
-        const created = await createMutation.mutateAsync({
-          colaborador_id: form.colaborador_id,
-          categoria_id: it.categoria_id,
-          cliente_id: form.cliente_id || null,
-          data: it.data || form.data,
-          hora_entrada: it.hora_entrada || null,
-          hora_saida: it.hora_saida || null,
-          valor: it.valor,
-          descricao: it.descricao || null,
-        } as any);
-        const lancamentoId = (created as any)?.id ?? null;
-        if (it.parcelamento && contaId) {
-          const n = Math.max(1, it.parcelas || 1);
-          const isExtrato = it.parcelamento === "extrato";
-          const freqLabel = it.parcelamento === "quinzena" ? "quinzenal" : it.parcelamento === "mes" ? "mensal" : "no extrato";
-          const parcValor = Math.round((it.valor / n) * 100) / 100;
-          const baseDate = new Date(`${it.data || form.data}T00:00:00`);
-          for (let p = 0; p < n; p++) {
-            const venc = new Date(baseDate);
-            if (!isExtrato) {
-              if (it.parcelamento === "quinzena") venc.setDate(venc.getDate() + 15 * p);
-              else venc.setMonth(venc.getMonth() + p);
-            }
-            const valorParcela = p === n - 1 ? Math.round((it.valor - parcValor * (n - 1)) * 100) / 100 : parcValor;
-            const desc = n > 1
-              ? `Vale ${colabNome} (${p + 1}/${n} ${freqLabel})`
-              : `Vale ${colabNome} (${freqLabel})`;
-            await createMovimentacao.mutateAsync({
-              conta_id: contaId,
-              categoria_id: valeCatFinId,
-              tipo: "saida",
-              valor: valorParcela,
-              data_vencimento: toISO(venc),
-              status: "pendente",
-              descricao: desc,
-              observacoes: n > 1 ? `Parcela ${p + 1} de ${n} (${freqLabel})` : `Pagamento ${freqLabel}`,
-              colaborador_id: form.colaborador_id,
-              lancamento_id: lancamentoId,
-              origem: "manual",
-              recorrente: false,
-            } as any);
+        const isParcelado = it.parcelamento === "quinzena" || it.parcelamento === "mes";
+        const n = isParcelado ? Math.max(1, it.parcelas || 1) : 1;
+        const baseDate = new Date(`${(it.data || form.data)}T00:00:00`);
+        const parcValor = Math.round((it.valor / n) * 100) / 100;
+        const freqLabel = it.parcelamento === "quinzena" ? "quinzenal" : it.parcelamento === "mes" ? "mensal" : "no extrato";
+
+        // 1) Lançamentos do diarista: 1 se à vista, N parcelas se parcelado
+        let firstLancamentoId: string | null = null;
+        for (let p = 0; p < n; p++) {
+          const dt = new Date(baseDate);
+          if (isParcelado) {
+            if (it.parcelamento === "quinzena") dt.setDate(dt.getDate() + 15 * p);
+            else dt.setMonth(dt.getMonth() + p);
           }
+          const valorParcela = n > 1
+            ? (p === n - 1 ? Math.round((it.valor - parcValor * (n - 1)) * 100) / 100 : parcValor)
+            : it.valor;
+          const descParcela = n > 1
+            ? `${it.descricao ? it.descricao + " — " : ""}Parcela ${p + 1}/${n} (${freqLabel})`
+            : (it.descricao || null);
+          const created = await createMutation.mutateAsync({
+            colaborador_id: form.colaborador_id,
+            categoria_id: it.categoria_id,
+            cliente_id: form.cliente_id || null,
+            data: toISO(dt),
+            hora_entrada: it.hora_entrada || null,
+            hora_saida: it.hora_saida || null,
+            valor: valorParcela,
+            descricao: descParcela,
+          } as any);
+          if (p === 0) firstLancamentoId = (created as any)?.id ?? null;
+        }
+
+        // 2) Movimentação financeira: SEMPRE à vista (valor cheio) quando o vale gerar movimentação
+        if (it.parcelamento && contaId) {
+          await createMovimentacao.mutateAsync({
+            conta_id: contaId,
+            categoria_id: valeCatFinId,
+            tipo: "saida",
+            valor: it.valor,
+            data_vencimento: toISO(baseDate),
+            status: "pendente",
+            descricao: `Vale ${colabNome}${n > 1 ? ` (${n}× ${freqLabel} no extrato do diarista)` : ""}`,
+            observacoes: n > 1 ? `Pagamento à vista — diarista recebe em ${n} parcelas ${freqLabel}` : `Pagamento à vista`,
+            colaborador_id: form.colaborador_id,
+            lancamento_id: firstLancamentoId,
+            origem: "manual",
+            recorrente: false,
+          } as any);
         }
       }
+
       toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });
       setDialogOpen(false);
       setForm(emptyForm);

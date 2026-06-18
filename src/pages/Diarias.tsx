@@ -311,6 +311,7 @@ export default function Diarias() {
     const items = [...queue];
     if (form.categoria_id) {
       const cat = categorias.find((c) => c.id === form.categoria_id);
+      const isItemVale = (cat?.descricao || "").toUpperCase().includes("VALE");
       items.push({
         categoria_id: form.categoria_id,
         categoria_desc: cat?.descricao || "—",
@@ -320,6 +321,7 @@ export default function Diarias() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
+        parcelamento: isItemVale ? valeParcelamento : undefined,
       });
     }
     if (items.length === 0) {
@@ -327,6 +329,19 @@ export default function Diarias() {
       return;
     }
     try {
+      // Pré-carrega categoria/conta para vales (apenas se houver algum vale)
+      const hasVale = items.some((i) => i.parcelamento);
+      let valeCatFinId: string | null = null;
+      let contaId: string | null = null;
+      if (hasVale) {
+        const [{ data: catFin }, { data: conta }] = await Promise.all([
+          supabase.from("categorias_financeiras").select("id").eq("nome", "Vales Diaristas").maybeSingle(),
+          supabase.from("contas_bancarias").select("id").eq("ativo", true).order("created_at", { ascending: true }).limit(1).maybeSingle(),
+        ]);
+        valeCatFinId = catFin?.id ?? null;
+        contaId = conta?.id ?? null;
+      }
+      const colabNome = colaboradores.find((c) => c.id === form.colaborador_id)?.nome || "diarista";
       for (const it of items) {
         await createMutation.mutateAsync({
           colaborador_id: form.colaborador_id,
@@ -338,12 +353,29 @@ export default function Diarias() {
           valor: it.valor,
           descricao: it.descricao || null,
         } as any);
+        if (it.parcelamento && contaId) {
+          const parcelLabel = it.parcelamento === "extrato" ? "no extrato do diarista" : it.parcelamento === "quinzena" ? "a cada quinzena" : "a cada mês";
+          await createMovimentacao.mutateAsync({
+            conta_id: contaId,
+            categoria_id: valeCatFinId,
+            tipo: "saida",
+            valor: it.valor,
+            data_vencimento: it.data || form.data,
+            status: "pendente",
+            descricao: `Vale ${colabNome} (parcelar ${parcelLabel})`,
+            observacoes: `Parcelamento: ${parcelLabel}`,
+            colaborador_id: form.colaborador_id,
+            origem: "manual",
+            recorrente: false,
+          } as any);
+        }
       }
       toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });
       setDialogOpen(false);
       setForm(emptyForm);
       setQueue([]);
       setEditingId(null);
+      setValeParcelamento("extrato");
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }

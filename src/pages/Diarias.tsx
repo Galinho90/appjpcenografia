@@ -136,6 +136,7 @@ export default function Diarias() {
   const [valeParcelamento, setValeParcelamento] = useState<"extrato" | "quinzena" | "mes">("extrato");
   const [valeParcelado, setValeParcelado] = useState(false);
   const [valeNumParcelas, setValeNumParcelas] = useState(2);
+  const [valeLancarMov, setValeLancarMov] = useState<"sim" | "nao">("sim");
   const createMovimentacao = useCreateMovimentacao();
   const isDiaria = usaHorario;
   const isHoraExtra = !isPagamento && (descCat.includes("HORA EXTRA") || descCat.includes("HORAS EXTRA"));

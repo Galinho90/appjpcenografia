@@ -535,23 +535,53 @@ export default function Diarias() {
               )}
             </div>
             {isVale && !editingId && (
-              <div className="space-y-2 rounded-md border border-warning/30 bg-warning/5 p-3">
-                <Label className="text-sm font-medium">Parcelamento do vale</Label>
-                <p className="text-xs text-muted-foreground">O valor total será enviado para Movimentações Financeiras.</p>
-                <RadioGroup value={valeParcelamento} onValueChange={(v) => setValeParcelamento(v as any)} className="gap-2">
+              <div className="space-y-3 rounded-md border border-warning/30 bg-warning/5 p-3">
+                <Label className="text-sm font-medium">Pagamento do vale</Label>
+                <p className="text-xs text-muted-foreground">O valor será enviado para Movimentações Financeiras.</p>
+                <RadioGroup
+                  value={valeParcelado ? "parcelado" : "avista"}
+                  onValueChange={(v) => setValeParcelado(v === "parcelado")}
+                  className="gap-2"
+                >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="extrato" id="vale-extrato" />
-                    <Label htmlFor="vale-extrato" className="font-normal cursor-pointer">Parcelar no extrato do diarista</Label>
+                    <RadioGroupItem value="avista" id="vale-avista" />
+                    <Label htmlFor="vale-avista" className="font-normal cursor-pointer">Descontar no extrato do diarista (sem parcelar)</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="quinzena" id="vale-quinzena" />
-                    <Label htmlFor="vale-quinzena" className="font-normal cursor-pointer">Parcelar a cada quinzena</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="mes" id="vale-mes" />
-                    <Label htmlFor="vale-mes" className="font-normal cursor-pointer">Parcelar a cada mês</Label>
+                    <RadioGroupItem value="parcelado" id="vale-parcelado" />
+                    <Label htmlFor="vale-parcelado" className="font-normal cursor-pointer">Parcelar pagamento</Label>
                   </div>
                 </RadioGroup>
+
+                {valeParcelado && (
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-warning/20">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Nº de parcelas</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={36}
+                        value={valeNumParcelas}
+                        onChange={(e) => setValeNumParcelas(Math.max(1, Number(e.target.value) || 1))}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Frequência</Label>
+                      <Select value={valeParcelamento === "extrato" ? "quinzena" : valeParcelamento} onValueChange={(v) => setValeParcelamento(v as any)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="quinzena">Quinzenal</SelectItem>
+                          <SelectItem value="mes">Mensal</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {Number(form.valor) > 0 && (
+                      <p className="col-span-2 text-xs text-muted-foreground">
+                        {valeNumParcelas}× de R$ {(Number(form.valor) / Math.max(1, valeNumParcelas)).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({valeParcelamento === "mes" ? "mensal" : "quinzenal"})
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
             <div className="space-y-2">

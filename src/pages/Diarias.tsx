@@ -326,7 +326,8 @@ export default function Diarias() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
-        parcelamento: isItemVale ? valeParcelamento : undefined,
+        parcelamento: isItemVale ? (valeParcelado ? valeParcelamento : "extrato") : undefined,
+        parcelas: isItemVale && valeParcelado ? Math.max(1, valeNumParcelas) : 1,
       });
     }
     if (items.length === 0) {

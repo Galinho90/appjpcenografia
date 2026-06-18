@@ -510,6 +510,26 @@ export default function Diarias() {
                 </p>
               )}
             </div>
+            {isVale && !editingId && (
+              <div className="space-y-2 rounded-md border border-warning/30 bg-warning/5 p-3">
+                <Label className="text-sm font-medium">Parcelamento do vale</Label>
+                <p className="text-xs text-muted-foreground">O valor total será enviado para Movimentações Financeiras.</p>
+                <RadioGroup value={valeParcelamento} onValueChange={(v) => setValeParcelamento(v as any)} className="gap-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="extrato" id="vale-extrato" />
+                    <Label htmlFor="vale-extrato" className="font-normal cursor-pointer">Parcelar no extrato do diarista</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="quinzena" id="vale-quinzena" />
+                    <Label htmlFor="vale-quinzena" className="font-normal cursor-pointer">Parcelar a cada quinzena</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="mes" id="vale-mes" />
+                    <Label htmlFor="vale-mes" className="font-normal cursor-pointer">Parcelar a cada mês</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Cliente</Label>
               <Select value={form.cliente_id || "none"} onValueChange={(v) => setForm({ ...form, cliente_id: v === "none" ? "" : v })}>

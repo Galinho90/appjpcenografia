@@ -539,49 +539,69 @@ export default function Diarias() {
             </div>
             {isVale && !editingId && (
               <div className="space-y-3 rounded-md border border-warning/30 bg-warning/5 p-3">
-                <Label className="text-sm font-medium">Pagamento do vale</Label>
-                <p className="text-xs text-muted-foreground">O valor será enviado para Movimentações Financeiras.</p>
+                <Label className="text-sm font-medium">Lançar nas Movimentações Financeiras?</Label>
+                <p className="text-xs text-muted-foreground">Deseja registrar este vale também como saída no financeiro?</p>
                 <RadioGroup
-                  value={valeParcelado ? "parcelado" : "avista"}
-                  onValueChange={(v) => setValeParcelado(v === "parcelado")}
+                  value={valeLancarMov}
+                  onValueChange={(v) => setValeLancarMov(v as "sim" | "nao")}
                   className="gap-2"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="avista" id="vale-avista" />
-                    <Label htmlFor="vale-avista" className="font-normal cursor-pointer">Descontar no extrato do diarista (sem parcelar)</Label>
+                    <RadioGroupItem value="sim" id="vale-mov-sim" />
+                    <Label htmlFor="vale-mov-sim" className="font-normal cursor-pointer">Sim, lançar nas movimentações</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="parcelado" id="vale-parcelado" />
-                    <Label htmlFor="vale-parcelado" className="font-normal cursor-pointer">Parcelar pagamento</Label>
+                    <RadioGroupItem value="nao" id="vale-mov-nao" />
+                    <Label htmlFor="vale-mov-nao" className="font-normal cursor-pointer">Não, apenas registrar o vale</Label>
                   </div>
                 </RadioGroup>
 
-                {valeParcelado && (
-                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-warning/20">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Nº de parcelas</Label>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={36}
-                        value={valeNumParcelas}
-                        onChange={(e) => setValeNumParcelas(Math.max(1, Number(e.target.value) || 1))}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Frequência</Label>
-                      <Select value={valeParcelamento === "extrato" ? "quinzena" : valeParcelamento} onValueChange={(v) => setValeParcelamento(v as any)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="quinzena">Quinzenal</SelectItem>
-                          <SelectItem value="mes">Mensal</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {Number(form.valor) > 0 && (
-                      <p className="col-span-2 text-xs text-muted-foreground">
-                        {valeNumParcelas}× de R$ {(Number(form.valor) / Math.max(1, valeNumParcelas)).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({valeParcelamento === "mes" ? "mensal" : "quinzenal"})
-                      </p>
+                {valeLancarMov === "sim" && (
+                  <div className="space-y-3 pt-3 border-t border-warning/20">
+                    <Label className="text-sm font-medium">Pagamento do vale</Label>
+                    <RadioGroup
+                      value={valeParcelado ? "parcelado" : "avista"}
+                      onValueChange={(v) => setValeParcelado(v === "parcelado")}
+                      className="gap-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="avista" id="vale-avista" />
+                        <Label htmlFor="vale-avista" className="font-normal cursor-pointer">Descontar no extrato do diarista (sem parcelar)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="parcelado" id="vale-parcelado" />
+                        <Label htmlFor="vale-parcelado" className="font-normal cursor-pointer">Parcelar pagamento</Label>
+                      </div>
+                    </RadioGroup>
+
+                    {valeParcelado && (
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-warning/20">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Nº de parcelas</Label>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={36}
+                            value={valeNumParcelas}
+                            onChange={(e) => setValeNumParcelas(Math.max(1, Number(e.target.value) || 1))}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Frequência</Label>
+                          <Select value={valeParcelamento === "extrato" ? "quinzena" : valeParcelamento} onValueChange={(v) => setValeParcelamento(v as any)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="quinzena">Quinzenal</SelectItem>
+                              <SelectItem value="mes">Mensal</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {Number(form.valor) > 0 && (
+                          <p className="col-span-2 text-xs text-muted-foreground">
+                            {valeNumParcelas}× de R$ {(Number(form.valor) / Math.max(1, valeNumParcelas)).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({valeParcelamento === "mes" ? "mensal" : "quinzenal"})
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}

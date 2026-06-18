@@ -22,6 +22,9 @@ import {
   useUpdateLancamento,
   useDeleteLancamento,
 } from "@/hooks/useSupabaseData";
+import { useCreateMovimentacao } from "@/hooks/useFinanceiro";
+import { supabase } from "@/integrations/supabase/client";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { cn, formatDateBR } from "@/lib/utils";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -109,6 +112,7 @@ export default function Diarias() {
     hora_saida: string;
     valor: number;
     descricao: string;
+    parcelamento?: "extrato" | "quinzena" | "mes";
   };
   const [queue, setQueue] = useState<QueueItem[]>([]);
 
@@ -126,6 +130,9 @@ export default function Diarias() {
     descCat.includes("HORA EXTRA") ||
     descCat.includes("HORAS EXTRA")
   );
+  const isVale = descCat === "VALE" || descCat.includes("VALE");
+  const [valeParcelamento, setValeParcelamento] = useState<"extrato" | "quinzena" | "mes">("extrato");
+  const createMovimentacao = useCreateMovimentacao();
   const isDiaria = usaHorario;
   const isHoraExtra = !isPagamento && (descCat.includes("HORA EXTRA") || descCat.includes("HORAS EXTRA"));
   const isDiariaOuDobra = !isPagamento && !isHoraExtra && (
@@ -244,6 +251,7 @@ export default function Diarias() {
       return;
     }
     const cat = categorias.find((c) => c.id === form.categoria_id);
+    const isItemVale = (cat?.descricao || "").toUpperCase().includes("VALE");
     setQueue([
       ...queue,
       {
@@ -255,6 +263,7 @@ export default function Diarias() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
+        parcelamento: isItemVale ? valeParcelamento : undefined,
       },
     ]);
     setForm({ ...form, categoria_id: "", hora_entrada: "", hora_saida: "", valor: 0, descricao: "" });
@@ -302,6 +311,7 @@ export default function Diarias() {
     const items = [...queue];
     if (form.categoria_id) {
       const cat = categorias.find((c) => c.id === form.categoria_id);
+      const isItemVale = (cat?.descricao || "").toUpperCase().includes("VALE");
       items.push({
         categoria_id: form.categoria_id,
         categoria_desc: cat?.descricao || "—",
@@ -311,6 +321,7 @@ export default function Diarias() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
+        parcelamento: isItemVale ? valeParcelamento : undefined,
       });
     }
     if (items.length === 0) {
@@ -318,6 +329,19 @@ export default function Diarias() {
       return;
     }
     try {
+      // Pré-carrega categoria/conta para vales (apenas se houver algum vale)
+      const hasVale = items.some((i) => i.parcelamento);
+      let valeCatFinId: string | null = null;
+      let contaId: string | null = null;
+      if (hasVale) {
+        const [{ data: catFin }, { data: conta }] = await Promise.all([
+          supabase.from("categorias_financeiras" as any).select("id").eq("nome", "Vales Diaristas").maybeSingle(),
+          supabase.from("contas_bancarias" as any).select("id").eq("ativo", true).order("created_at", { ascending: true }).limit(1).maybeSingle(),
+        ]);
+        valeCatFinId = (catFin as any)?.id ?? null;
+        contaId = (conta as any)?.id ?? null;
+      }
+      const colabNome = colaboradores.find((c) => c.id === form.colaborador_id)?.nome || "diarista";
       for (const it of items) {
         await createMutation.mutateAsync({
           colaborador_id: form.colaborador_id,
@@ -329,12 +353,29 @@ export default function Diarias() {
           valor: it.valor,
           descricao: it.descricao || null,
         } as any);
+        if (it.parcelamento && contaId) {
+          const parcelLabel = it.parcelamento === "extrato" ? "no extrato do diarista" : it.parcelamento === "quinzena" ? "a cada quinzena" : "a cada mês";
+          await createMovimentacao.mutateAsync({
+            conta_id: contaId,
+            categoria_id: valeCatFinId,
+            tipo: "saida",
+            valor: it.valor,
+            data_vencimento: it.data || form.data,
+            status: "pendente",
+            descricao: `Vale ${colabNome} (parcelar ${parcelLabel})`,
+            observacoes: `Parcelamento: ${parcelLabel}`,
+            colaborador_id: form.colaborador_id,
+            origem: "manual",
+            recorrente: false,
+          } as any);
+        }
       }
       toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });
       setDialogOpen(false);
       setForm(emptyForm);
       setQueue([]);
       setEditingId(null);
+      setValeParcelamento("extrato");
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
@@ -469,6 +510,26 @@ export default function Diarias() {
                 </p>
               )}
             </div>
+            {isVale && !editingId && (
+              <div className="space-y-2 rounded-md border border-warning/30 bg-warning/5 p-3">
+                <Label className="text-sm font-medium">Parcelamento do vale</Label>
+                <p className="text-xs text-muted-foreground">O valor total será enviado para Movimentações Financeiras.</p>
+                <RadioGroup value={valeParcelamento} onValueChange={(v) => setValeParcelamento(v as any)} className="gap-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="extrato" id="vale-extrato" />
+                    <Label htmlFor="vale-extrato" className="font-normal cursor-pointer">Parcelar no extrato do diarista</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="quinzena" id="vale-quinzena" />
+                    <Label htmlFor="vale-quinzena" className="font-normal cursor-pointer">Parcelar a cada quinzena</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="mes" id="vale-mes" />
+                    <Label htmlFor="vale-mes" className="font-normal cursor-pointer">Parcelar a cada mês</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Cliente</Label>
               <Select value={form.cliente_id || "none"} onValueChange={(v) => setForm({ ...form, cliente_id: v === "none" ? "" : v })}>

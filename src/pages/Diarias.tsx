@@ -335,8 +335,8 @@ export default function Diarias() {
       let contaId: string | null = null;
       if (hasVale) {
         const [{ data: catFin }, { data: conta }] = await Promise.all([
-          supabase.from("categorias_financeiras").select("id").eq("nome", "Vales Diaristas").maybeSingle(),
-          supabase.from("contas_bancarias").select("id").eq("ativo", true).order("created_at", { ascending: true }).limit(1).maybeSingle(),
+          supabase.from("categorias_financeiras" as any).select("id").eq("nome", "Vales Diaristas").maybeSingle(),
+          supabase.from("contas_bancarias" as any).select("id").eq("ativo", true).order("created_at", { ascending: true }).limit(1).maybeSingle(),
         ]);
         valeCatFinId = catFin?.id ?? null;
         contaId = conta?.id ?? null;

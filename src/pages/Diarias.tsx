@@ -113,6 +113,8 @@ export default function Diarias() {
     valor: number;
     descricao: string;
     parcelamento?: "extrato" | "quinzena" | "mes";
+    parcelas?: number;
+  
   };
   const [queue, setQueue] = useState<QueueItem[]>([]);
 
@@ -132,6 +134,8 @@ export default function Diarias() {
   );
   const isVale = descCat === "VALE" || descCat.includes("VALE");
   const [valeParcelamento, setValeParcelamento] = useState<"extrato" | "quinzena" | "mes">("extrato");
+  const [valeParcelado, setValeParcelado] = useState(false);
+  const [valeNumParcelas, setValeNumParcelas] = useState(2);
   const createMovimentacao = useCreateMovimentacao();
   const isDiaria = usaHorario;
   const isHoraExtra = !isPagamento && (descCat.includes("HORA EXTRA") || descCat.includes("HORAS EXTRA"));
@@ -263,7 +267,8 @@ export default function Diarias() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
-        parcelamento: isItemVale ? valeParcelamento : undefined,
+        parcelamento: isItemVale ? (valeParcelado ? valeParcelamento : "extrato") : undefined,
+        parcelas: isItemVale && valeParcelado ? Math.max(1, valeNumParcelas) : 1,
       },
     ]);
     setForm({ ...form, categoria_id: "", hora_entrada: "", hora_saida: "", valor: 0, descricao: "" });
@@ -321,7 +326,8 @@ export default function Diarias() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
-        parcelamento: isItemVale ? valeParcelamento : undefined,
+        parcelamento: isItemVale ? (valeParcelado ? valeParcelamento : "extrato") : undefined,
+        parcelas: isItemVale && valeParcelado ? Math.max(1, valeNumParcelas) : 1,
       });
     }
     if (items.length === 0) {
@@ -354,20 +360,36 @@ export default function Diarias() {
           descricao: it.descricao || null,
         } as any);
         if (it.parcelamento && contaId) {
-          const parcelLabel = it.parcelamento === "extrato" ? "no extrato do diarista" : it.parcelamento === "quinzena" ? "a cada quinzena" : "a cada mês";
-          await createMovimentacao.mutateAsync({
-            conta_id: contaId,
-            categoria_id: valeCatFinId,
-            tipo: "saida",
-            valor: it.valor,
-            data_vencimento: it.data || form.data,
-            status: "pendente",
-            descricao: `Vale ${colabNome} (parcelar ${parcelLabel})`,
-            observacoes: `Parcelamento: ${parcelLabel}`,
-            colaborador_id: form.colaborador_id,
-            origem: "manual",
-            recorrente: false,
-          } as any);
+          const n = Math.max(1, it.parcelas || 1);
+          const isExtrato = it.parcelamento === "extrato";
+          const freqLabel = it.parcelamento === "quinzena" ? "quinzenal" : it.parcelamento === "mes" ? "mensal" : "no extrato";
+          const parcValor = Math.round((it.valor / n) * 100) / 100;
+          const baseDate = new Date(`${it.data || form.data}T00:00:00`);
+          for (let p = 0; p < n; p++) {
+            const venc = new Date(baseDate);
+            if (!isExtrato) {
+              if (it.parcelamento === "quinzena") venc.setDate(venc.getDate() + 15 * p);
+              else venc.setMonth(venc.getMonth() + p);
+            }
+            // Ajuste último valor para fechar centavos
+            const valorParcela = p === n - 1 ? Math.round((it.valor - parcValor * (n - 1)) * 100) / 100 : parcValor;
+            const desc = n > 1
+              ? `Vale ${colabNome} (${p + 1}/${n} ${freqLabel})`
+              : `Vale ${colabNome} (${freqLabel})`;
+            await createMovimentacao.mutateAsync({
+              conta_id: contaId,
+              categoria_id: valeCatFinId,
+              tipo: "saida",
+              valor: valorParcela,
+              data_vencimento: toISO(venc),
+              status: "pendente",
+              descricao: desc,
+              observacoes: n > 1 ? `Parcela ${p + 1} de ${n} (${freqLabel})` : `Pagamento ${freqLabel}`,
+              colaborador_id: form.colaborador_id,
+              origem: "manual",
+              recorrente: false,
+            } as any);
+          }
         }
       }
       toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });
@@ -376,6 +398,8 @@ export default function Diarias() {
       setQueue([]);
       setEditingId(null);
       setValeParcelamento("extrato");
+      setValeParcelado(false);
+      setValeNumParcelas(2);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
@@ -511,23 +535,53 @@ export default function Diarias() {
               )}
             </div>
             {isVale && !editingId && (
-              <div className="space-y-2 rounded-md border border-warning/30 bg-warning/5 p-3">
-                <Label className="text-sm font-medium">Parcelamento do vale</Label>
-                <p className="text-xs text-muted-foreground">O valor total será enviado para Movimentações Financeiras.</p>
-                <RadioGroup value={valeParcelamento} onValueChange={(v) => setValeParcelamento(v as any)} className="gap-2">
+              <div className="space-y-3 rounded-md border border-warning/30 bg-warning/5 p-3">
+                <Label className="text-sm font-medium">Pagamento do vale</Label>
+                <p className="text-xs text-muted-foreground">O valor será enviado para Movimentações Financeiras.</p>
+                <RadioGroup
+                  value={valeParcelado ? "parcelado" : "avista"}
+                  onValueChange={(v) => setValeParcelado(v === "parcelado")}
+                  className="gap-2"
+                >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="extrato" id="vale-extrato" />
-                    <Label htmlFor="vale-extrato" className="font-normal cursor-pointer">Parcelar no extrato do diarista</Label>
+                    <RadioGroupItem value="avista" id="vale-avista" />
+                    <Label htmlFor="vale-avista" className="font-normal cursor-pointer">Descontar no extrato do diarista (sem parcelar)</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="quinzena" id="vale-quinzena" />
-                    <Label htmlFor="vale-quinzena" className="font-normal cursor-pointer">Parcelar a cada quinzena</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="mes" id="vale-mes" />
-                    <Label htmlFor="vale-mes" className="font-normal cursor-pointer">Parcelar a cada mês</Label>
+                    <RadioGroupItem value="parcelado" id="vale-parcelado" />
+                    <Label htmlFor="vale-parcelado" className="font-normal cursor-pointer">Parcelar pagamento</Label>
                   </div>
                 </RadioGroup>
+
+                {valeParcelado && (
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-warning/20">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Nº de parcelas</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={36}
+                        value={valeNumParcelas}
+                        onChange={(e) => setValeNumParcelas(Math.max(1, Number(e.target.value) || 1))}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Frequência</Label>
+                      <Select value={valeParcelamento === "extrato" ? "quinzena" : valeParcelamento} onValueChange={(v) => setValeParcelamento(v as any)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="quinzena">Quinzenal</SelectItem>
+                          <SelectItem value="mes">Mensal</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {Number(form.valor) > 0 && (
+                      <p className="col-span-2 text-xs text-muted-foreground">
+                        {valeNumParcelas}× de R$ {(Number(form.valor) / Math.max(1, valeNumParcelas)).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({valeParcelamento === "mes" ? "mensal" : "quinzenal"})
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
             <div className="space-y-2">

@@ -113,6 +113,8 @@ export default function Diarias() {
     valor: number;
     descricao: string;
     parcelamento?: "extrato" | "quinzena" | "mes";
+    parcelas?: number;
+  
   };
   const [queue, setQueue] = useState<QueueItem[]>([]);
 

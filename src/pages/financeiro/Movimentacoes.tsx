@@ -1,5 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
-import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot } from "lucide-react";
+import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot, GripVertical } from "lucide-react";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +44,8 @@ const emptyForm = {
 export default function Movimentacoes() {
   const { toast } = useToast();
   const { isAdmin } = usePermissions();
+  const qc = useQueryClient();
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const [filters, setFilters] = useState({
     tipo: "all" as TipoMovimentacao | "all",
     status: "all" as StatusMovimentacao | "all",
@@ -162,6 +169,49 @@ export default function Movimentacoes() {
   const categoriasFiltradas = categorias.filter((c) =>
     form.tipo === "entrada" ? c.tipo === "receita" : c.tipo === "despesa"
   );
+
+  const handleDragEnd = async (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const oldIndex = pagedMovs.findIndex((m) => m.id === active.id);
+    const newIndex = pagedMovs.findIndex((m) => m.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = arrayMove(pagedMovs, oldIndex, newIndex);
+    const baseOrder = (currentPage - 1) * pageSize + 1;
+    const updates = reordered.map((m, i) => ({ id: m.id, ordem_manual: baseOrder + i }));
+    const orderMap = new Map(updates.map((u) => [u.id, u.ordem_manual]));
+
+    // Optimistic cache update
+    qc.setQueryData(["movimentacoes_financeiras", filters], (prev: any) => {
+      if (!Array.isArray(prev)) return prev;
+      const next = prev.map((m: any) =>
+        orderMap.has(m.id) ? { ...m, ordem_manual: orderMap.get(m.id) } : m
+      );
+      return [...next].sort((a: any, b: any) => {
+        const oA = a.ordem_manual, oB = b.ordem_manual;
+        if (oA != null && oB != null && oA !== oB) return oA - oB;
+        if (oA != null && oB == null) return -1;
+        if (oA == null && oB != null) return 1;
+        const dA = (a.status === "pago" ? a.data_pagamento : a.data_vencimento) ?? "";
+        const dB = (b.status === "pago" ? b.data_pagamento : b.data_vencimento) ?? "";
+        if (dA !== dB) return dB.localeCompare(dA);
+        return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+      });
+    });
+
+    try {
+      await Promise.all(
+        updates.map((u) =>
+          supabase.from("movimentacoes_financeiras" as any)
+            .update({ ordem_manual: u.ordem_manual } as any)
+            .eq("id", u.id)
+        )
+      );
+    } catch (err: any) {
+      toast({ title: "Erro ao reordenar", description: err.message, variant: "destructive" });
+    }
+    qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
+  };
 
   const tipoIcon = (t: TipoMovimentacao) =>
     t === "entrada" ? <ArrowDownCircle className="h-4 w-4 text-success" /> :
@@ -340,83 +390,41 @@ export default function Movimentacoes() {
 
               {/* Desktop: table */}
               <div className="hidden md:block overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead>Categoria</TableHead>
-                      <TableHead>Conta</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Valor</TableHead>
-                      {isAdmin && <TableHead className="text-right">Ações</TableHead>}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pagedMovs.map((m) => (
-                      <TableRow key={m.id}>
-                        <TableCell>{tipoIcon(m.tipo)}</TableCell>
-                        <TableCell>
-                          <div className="font-medium">{m.descricao}</div>
-                          {m.fornecedor && (
-                            <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
-                          )}
-                          {m.cliente && (
-                            <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
-                          )}
-                          <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
-                        </TableCell>
-                        <TableCell>
-                          {m.categoria ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs">
-                              <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
-                              {m.categoria.nome}
-                            </span>
-                          ) : "—"}
-                        </TableCell>
-                        <TableCell className="text-xs">{m.conta?.apelido ?? "—"}</TableCell>
-                        <TableCell className="text-xs">
-                          {m.status === "pago" && m.data_pagamento ? (
-                            <span title="Pago em">{fmtDate(m.data_pagamento)}</span>
-                          ) : (
-                            <span title="Vencimento">{fmtDate(m.data_vencimento)}</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent hover:opacity-90`}>
-                            {statusLabel[m.status]}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className={`text-right font-semibold ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
-                          {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
-                        </TableCell>
-                        {isAdmin && (
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              {m.status !== "pago" && (
-                                <Button variant="ghost" size="sm" onClick={() => marcarPago(m)} className="text-success">
-                                  Pagar
-                                </Button>
-                              )}
-                              {m.origem !== "fechamento" && (
-                                <>
-                                  <Button variant="ghost" size="icon" onClick={() => openEdit(m)}>
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => setDeleteId(m.id)}>
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </TableCell>
-                        )}
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        {isAdmin && <TableHead className="w-8"></TableHead>}
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Descrição</TableHead>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead>Conta</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Valor</TableHead>
+                        {isAdmin && <TableHead className="text-right">Ações</TableHead>}
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <SortableContext items={pagedMovs.map((m) => m.id)} strategy={verticalListSortingStrategy}>
+                      <TableBody>
+                        {pagedMovs.map((m) => (
+                          <SortableMovRow
+                            key={m.id}
+                            m={m}
+                            isAdmin={isAdmin}
+                            tipoIcon={tipoIcon}
+                            origemBadge={origemBadge}
+                            onEdit={openEdit}
+                            onDelete={setDeleteId}
+                            onPagar={marcarPago}
+                          />
+                        ))}
+                      </TableBody>
+                    </SortableContext>
+                  </Table>
+                </DndContext>
               </div>
+
 
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
                 <div className="text-xs text-muted-foreground">
@@ -621,5 +629,98 @@ export default function Movimentacoes() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+function SortableMovRow({
+  m, isAdmin, tipoIcon, origemBadge, onEdit, onDelete, onPagar,
+}: {
+  m: MovimentacaoFinanceira;
+  isAdmin: boolean;
+  tipoIcon: (t: TipoMovimentacao) => JSX.Element;
+  origemBadge: (o: string) => JSX.Element | null;
+  onEdit: (m: MovimentacaoFinanceira) => void;
+  onDelete: (id: string) => void;
+  onPagar: (m: MovimentacaoFinanceira) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: m.id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    background: isDragging ? "hsl(var(--muted))" : undefined,
+  };
+  return (
+    <TableRow ref={setNodeRef} style={style}>
+      {isAdmin && (
+        <TableCell className="w-8 p-1">
+          <button
+            type="button"
+            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1"
+            aria-label="Arrastar para reordenar"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        </TableCell>
+      )}
+      <TableCell>{tipoIcon(m.tipo)}</TableCell>
+      <TableCell>
+        <div className="font-medium">{m.descricao}</div>
+        {m.fornecedor && (
+          <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
+        )}
+        {m.cliente && (
+          <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
+        )}
+        <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
+      </TableCell>
+      <TableCell>
+        {m.categoria ? (
+          <span className="inline-flex items-center gap-1.5 text-xs">
+            <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
+            {m.categoria.nome}
+          </span>
+        ) : "—"}
+      </TableCell>
+      <TableCell className="text-xs">{m.conta?.apelido ?? "—"}</TableCell>
+      <TableCell className="text-xs">
+        {m.status === "pago" && m.data_pagamento ? (
+          <span title="Pago em">{fmtDate(m.data_pagamento)}</span>
+        ) : (
+          <span title="Vencimento">{fmtDate(m.data_vencimento)}</span>
+        )}
+      </TableCell>
+      <TableCell>
+        <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent hover:opacity-90`}>
+          {statusLabel[m.status]}
+        </Badge>
+      </TableCell>
+      <TableCell className={`text-right font-semibold ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
+        {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
+      </TableCell>
+      {isAdmin && (
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-1">
+            {m.status !== "pago" && (
+              <Button variant="ghost" size="sm" onClick={() => onPagar(m)} className="text-success">
+                Pagar
+              </Button>
+            )}
+            {m.origem !== "fechamento" && (
+              <>
+                <Button variant="ghost" size="icon" onClick={() => onEdit(m)}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => onDelete(m.id)}>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </>
+            )}
+          </div>
+        </TableCell>
+      )}
+    </TableRow>
   );
 }

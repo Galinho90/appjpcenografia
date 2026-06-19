@@ -207,11 +207,16 @@ export function useMovimentacoes(filters: MovFilters = {}) {
       if (error) throw error;
       const mapped = ((data ?? []) as any[]).map((m) => ({ ...m, valor: Number(m.valor) })) as MovimentacaoFinanceira[];
 
-      // Ordena pela data efetiva do lançamento (data_pagamento quando pago, senão data_vencimento)
-      mapped.sort((a, b) => {
+      // Ordena: ordem_manual (asc, NULLS LAST) → data efetiva desc → created_at desc
+      mapped.sort((a: any, b: any) => {
+        const oA = a.ordem_manual;
+        const oB = b.ordem_manual;
+        if (oA != null && oB != null && oA !== oB) return oA - oB;
+        if (oA != null && oB == null) return -1;
+        if (oA == null && oB != null) return 1;
         const dataA = (a.status === "pago" ? a.data_pagamento : a.data_vencimento) ?? "";
         const dataB = (b.status === "pago" ? b.data_pagamento : b.data_vencimento) ?? "";
-        if (dataA !== dataB) return dataB.localeCompare(dataA); // descendente
+        if (dataA !== dataB) return dataB.localeCompare(dataA);
         return b.created_at.localeCompare(a.created_at);
       });
 

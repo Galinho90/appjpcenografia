@@ -704,6 +704,7 @@ export type Database = {
           id_externo: string | null
           lancamento_id: string | null
           observacoes: string | null
+          ordem_manual: number | null
           origem: Database["public"]["Enums"]["origem_movimentacao"]
           recorrencia_config: Json | null
           recorrente: boolean
@@ -730,6 +731,7 @@ export type Database = {
           id_externo?: string | null
           lancamento_id?: string | null
           observacoes?: string | null
+          ordem_manual?: number | null
           origem?: Database["public"]["Enums"]["origem_movimentacao"]
           recorrencia_config?: Json | null
           recorrente?: boolean
@@ -756,6 +758,7 @@ export type Database = {
           id_externo?: string | null
           lancamento_id?: string | null
           observacoes?: string | null
+          ordem_manual?: number | null
           origem?: Database["public"]["Enums"]["origem_movimentacao"]
           recorrencia_config?: Json | null
           recorrente?: boolean

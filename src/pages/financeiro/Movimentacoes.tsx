@@ -1,5 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
-import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot } from "lucide-react";
+import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot, GripVertical } from "lucide-react";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

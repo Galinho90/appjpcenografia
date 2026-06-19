@@ -631,3 +631,96 @@ export default function Movimentacoes() {
     </div>
   );
 }
+
+function SortableMovRow({
+  m, isAdmin, tipoIcon, origemBadge, onEdit, onDelete, onPagar,
+}: {
+  m: MovimentacaoFinanceira;
+  isAdmin: boolean;
+  tipoIcon: (t: TipoMovimentacao) => JSX.Element;
+  origemBadge: (o: string) => JSX.Element | null;
+  onEdit: (m: MovimentacaoFinanceira) => void;
+  onDelete: (id: string) => void;
+  onPagar: (m: MovimentacaoFinanceira) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: m.id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    background: isDragging ? "hsl(var(--muted))" : undefined,
+  };
+  return (
+    <TableRow ref={setNodeRef} style={style}>
+      {isAdmin && (
+        <TableCell className="w-8 p-1">
+          <button
+            type="button"
+            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1"
+            aria-label="Arrastar para reordenar"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        </TableCell>
+      )}
+      <TableCell>{tipoIcon(m.tipo)}</TableCell>
+      <TableCell>
+        <div className="font-medium">{m.descricao}</div>
+        {m.fornecedor && (
+          <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
+        )}
+        {m.cliente && (
+          <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
+        )}
+        <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
+      </TableCell>
+      <TableCell>
+        {m.categoria ? (
+          <span className="inline-flex items-center gap-1.5 text-xs">
+            <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
+            {m.categoria.nome}
+          </span>
+        ) : "—"}
+      </TableCell>
+      <TableCell className="text-xs">{m.conta?.apelido ?? "—"}</TableCell>
+      <TableCell className="text-xs">
+        {m.status === "pago" && m.data_pagamento ? (
+          <span title="Pago em">{fmtDate(m.data_pagamento)}</span>
+        ) : (
+          <span title="Vencimento">{fmtDate(m.data_vencimento)}</span>
+        )}
+      </TableCell>
+      <TableCell>
+        <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent hover:opacity-90`}>
+          {statusLabel[m.status]}
+        </Badge>
+      </TableCell>
+      <TableCell className={`text-right font-semibold ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
+        {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
+      </TableCell>
+      {isAdmin && (
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-1">
+            {m.status !== "pago" && (
+              <Button variant="ghost" size="sm" onClick={() => onPagar(m)} className="text-success">
+                Pagar
+              </Button>
+            )}
+            {m.origem !== "fechamento" && (
+              <>
+                <Button variant="ghost" size="icon" onClick={() => onEdit(m)}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => onDelete(m.id)}>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </>
+            )}
+          </div>
+        </TableCell>
+      )}
+    </TableRow>
+  );
+}

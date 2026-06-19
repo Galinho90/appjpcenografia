@@ -170,6 +170,49 @@ export default function Movimentacoes() {
     form.tipo === "entrada" ? c.tipo === "receita" : c.tipo === "despesa"
   );
 
+  const handleDragEnd = async (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const oldIndex = pagedMovs.findIndex((m) => m.id === active.id);
+    const newIndex = pagedMovs.findIndex((m) => m.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = arrayMove(pagedMovs, oldIndex, newIndex);
+    const baseOrder = (currentPage - 1) * pageSize + 1;
+    const updates = reordered.map((m, i) => ({ id: m.id, ordem_manual: baseOrder + i }));
+    const orderMap = new Map(updates.map((u) => [u.id, u.ordem_manual]));
+
+    // Optimistic cache update
+    qc.setQueryData(["movimentacoes_financeiras", filters], (prev: any) => {
+      if (!Array.isArray(prev)) return prev;
+      const next = prev.map((m: any) =>
+        orderMap.has(m.id) ? { ...m, ordem_manual: orderMap.get(m.id) } : m
+      );
+      return [...next].sort((a: any, b: any) => {
+        const oA = a.ordem_manual, oB = b.ordem_manual;
+        if (oA != null && oB != null && oA !== oB) return oA - oB;
+        if (oA != null && oB == null) return -1;
+        if (oA == null && oB != null) return 1;
+        const dA = (a.status === "pago" ? a.data_pagamento : a.data_vencimento) ?? "";
+        const dB = (b.status === "pago" ? b.data_pagamento : b.data_vencimento) ?? "";
+        if (dA !== dB) return dB.localeCompare(dA);
+        return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+      });
+    });
+
+    try {
+      await Promise.all(
+        updates.map((u) =>
+          supabase.from("movimentacoes_financeiras" as any)
+            .update({ ordem_manual: u.ordem_manual } as any)
+            .eq("id", u.id)
+        )
+      );
+    } catch (err: any) {
+      toast({ title: "Erro ao reordenar", description: err.message, variant: "destructive" });
+    }
+    qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
+  };
+
   const tipoIcon = (t: TipoMovimentacao) =>
     t === "entrada" ? <ArrowDownCircle className="h-4 w-4 text-success" /> :
     t === "saida" ? <ArrowUpCircle className="h-4 w-4 text-destructive" /> :

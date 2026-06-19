@@ -44,6 +44,8 @@ const emptyForm = {
 export default function Movimentacoes() {
   const { toast } = useToast();
   const { isAdmin } = usePermissions();
+  const qc = useQueryClient();
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const [filters, setFilters] = useState({
     tipo: "all" as TipoMovimentacao | "all",
     status: "all" as StatusMovimentacao | "all",

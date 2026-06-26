@@ -178,11 +178,14 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                 .eq("id", r.movId);
               if (error) throw error;
             } else if (r.action === "criar") {
+              if (!r.categoriaId) {
+                throw new Error("Categoria não selecionada");
+              }
               const { error } = await supabase
                 .from("movimentacoes_financeiras" as any)
                 .insert({
                   conta_id: contaId,
-                  categoria_id: null,
+                  categoria_id: r.categoriaId,
                   tipo: r.tx.tipo,
                   valor: r.tx.valor,
                   data_vencimento: r.tx.data,

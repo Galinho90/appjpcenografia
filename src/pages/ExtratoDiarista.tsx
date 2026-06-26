@@ -21,6 +21,8 @@ import {
   useColaboradores, useFechamentos,
   useCategorias, useLancamentos, useCreateLancamento, useClientes,
 } from "@/hooks/useSupabaseData";
+import { useCreateMovimentacao } from "@/hooks/useFinanceiro";
+import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useCompanyLogo } from "@/hooks/useCompanyLogo";
 

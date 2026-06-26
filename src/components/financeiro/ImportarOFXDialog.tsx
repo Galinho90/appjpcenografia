@@ -49,8 +49,6 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [contaId, setContaId] = useState("");
-  const [defaultCatEntrada, setDefaultCatEntrada] = useState<string>("");
-  const [defaultCatSaida, setDefaultCatSaida] = useState<string>("");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -133,8 +131,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           action = "vincular";
           movId = candidates[0].id;
         }
-        const categoriaId = tx.tipo === "entrada" ? defaultCatEntrada : defaultCatSaida;
-        return { tx, action, movId, categoriaId: categoriaId || undefined, candidates, alreadyImported };
+        return { tx, action, movId, categoriaId: undefined, candidates, alreadyImported };
       });
 
       setRows(newRows);
@@ -249,47 +246,6 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                 if (f) handleFile(f);
               }}
             />
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label>Categoria padrão (entradas)</Label>
-            <Select
-              value={defaultCatEntrada}
-              onValueChange={(v) => {
-                setDefaultCatEntrada(v);
-                setRows((prev) => prev.map((r) =>
-                  r.tx.tipo === "entrada" && !r.categoriaId ? { ...r, categoriaId: v } : r
-                ));
-              }}
-            >
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {categorias.filter((c) => c.tipo === "receita").map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Categoria padrão (saídas)</Label>
-            <Select
-              value={defaultCatSaida}
-              onValueChange={(v) => {
-                setDefaultCatSaida(v);
-                setRows((prev) => prev.map((r) =>
-                  r.tx.tipo === "saida" && !r.categoriaId ? { ...r, categoriaId: v } : r
-                ));
-              }}
-            >
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {categorias.filter((c) => c.tipo === "despesa").map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
 

@@ -406,7 +406,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           <Button variant="outline" onClick={() => handleClose(false)} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={handleConciliar} disabled={rows.length === 0 || saving}>
+          <Button
+            onClick={handleConciliar}
+            disabled={rows.length === 0 || saving || rows.some((r) => r.action === "criar" && !r.categoriaId)}
+          >
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             Conciliar tudo
           </Button>

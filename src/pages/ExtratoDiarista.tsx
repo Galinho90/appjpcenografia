@@ -245,6 +245,7 @@ export default function ExtratoDiarista() {
       return;
     }
     const cat = categorias.find((c) => c.id === form.categoria_id);
+    const isItemVale = (cat?.descricao || "").toUpperCase().includes("VALE");
     setQueue([
       ...queue,
       {
@@ -256,6 +257,8 @@ export default function ExtratoDiarista() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
+        parcelamento: isItemVale && valeLancarMov === "sim" ? (valeParcelado ? (valeParcelamento === "extrato" ? "quinzena" : valeParcelamento) : "extrato") : undefined,
+        parcelas: isItemVale && valeLancarMov === "sim" && valeParcelado ? Math.max(2, valeNumParcelas) : 1,
       },
     ]);
     setForm({ ...form, categoria_id: "", hora_entrada: "", hora_saida: "", valor: 0, descricao: "" });
@@ -266,9 +269,10 @@ export default function ExtratoDiarista() {
   };
 
   const handleSalvar = async () => {
-    const items = [...queue];
+    const items: QueueItem[] = [...queue];
     if (form.categoria_id) {
       const cat = categorias.find((c) => c.id === form.categoria_id);
+      const isItemVale = (cat?.descricao || "").toUpperCase().includes("VALE");
       items.push({
         categoria_id: form.categoria_id,
         categoria_desc: cat?.descricao || "—",
@@ -278,6 +282,8 @@ export default function ExtratoDiarista() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
+        parcelamento: isItemVale && valeLancarMov === "sim" ? (valeParcelado ? (valeParcelamento === "extrato" ? "quinzena" : valeParcelamento) : "extrato") : undefined,
+        parcelas: isItemVale && valeLancarMov === "sim" && valeParcelado ? Math.max(2, valeNumParcelas) : 1,
       });
     }
     if (items.length === 0) {
@@ -285,22 +291,78 @@ export default function ExtratoDiarista() {
       return;
     }
     try {
-      for (const it of items) {
-        await createLancamento.mutateAsync({
-          colaborador_id: colaboradorId,
-          categoria_id: it.categoria_id,
-          cliente_id: form.cliente_id || null,
-          data: it.data || form.data,
-          valor: it.valor,
-          hora_entrada: it.hora_entrada || null,
-          hora_saida: it.hora_saida || null,
-          descricao: it.descricao || null,
-        } as any);
+      const hasVale = items.some((i) => i.parcelamento);
+      let valeCatFinId: string | null = null;
+      let contaId: string | null = null;
+      if (hasVale) {
+        const [{ data: catFin }, { data: conta }] = await Promise.all([
+          supabase.from("categorias_financeiras" as any).select("id").eq("nome", "Vales Diaristas").maybeSingle(),
+          supabase.from("contas_bancarias" as any).select("id").eq("ativo", true).order("created_at", { ascending: true }).limit(1).maybeSingle(),
+        ]);
+        valeCatFinId = (catFin as any)?.id ?? null;
+        contaId = (conta as any)?.id ?? null;
       }
+      const colabNome = colaboradorSel?.nome || "diarista";
+      for (const it of items) {
+        const isParcelado = it.parcelamento === "quinzena" || it.parcelamento === "mes";
+        const n = isParcelado ? Math.max(1, it.parcelas || 1) : 1;
+        const baseDate = new Date(`${(it.data || form.data)}T00:00:00`);
+        const parcValor = Math.round((it.valor / n) * 100) / 100;
+        const freqLabel = it.parcelamento === "quinzena" ? "quinzenal" : it.parcelamento === "mes" ? "mensal" : "no extrato";
+
+        let firstLancamentoId: string | null = null;
+        for (let p = 0; p < n; p++) {
+          const dt = new Date(baseDate);
+          if (isParcelado) {
+            if (it.parcelamento === "quinzena") dt.setDate(dt.getDate() + 15 * p);
+            else dt.setMonth(dt.getMonth() + p);
+          }
+          const valorParcela = n > 1
+            ? (p === n - 1 ? Math.round((it.valor - parcValor * (n - 1)) * 100) / 100 : parcValor)
+            : it.valor;
+          const descParcela = n > 1
+            ? `${it.descricao ? it.descricao + " — " : ""}Parcela ${p + 1}/${n} (${freqLabel})`
+            : (it.descricao || null);
+          const created = await createLancamento.mutateAsync({
+            colaborador_id: colaboradorId,
+            categoria_id: it.categoria_id,
+            cliente_id: form.cliente_id || null,
+            data: toISO(dt),
+            hora_entrada: it.hora_entrada || null,
+            hora_saida: it.hora_saida || null,
+            valor: valorParcela,
+            descricao: descParcela,
+          } as any);
+          if (p === 0) firstLancamentoId = (created as any)?.id ?? null;
+        }
+
+        if (it.parcelamento && contaId) {
+          await createMovimentacao.mutateAsync({
+            conta_id: contaId,
+            categoria_id: valeCatFinId,
+            tipo: "saida",
+            valor: it.valor,
+            data_vencimento: toISO(baseDate),
+            data_pagamento: toISO(baseDate),
+            status: "pago",
+            descricao: `Vale ${colabNome}${n > 1 ? ` (${n}× ${freqLabel} no extrato do diarista)` : ""}`,
+            observacoes: n > 1 ? `Pagamento à vista — diarista recebe em ${n} parcelas ${freqLabel}` : `Pagamento à vista`,
+            colaborador_id: colaboradorId,
+            lancamento_id: firstLancamentoId,
+            origem: "manual",
+            recorrente: false,
+          } as any);
+        }
+      }
+
       toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });
       setDialogOpen(false);
       setForm(emptyForm);
       setQueue([]);
+      setValeParcelamento("extrato");
+      setValeParcelado(false);
+      setValeNumParcelas(2);
+      setValeLancarMov("sim");
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }

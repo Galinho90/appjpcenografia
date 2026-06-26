@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { useContasBancarias } from "@/hooks/useFinanceiro";
+import { useContasBancarias, useCategoriasFinanceiras } from "@/hooks/useFinanceiro";
 import { parseOFX, type OFXTransaction } from "@/lib/ofx";
 import { fmtBRL, fmtDate, todayISO } from "@/lib/financeiro";
 
@@ -30,6 +30,7 @@ type Row = {
   tx: OFXTransaction;
   action: "criar" | "vincular" | "ignorar";
   movId?: string;
+  categoriaId?: string;
   candidates: MovCandidate[];
   alreadyImported: boolean;
 };
@@ -44,9 +45,12 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const { data: contas = [] } = useContasBancarias();
+  const { data: categorias = [] } = useCategoriasFinanceiras();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [contaId, setContaId] = useState("");
+  const [defaultCatEntrada, setDefaultCatEntrada] = useState<string>("");
+  const [defaultCatSaida, setDefaultCatSaida] = useState<string>("");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -129,7 +133,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           action = "vincular";
           movId = candidates[0].id;
         }
-        return { tx, action, movId, candidates, alreadyImported };
+        const categoriaId = tx.tipo === "entrada" ? defaultCatEntrada : defaultCatSaida;
+        return { tx, action, movId, categoriaId: categoriaId || undefined, candidates, alreadyImported };
       });
 
       setRows(newRows);
@@ -173,11 +178,14 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                 .eq("id", r.movId);
               if (error) throw error;
             } else if (r.action === "criar") {
+              if (!r.categoriaId) {
+                throw new Error("Categoria não selecionada");
+              }
               const { error } = await supabase
                 .from("movimentacoes_financeiras" as any)
                 .insert({
                   conta_id: contaId,
-                  categoria_id: null,
+                  categoria_id: r.categoriaId,
                   tipo: r.tx.tipo,
                   valor: r.tx.valor,
                   data_vencimento: r.tx.data,
@@ -241,6 +249,47 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                 if (f) handleFile(f);
               }}
             />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label>Categoria padrão (entradas)</Label>
+            <Select
+              value={defaultCatEntrada}
+              onValueChange={(v) => {
+                setDefaultCatEntrada(v);
+                setRows((prev) => prev.map((r) =>
+                  r.tx.tipo === "entrada" && !r.categoriaId ? { ...r, categoriaId: v } : r
+                ));
+              }}
+            >
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                {categorias.filter((c) => c.tipo === "receita").map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Categoria padrão (saídas)</Label>
+            <Select
+              value={defaultCatSaida}
+              onValueChange={(v) => {
+                setDefaultCatSaida(v);
+                setRows((prev) => prev.map((r) =>
+                  r.tx.tipo === "saida" && !r.categoriaId ? { ...r, categoriaId: v } : r
+                ));
+              }}
+            >
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                {categorias.filter((c) => c.tipo === "despesa").map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -326,6 +375,23 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                               </SelectContent>
                             </Select>
                           )}
+                          {r.action === "criar" && (
+                            <Select
+                              value={r.categoriaId ?? ""}
+                              onValueChange={(v) => updateRow(i, { categoriaId: v })}
+                            >
+                              <SelectTrigger className={`h-7 text-xs ${!r.categoriaId ? "border-destructive" : ""}`}>
+                                <SelectValue placeholder="Categoria *" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {categorias
+                                  .filter((c) => c.tipo === (r.tx.tipo === "entrada" ? "receita" : "despesa"))
+                                  .map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -340,7 +406,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           <Button variant="outline" onClick={() => handleClose(false)} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={handleConciliar} disabled={rows.length === 0 || saving}>
+          <Button
+            onClick={handleConciliar}
+            disabled={rows.length === 0 || saving || rows.some((r) => r.action === "criar" && !r.categoriaId)}
+          >
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             Conciliar tudo
           </Button>

@@ -699,6 +699,7 @@ export type Database = {
           data_vencimento: string | null
           descricao: string
           fechamento_id: string | null
+          fitid: string | null
           fornecedor_id: string | null
           id: string
           id_externo: string | null
@@ -726,6 +727,7 @@ export type Database = {
           data_vencimento?: string | null
           descricao: string
           fechamento_id?: string | null
+          fitid?: string | null
           fornecedor_id?: string | null
           id?: string
           id_externo?: string | null
@@ -753,6 +755,7 @@ export type Database = {
           data_vencimento?: string | null
           descricao?: string
           fechamento_id?: string | null
+          fitid?: string | null
           fornecedor_id?: string | null
           id?: string
           id_externo?: string | null
@@ -1154,7 +1157,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "gerente" | "visualizador"
-      origem_movimentacao: "manual" | "fechamento" | "inter_api"
+      origem_movimentacao: "manual" | "fechamento" | "inter_api" | "ofx"
       status_movimentacao: "pendente" | "pago" | "atrasado" | "cancelado"
       tipo_categoria_financeira: "receita" | "despesa"
       tipo_movimentacao: "entrada" | "saida" | "transferencia"
@@ -1286,7 +1289,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "gerente", "visualizador"],
-      origem_movimentacao: ["manual", "fechamento", "inter_api"],
+      origem_movimentacao: ["manual", "fechamento", "inter_api", "ofx"],
       status_movimentacao: ["pendente", "pago", "atrasado", "cancelado"],
       tipo_categoria_financeira: ["receita", "despesa"],
       tipo_movimentacao: ["entrada", "saida", "transferencia"],

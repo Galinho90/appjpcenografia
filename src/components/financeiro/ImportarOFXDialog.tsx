@@ -375,6 +375,23 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                               </SelectContent>
                             </Select>
                           )}
+                          {r.action === "criar" && (
+                            <Select
+                              value={r.categoriaId ?? ""}
+                              onValueChange={(v) => updateRow(i, { categoriaId: v })}
+                            >
+                              <SelectTrigger className={`h-7 text-xs ${!r.categoriaId ? "border-destructive" : ""}`}>
+                                <SelectValue placeholder="Categoria *" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {categorias
+                                  .filter((c) => c.tipo === (r.tx.tipo === "entrada" ? "receita" : "despesa"))
+                                  .map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

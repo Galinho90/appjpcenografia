@@ -249,47 +249,6 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label>Categoria padrão (entradas)</Label>
-            <Select
-              value={defaultCatEntrada}
-              onValueChange={(v) => {
-                setDefaultCatEntrada(v);
-                setRows((prev) => prev.map((r) =>
-                  r.tx.tipo === "entrada" && !r.categoriaId ? { ...r, categoriaId: v } : r
-                ));
-              }}
-            >
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {categorias.filter((c) => c.tipo === "receita").map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Categoria padrão (saídas)</Label>
-            <Select
-              value={defaultCatSaida}
-              onValueChange={(v) => {
-                setDefaultCatSaida(v);
-                setRows((prev) => prev.map((r) =>
-                  r.tx.tipo === "saida" && !r.categoriaId ? { ...r, categoriaId: v } : r
-                ));
-              }}
-            >
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {categorias.filter((c) => c.tipo === "despesa").map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
         {loading && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
             <Loader2 className="h-4 w-4 animate-spin" /> Processando arquivo...

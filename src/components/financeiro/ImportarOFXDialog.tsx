@@ -45,9 +45,12 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const { data: contas = [] } = useContasBancarias();
+  const { data: categorias = [] } = useCategoriasFinanceiras();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [contaId, setContaId] = useState("");
+  const [defaultCatEntrada, setDefaultCatEntrada] = useState<string>("");
+  const [defaultCatSaida, setDefaultCatSaida] = useState<string>("");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);

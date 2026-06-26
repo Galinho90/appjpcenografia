@@ -30,6 +30,7 @@ type Row = {
   tx: OFXTransaction;
   action: "criar" | "vincular" | "ignorar";
   movId?: string;
+  categoriaId?: string;
   candidates: MovCandidate[];
   alreadyImported: boolean;
 };

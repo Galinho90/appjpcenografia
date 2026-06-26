@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -20,6 +21,8 @@ import {
   useColaboradores, useFechamentos,
   useCategorias, useLancamentos, useCreateLancamento, useClientes,
 } from "@/hooks/useSupabaseData";
+import { useCreateMovimentacao } from "@/hooks/useFinanceiro";
+import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useCompanyLogo } from "@/hooks/useCompanyLogo";
 
@@ -64,7 +67,12 @@ function shiftQuinzena(q: { inicio: Date; fim: Date }, dir: -1 | 1) {
 }
 
 const fmtDate = (d: Date) => d.toLocaleDateString("pt-BR");
-const toISO = (d: Date) => d.toISOString().slice(0, 10);
+const toISO = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
 const fmtBRL = (n: number) =>
   `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -154,6 +162,8 @@ export default function ExtratoDiarista() {
     hora_saida: string;
     valor: number;
     descricao: string;
+    parcelamento?: "extrato" | "quinzena" | "mes";
+    parcelas?: number;
   };
   const [queue, setQueue] = useState<QueueItem[]>([]);
 
@@ -170,6 +180,12 @@ export default function ExtratoDiarista() {
   const isDiariaOuDobra = !isPagamento && !isHoraExtra && (
     descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") || descCategoria.includes("DOBRA")
   );
+  const isVale = descCategoria === "VALE" || descCategoria.includes("VALE");
+  const [valeParcelamento, setValeParcelamento] = useState<"extrato" | "quinzena" | "mes">("extrato");
+  const [valeParcelado, setValeParcelado] = useState(false);
+  const [valeNumParcelas, setValeNumParcelas] = useState(2);
+  const [valeLancarMov, setValeLancarMov] = useState<"sim" | "nao">("sim");
+  const createMovimentacao = useCreateMovimentacao();
 
   const calcHoras = (entrada: string, saida: string): number => {
     if (!entrada || !saida) return 0;
@@ -229,6 +245,7 @@ export default function ExtratoDiarista() {
       return;
     }
     const cat = categorias.find((c) => c.id === form.categoria_id);
+    const isItemVale = (cat?.descricao || "").toUpperCase().includes("VALE");
     setQueue([
       ...queue,
       {
@@ -240,6 +257,8 @@ export default function ExtratoDiarista() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
+        parcelamento: isItemVale && valeLancarMov === "sim" ? (valeParcelado ? (valeParcelamento === "extrato" ? "quinzena" : valeParcelamento) : "extrato") : undefined,
+        parcelas: isItemVale && valeLancarMov === "sim" && valeParcelado ? Math.max(2, valeNumParcelas) : 1,
       },
     ]);
     setForm({ ...form, categoria_id: "", hora_entrada: "", hora_saida: "", valor: 0, descricao: "" });
@@ -250,9 +269,10 @@ export default function ExtratoDiarista() {
   };
 
   const handleSalvar = async () => {
-    const items = [...queue];
+    const items: QueueItem[] = [...queue];
     if (form.categoria_id) {
       const cat = categorias.find((c) => c.id === form.categoria_id);
+      const isItemVale = (cat?.descricao || "").toUpperCase().includes("VALE");
       items.push({
         categoria_id: form.categoria_id,
         categoria_desc: cat?.descricao || "—",
@@ -262,6 +282,8 @@ export default function ExtratoDiarista() {
         hora_saida: isDiaria ? form.hora_saida : "",
         valor: Number(form.valor) || 0,
         descricao: form.descricao || "",
+        parcelamento: isItemVale && valeLancarMov === "sim" ? (valeParcelado ? (valeParcelamento === "extrato" ? "quinzena" : valeParcelamento) : "extrato") : undefined,
+        parcelas: isItemVale && valeLancarMov === "sim" && valeParcelado ? Math.max(2, valeNumParcelas) : 1,
       });
     }
     if (items.length === 0) {
@@ -269,22 +291,78 @@ export default function ExtratoDiarista() {
       return;
     }
     try {
-      for (const it of items) {
-        await createLancamento.mutateAsync({
-          colaborador_id: colaboradorId,
-          categoria_id: it.categoria_id,
-          cliente_id: form.cliente_id || null,
-          data: it.data || form.data,
-          valor: it.valor,
-          hora_entrada: it.hora_entrada || null,
-          hora_saida: it.hora_saida || null,
-          descricao: it.descricao || null,
-        } as any);
+      const hasVale = items.some((i) => i.parcelamento);
+      let valeCatFinId: string | null = null;
+      let contaId: string | null = null;
+      if (hasVale) {
+        const [{ data: catFin }, { data: conta }] = await Promise.all([
+          supabase.from("categorias_financeiras" as any).select("id").eq("nome", "Vales Diaristas").maybeSingle(),
+          supabase.from("contas_bancarias" as any).select("id").eq("ativo", true).order("created_at", { ascending: true }).limit(1).maybeSingle(),
+        ]);
+        valeCatFinId = (catFin as any)?.id ?? null;
+        contaId = (conta as any)?.id ?? null;
       }
+      const colabNome = colaboradorSel?.nome || "diarista";
+      for (const it of items) {
+        const isParcelado = it.parcelamento === "quinzena" || it.parcelamento === "mes";
+        const n = isParcelado ? Math.max(1, it.parcelas || 1) : 1;
+        const baseDate = new Date(`${(it.data || form.data)}T00:00:00`);
+        const parcValor = Math.round((it.valor / n) * 100) / 100;
+        const freqLabel = it.parcelamento === "quinzena" ? "quinzenal" : it.parcelamento === "mes" ? "mensal" : "no extrato";
+
+        let firstLancamentoId: string | null = null;
+        for (let p = 0; p < n; p++) {
+          const dt = new Date(baseDate);
+          if (isParcelado) {
+            if (it.parcelamento === "quinzena") dt.setDate(dt.getDate() + 15 * p);
+            else dt.setMonth(dt.getMonth() + p);
+          }
+          const valorParcela = n > 1
+            ? (p === n - 1 ? Math.round((it.valor - parcValor * (n - 1)) * 100) / 100 : parcValor)
+            : it.valor;
+          const descParcela = n > 1
+            ? `${it.descricao ? it.descricao + " — " : ""}Parcela ${p + 1}/${n} (${freqLabel})`
+            : (it.descricao || null);
+          const created = await createLancamento.mutateAsync({
+            colaborador_id: colaboradorId,
+            categoria_id: it.categoria_id,
+            cliente_id: form.cliente_id || null,
+            data: toISO(dt),
+            hora_entrada: it.hora_entrada || null,
+            hora_saida: it.hora_saida || null,
+            valor: valorParcela,
+            descricao: descParcela,
+          } as any);
+          if (p === 0) firstLancamentoId = (created as any)?.id ?? null;
+        }
+
+        if (it.parcelamento && contaId) {
+          await createMovimentacao.mutateAsync({
+            conta_id: contaId,
+            categoria_id: valeCatFinId,
+            tipo: "saida",
+            valor: it.valor,
+            data_vencimento: toISO(baseDate),
+            data_pagamento: toISO(baseDate),
+            status: "pago",
+            descricao: `Vale ${colabNome}${n > 1 ? ` (${n}× ${freqLabel} no extrato do diarista)` : ""}`,
+            observacoes: n > 1 ? `Pagamento à vista — diarista recebe em ${n} parcelas ${freqLabel}` : `Pagamento à vista`,
+            colaborador_id: colaboradorId,
+            lancamento_id: firstLancamentoId,
+            origem: "manual",
+            recorrente: false,
+          } as any);
+        }
+      }
+
       toast({ title: items.length === 1 ? "Lançamento registrado!" : `${items.length} lançamentos registrados!` });
       setDialogOpen(false);
       setForm(emptyForm);
       setQueue([]);
+      setValeParcelamento("extrato");
+      setValeParcelado(false);
+      setValeNumParcelas(2);
+      setValeLancarMov("sim");
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
@@ -496,7 +574,7 @@ export default function ExtratoDiarista() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Novo Lançamento {colaboradorNome ? `— ${colaboradorNome}` : ""}</DialogTitle>
           </DialogHeader>
@@ -572,6 +650,63 @@ export default function ExtratoDiarista() {
                 </p>
               )}
             </div>
+
+            {isVale && (
+              <div className="space-y-3 rounded-md border border-warning/30 bg-warning/5 p-3">
+                <Label className="text-sm font-medium">Lançar nas Movimentações Financeiras?</Label>
+                <p className="text-xs text-muted-foreground">Deseja registrar este vale também como saída no financeiro?</p>
+                <RadioGroup value={valeLancarMov} onValueChange={(v) => setValeLancarMov(v as "sim" | "nao")} className="gap-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="sim" id="vale-mov-sim" />
+                    <Label htmlFor="vale-mov-sim" className="font-normal cursor-pointer">Sim, lançar nas movimentações</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="nao" id="vale-mov-nao" />
+                    <Label htmlFor="vale-mov-nao" className="font-normal cursor-pointer">Não, apenas registrar o vale</Label>
+                  </div>
+                </RadioGroup>
+
+                {valeLancarMov === "sim" && (
+                  <div className="space-y-3 pt-3 border-t border-warning/20">
+                    <Label className="text-sm font-medium">Pagamento do vale</Label>
+                    <RadioGroup value={valeParcelado ? "parcelado" : "avista"} onValueChange={(v) => setValeParcelado(v === "parcelado")} className="gap-2">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="avista" id="vale-avista" />
+                        <Label htmlFor="vale-avista" className="font-normal cursor-pointer">Descontar no extrato do diarista (sem parcelar)</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="parcelado" id="vale-parcelado" />
+                        <Label htmlFor="vale-parcelado" className="font-normal cursor-pointer">Parcelar pagamento</Label>
+                      </div>
+                    </RadioGroup>
+
+                    {valeParcelado && (
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-warning/20">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Nº de parcelas</Label>
+                          <Input type="number" min={1} max={36} value={valeNumParcelas} onChange={(e) => setValeNumParcelas(Math.max(1, Number(e.target.value) || 1))} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Frequência</Label>
+                          <Select value={valeParcelamento === "extrato" ? "quinzena" : valeParcelamento} onValueChange={(v) => setValeParcelamento(v as any)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="quinzena">Quinzenal</SelectItem>
+                              <SelectItem value="mes">Mensal</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {Number(form.valor) > 0 && (
+                          <p className="col-span-2 text-xs text-muted-foreground">
+                            {valeNumParcelas}× de R$ {(Number(form.valor) / Math.max(1, valeNumParcelas)).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({valeParcelamento === "mes" ? "mensal" : "quinzenal"})
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Cliente</Label>

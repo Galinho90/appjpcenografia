@@ -634,6 +634,8 @@ export default function Movimentacoes() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ImportarOFXDialog open={ofxOpen} onOpenChange={setOfxOpen} />
     </div>
   );
 }

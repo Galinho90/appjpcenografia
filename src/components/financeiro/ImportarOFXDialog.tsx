@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { useContasBancarias } from "@/hooks/useFinanceiro";
+import { useContasBancarias, useCategoriasFinanceiras } from "@/hooks/useFinanceiro";
 import { parseOFX, type OFXTransaction } from "@/lib/ofx";
 import { fmtBRL, fmtDate, todayISO } from "@/lib/financeiro";
 

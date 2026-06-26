@@ -133,7 +133,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           action = "vincular";
           movId = candidates[0].id;
         }
-        return { tx, action, movId, candidates, alreadyImported };
+        const categoriaId = tx.tipo === "entrada" ? defaultCatEntrada : defaultCatSaida;
+        return { tx, action, movId, categoriaId: categoriaId || undefined, candidates, alreadyImported };
       });
 
       setRows(newRows);

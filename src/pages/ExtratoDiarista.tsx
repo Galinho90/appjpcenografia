@@ -162,6 +162,8 @@ export default function ExtratoDiarista() {
     hora_saida: string;
     valor: number;
     descricao: string;
+    parcelamento?: "extrato" | "quinzena" | "mes";
+    parcelas?: number;
   };
   const [queue, setQueue] = useState<QueueItem[]>([]);
 
@@ -178,6 +180,12 @@ export default function ExtratoDiarista() {
   const isDiariaOuDobra = !isPagamento && !isHoraExtra && (
     descCategoria.includes("DIÁRIA") || descCategoria.includes("DIARIA") || descCategoria.includes("DOBRA")
   );
+  const isVale = descCategoria === "VALE" || descCategoria.includes("VALE");
+  const [valeParcelamento, setValeParcelamento] = useState<"extrato" | "quinzena" | "mes">("extrato");
+  const [valeParcelado, setValeParcelado] = useState(false);
+  const [valeNumParcelas, setValeNumParcelas] = useState(2);
+  const [valeLancarMov, setValeLancarMov] = useState<"sim" | "nao">("sim");
+  const createMovimentacao = useCreateMovimentacao();
 
   const calcHoras = (entrada: string, saida: string): number => {
     if (!entrada || !saida) return 0;

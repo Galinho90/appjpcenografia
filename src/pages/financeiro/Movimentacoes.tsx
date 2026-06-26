@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
-import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot, GripVertical, Upload } from "lucide-react";
+import ImportarOFXDialog from "@/components/financeiro/ImportarOFXDialog";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -65,6 +66,7 @@ export default function Movimentacoes() {
   const deleteMutation = useDeleteMovimentacao();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [ofxOpen, setOfxOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -221,6 +223,7 @@ export default function Movimentacoes() {
   const origemBadge = (o: string) => {
     if (o === "fechamento") return <Badge variant="outline" className="text-[10px]">Fechamento</Badge>;
     if (o === "inter_api") return <Badge variant="outline" className="text-[10px]">Inter</Badge>;
+    if (o === "ofx") return <Badge variant="outline" className="text-[10px]">OFX</Badge>;
     return null;
   };
 
@@ -262,6 +265,9 @@ export default function Movimentacoes() {
               </Button>
               <Button onClick={() => openCreate("transferencia")} variant="outline" className="gap-2 h-8 text-xs">
                 <ArrowLeftRight className="h-3.5 w-3.5" /> Transferência
+              </Button>
+              <Button onClick={() => setOfxOpen(true)} variant="outline" className="gap-2 h-8 text-xs">
+                <Upload className="h-3.5 w-3.5" /> Importar OFX
               </Button>
             </div>
           )}

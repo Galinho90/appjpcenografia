@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from "react";
-import { Upload, CheckCircle2, AlertCircle, HelpCircle, Loader2 } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, HelpCircle, Loader2, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -35,6 +35,21 @@ type Row = {
   alreadyImported: boolean;
 };
 
+type OFXMeta = {
+  ledgerBal?: number;
+  ledgerBalDate?: string;
+  dtStart?: string;
+  dtEnd?: string;
+};
+
+type SistemaExtra = {
+  id: string;
+  descricao: string;
+  valor: number;
+  tipo: string;
+  data: string;
+};
+
 function daysDiff(a: string, b: string): number {
   const da = new Date(a + "T00:00:00").getTime();
   const db = new Date(b + "T00:00:00").getTime();
@@ -52,10 +67,16 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [ofxMeta, setOfxMeta] = useState<OFXMeta>({});
+  const [saldoSistema, setSaldoSistema] = useState<number | null>(null);
+  const [extrasSistema, setExtrasSistema] = useState<SistemaExtra[]>([]);
 
   const reset = () => {
     setRows([]);
     setContaId("");
+    setOfxMeta({});
+    setSaldoSistema(null);
+    setExtrasSistema([]);
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -73,12 +94,15 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     setLoading(true);
     try {
       const text = await file.text();
-      const { transactions } = parseOFX(text);
+      const parsed = parseOFX(text);
+      const { transactions, ledgerBal, ledgerBalDate, dtStart, dtEnd } = parsed;
       if (transactions.length === 0) {
         toast({ title: "Nenhuma transação encontrada no arquivo", variant: "destructive" });
         setLoading(false);
         return;
       }
+
+      setOfxMeta({ ledgerBal, ledgerBalDate, dtStart, dtEnd });
 
       // Buscar movimentações da conta para match e fitids já importados
       const datas = transactions.map((t) => t.data).sort();
@@ -135,6 +159,46 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       });
 
       setRows(newRows);
+
+      // Buscar saldo do sistema na data do LEDGERBAL (ou fim do período)
+      const dataRef = ledgerBalDate || dtEnd || datas[datas.length - 1];
+      if (dataRef) {
+        const { data: saldoData } = await supabase.rpc("get_saldo_conta", {
+          _conta_id: contaId,
+          _data_ref: dataRef,
+        });
+        if (saldoData != null) setSaldoSistema(Number(saldoData));
+      }
+
+      // Identificar "extras" no sistema: movs pagas na conta dentro do período OFX
+      // que NÃO estão no arquivo (nem por fitid, nem por candidato vinculado)
+      const fitidsOFX = new Set(transactions.map((t) => t.fitid));
+      const candidatoIds = new Set<string>();
+      for (const r of newRows) {
+        if (r.action === "vincular" && r.movId) candidatoIds.add(r.movId);
+      }
+      const inicio = dtStart || datas[0];
+      const fim = dtEnd || datas[datas.length - 1];
+      const extras: SistemaExtra[] = ((movs ?? []) as any[])
+        .filter((m: any) => {
+          if (m.status !== "pago") return false;
+          const dEfet = m.data_pagamento ?? m.data_vencimento;
+          if (!dEfet) return false;
+          if (dEfet < inicio || dEfet > fim) return false;
+          // Já reconciliado via fitid do OFX
+          if (m.fitid && fitidsOFX.has(m.fitid)) return false;
+          // Vai ser vinculado nesta importação
+          if (candidatoIds.has(m.id)) return false;
+          return true;
+        })
+        .map((m: any) => ({
+          id: m.id,
+          descricao: m.descricao,
+          valor: Number(m.valor),
+          tipo: m.tipo,
+          data: m.data_pagamento ?? m.data_vencimento,
+        }));
+      setExtrasSistema(extras);
     } catch (e: any) {
       toast({ title: "Erro ao ler arquivo OFX", description: e.message, variant: "destructive" });
     } finally {
@@ -151,6 +215,52 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     }
     return { criar, vincular, ignorar };
   }, [rows]);
+
+  // Reconciliação de saldo: LEDGERBAL do OFX vs saldo esperado no sistema após conciliação
+  const reconciliacao = useMemo(() => {
+    if (ofxMeta.ledgerBal == null || saldoSistema == null) return null;
+
+    // Delta líquido gerado apenas pelas ações desta importação:
+    // - "criar": adiciona ao saldo do sistema (entrada +, saida -)
+    // - "vincular": mov já existe e pode já estar em outro status/data; se não era 'pago',
+    //   passar a 'pago' também afeta o saldo. Aqui simplificamos assumindo que candidatos
+    //   típicos vêm de movs pendentes → então também impactam.
+    let deltaAcoes = 0;
+    for (const r of rows) {
+      if (r.action === "criar") {
+        deltaAcoes += r.tx.tipo === "entrada" ? r.tx.valor : -r.tx.valor;
+      } else if (r.action === "vincular" && r.movId) {
+        const cand = r.candidates.find((c) => c.id === r.movId);
+        if (cand && cand.status !== "pago") {
+          deltaAcoes += r.tx.tipo === "entrada" ? r.tx.valor : -r.tx.valor;
+        }
+      }
+    }
+
+    const saldoEsperado = Number((saldoSistema + deltaAcoes).toFixed(2));
+    const diff = Number((ofxMeta.ledgerBal - saldoEsperado).toFixed(2));
+    return {
+      ledgerBal: ofxMeta.ledgerBal,
+      saldoEsperado,
+      diff,
+      ok: Math.abs(diff) < 0.01,
+    };
+  }, [ofxMeta, saldoSistema, rows]);
+
+  // Somatório do impacto de possíveis causas (extras do sistema + linhas ignoradas)
+  const causasDelta = useMemo(() => {
+    let extrasImpacto = 0;
+    for (const e of extrasSistema) {
+      extrasImpacto += e.tipo === "entrada" ? e.valor : -e.valor;
+    }
+    let ignoradasImpacto = 0;
+    for (const r of rows) {
+      if (r.action === "ignorar" && !r.alreadyImported) {
+        ignoradasImpacto += r.tx.tipo === "entrada" ? r.tx.valor : -r.tx.valor;
+      }
+    }
+    return { extrasImpacto, ignoradasImpacto };
+  }, [extrasSistema, rows]);
 
   const updateRow = (i: number, patch: Partial<Row>) => {
     setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
@@ -263,6 +373,87 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
               <Badge className="bg-info text-info-foreground">Criar: {stats.criar}</Badge>
               <Badge variant="outline">Ignorar: {stats.ignorar}</Badge>
             </div>
+
+            {reconciliacao && (
+              <div
+                className={`rounded-md border p-3 text-sm ${
+                  reconciliacao.ok
+                    ? "border-success/40 bg-success/10"
+                    : "border-destructive/40 bg-destructive/10"
+                }`}
+              >
+                <div className="flex items-center gap-2 font-medium mb-2">
+                  {reconciliacao.ok ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                      Saldo bate com o extrato OFX
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                      Divergência de saldo detectada
+                    </>
+                  )}
+                </div>
+                <div className="grid gap-1 sm:grid-cols-3 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Saldo OFX ({fmtDate(ofxMeta.ledgerBalDate ?? "")}):</span>{" "}
+                    <span className="font-medium">{fmtBRL(reconciliacao.ledgerBal)}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Saldo esperado (sistema):</span>{" "}
+                    <span className="font-medium">{fmtBRL(reconciliacao.saldoEsperado)}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Diferença:</span>{" "}
+                    <span className={`font-semibold ${reconciliacao.ok ? "text-success" : "text-destructive"}`}>
+                      {fmtBRL(reconciliacao.diff)}
+                    </span>
+                  </div>
+                </div>
+
+                {!reconciliacao.ok && (extrasSistema.length > 0 || causasDelta.ignoradasImpacto !== 0) && (
+                  <div className="mt-3 pt-3 border-t border-destructive/30">
+                    <div className="text-xs font-medium mb-2">Possíveis causas da diferença:</div>
+
+                    {extrasSistema.length > 0 && (
+                      <div className="mb-2">
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Movimentações do sistema pagas no período mas ausentes no OFX
+                          (impacto: {fmtBRL(causasDelta.extrasImpacto)}):
+                        </div>
+                        <ul className="text-xs space-y-0.5 max-h-32 overflow-y-auto pl-3">
+                          {extrasSistema.map((e) => (
+                            <li key={e.id} className="flex justify-between gap-2">
+                              <span className="truncate">
+                                {fmtDate(e.data)} — {e.descricao || "—"}
+                              </span>
+                              <span className={e.tipo === "entrada" ? "text-success" : "text-destructive"}>
+                                {e.tipo === "entrada" ? "+" : "-"} {fmtBRL(e.valor)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {causasDelta.ignoradasImpacto !== 0 && (
+                      <div className="text-xs text-muted-foreground">
+                        Transações do OFX marcadas como "Ignorar" (impacto: {fmtBRL(causasDelta.ignoradasImpacto)}).
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {ofxMeta.ledgerBal == null && rows.length > 0 && (
+              <div className="rounded-md border border-warning/40 bg-warning/10 p-2 text-xs flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-warning" />
+                O arquivo OFX não informa saldo final (LEDGERBAL). Não é possível validar o caixa automaticamente.
+              </div>
+            )}
+
 
             <div className="border rounded-md overflow-x-auto">
               <Table>

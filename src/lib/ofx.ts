@@ -13,6 +13,10 @@ export type OFXParseResult = {
   bankId?: string;
   acctId?: string;
   transactions: OFXTransaction[];
+  ledgerBal?: number;
+  ledgerBalDate?: string;
+  dtStart?: string;
+  dtEnd?: string;
 };
 
 function parseDate(raw: string): string {
@@ -57,5 +61,31 @@ export function parseOFX(text: string): OFXParseResult {
     });
   }
 
-  return { bankId, acctId, transactions };
+  // Saldo do extrato (LEDGERBAL) e período (DTSTART/DTEND)
+  const ledgerBlockMatch = body.match(/<LEDGERBAL>([\s\S]*?)<\/LEDGERBAL>/i);
+  let ledgerBal: number | undefined;
+  let ledgerBalDate: string | undefined;
+  if (ledgerBlockMatch) {
+    const lb = ledgerBlockMatch[1];
+    const amt = getTag(lb, "BALAMT");
+    const dt = getTag(lb, "DTASOF");
+    if (amt != null) {
+      const n = Number(amt.replace(",", "."));
+      if (isFinite(n)) ledgerBal = n;
+    }
+    if (dt) ledgerBalDate = parseDate(dt);
+  }
+
+  const dtStart = getTag(body, "DTSTART");
+  const dtEnd = getTag(body, "DTEND");
+
+  return {
+    bankId,
+    acctId,
+    transactions,
+    ledgerBal,
+    ledgerBalDate,
+    dtStart: dtStart ? parseDate(dtStart) : undefined,
+    dtEnd: dtEnd ? parseDate(dtEnd) : undefined,
+  };
 }

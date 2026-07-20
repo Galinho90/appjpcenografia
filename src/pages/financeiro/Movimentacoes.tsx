@@ -178,9 +178,17 @@ export default function Movimentacoes() {
     const oldIndex = pagedMovs.findIndex((m) => m.id === active.id);
     const newIndex = pagedMovs.findIndex((m) => m.id === over.id);
     if (oldIndex === -1 || newIndex === -1) return;
+    const effDate = (m: any) => (m.status === "pago" ? m.data_pagamento : m.data_vencimento) ?? "";
+    const activeMov = pagedMovs[oldIndex];
+    const overMov = pagedMovs[newIndex];
+    if (effDate(activeMov) !== effDate(overMov)) {
+      toast({ title: "Reordenação bloqueada", description: "Só é possível reordenar itens da mesma data.", variant: "destructive" });
+      return;
+    }
     const reordered = arrayMove(pagedMovs, oldIndex, newIndex);
-    const baseOrder = (currentPage - 1) * pageSize + 1;
-    const updates = reordered.map((m, i) => ({ id: m.id, ordem_manual: baseOrder + i }));
+    // Renumera apenas os itens da mesma data
+    const sameDate = reordered.filter((m) => effDate(m) === effDate(activeMov));
+    const updates = sameDate.map((m, i) => ({ id: m.id, ordem_manual: i + 1 }));
     const orderMap = new Map(updates.map((u) => [u.id, u.ordem_manual]));
 
     // Optimistic cache update
@@ -190,13 +198,13 @@ export default function Movimentacoes() {
         orderMap.has(m.id) ? { ...m, ordem_manual: orderMap.get(m.id) } : m
       );
       return [...next].sort((a: any, b: any) => {
+        const dA = (a.status === "pago" ? a.data_pagamento : a.data_vencimento) ?? "";
+        const dB = (b.status === "pago" ? b.data_pagamento : b.data_vencimento) ?? "";
+        if (dA !== dB) return dB.localeCompare(dA);
         const oA = a.ordem_manual, oB = b.ordem_manual;
         if (oA != null && oB != null && oA !== oB) return oA - oB;
         if (oA != null && oB == null) return -1;
         if (oA == null && oB != null) return 1;
-        const dA = (a.status === "pago" ? a.data_pagamento : a.data_vencimento) ?? "";
-        const dB = (b.status === "pago" ? b.data_pagamento : b.data_vencimento) ?? "";
-        if (dA !== dB) return dB.localeCompare(dA);
         return (b.created_at ?? "").localeCompare(a.created_at ?? "");
       });
     });
@@ -214,6 +222,7 @@ export default function Movimentacoes() {
     }
     qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
   };
+
 
   const tipoIcon = (t: TipoMovimentacao) =>
     t === "entrada" ? <ArrowDownCircle className="h-4 w-4 text-success" /> :

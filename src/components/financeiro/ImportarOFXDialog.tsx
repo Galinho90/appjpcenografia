@@ -374,6 +374,87 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
               <Badge variant="outline">Ignorar: {stats.ignorar}</Badge>
             </div>
 
+            {reconciliacao && (
+              <div
+                className={`rounded-md border p-3 text-sm ${
+                  reconciliacao.ok
+                    ? "border-success/40 bg-success/10"
+                    : "border-destructive/40 bg-destructive/10"
+                }`}
+              >
+                <div className="flex items-center gap-2 font-medium mb-2">
+                  {reconciliacao.ok ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                      Saldo bate com o extrato OFX
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                      Divergência de saldo detectada
+                    </>
+                  )}
+                </div>
+                <div className="grid gap-1 sm:grid-cols-3 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Saldo OFX ({fmtDate(ofxMeta.ledgerBalDate ?? "")}):</span>{" "}
+                    <span className="font-medium">{fmtBRL(reconciliacao.ledgerBal)}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Saldo esperado (sistema):</span>{" "}
+                    <span className="font-medium">{fmtBRL(reconciliacao.saldoEsperado)}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Diferença:</span>{" "}
+                    <span className={`font-semibold ${reconciliacao.ok ? "text-success" : "text-destructive"}`}>
+                      {fmtBRL(reconciliacao.diff)}
+                    </span>
+                  </div>
+                </div>
+
+                {!reconciliacao.ok && (extrasSistema.length > 0 || causasDelta.ignoradasImpacto !== 0) && (
+                  <div className="mt-3 pt-3 border-t border-destructive/30">
+                    <div className="text-xs font-medium mb-2">Possíveis causas da diferença:</div>
+
+                    {extrasSistema.length > 0 && (
+                      <div className="mb-2">
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Movimentações do sistema pagas no período mas ausentes no OFX
+                          (impacto: {fmtBRL(causasDelta.extrasImpacto)}):
+                        </div>
+                        <ul className="text-xs space-y-0.5 max-h-32 overflow-y-auto pl-3">
+                          {extrasSistema.map((e) => (
+                            <li key={e.id} className="flex justify-between gap-2">
+                              <span className="truncate">
+                                {fmtDate(e.data)} — {e.descricao || "—"}
+                              </span>
+                              <span className={e.tipo === "entrada" ? "text-success" : "text-destructive"}>
+                                {e.tipo === "entrada" ? "+" : "-"} {fmtBRL(e.valor)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {causasDelta.ignoradasImpacto !== 0 && (
+                      <div className="text-xs text-muted-foreground">
+                        Transações do OFX marcadas como "Ignorar" (impacto: {fmtBRL(causasDelta.ignoradasImpacto)}).
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {ofxMeta.ledgerBal == null && rows.length > 0 && (
+              <div className="rounded-md border border-warning/40 bg-warning/10 p-2 text-xs flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-warning" />
+                O arquivo OFX não informa saldo final (LEDGERBAL). Não é possível validar o caixa automaticamente.
+              </div>
+            )}
+
+
             <div className="border rounded-md overflow-x-auto">
               <Table>
                 <TableHeader>

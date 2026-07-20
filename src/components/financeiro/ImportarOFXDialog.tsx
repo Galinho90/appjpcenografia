@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from "react";
-import { Upload, CheckCircle2, AlertCircle, HelpCircle, Loader2 } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, HelpCircle, Loader2, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";

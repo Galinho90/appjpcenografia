@@ -196,8 +196,6 @@ export function useMovimentacoes(filters: MovFilters = {}) {
           fornecedor:fornecedores(id, nome)
         `);
 
-      if (filters.dataInicio) q = q.gte("data_vencimento", filters.dataInicio);
-      if (filters.dataFim) q = q.lte("data_vencimento", filters.dataFim);
       if (filters.contaId && filters.contaId !== "all") q = q.eq("conta_id", filters.contaId);
       if (filters.categoriaId && filters.categoriaId !== "all") q = q.eq("categoria_id", filters.categoriaId);
       if (filters.tipo && filters.tipo !== "all") q = q.eq("tipo", filters.tipo);
@@ -205,7 +203,18 @@ export function useMovimentacoes(filters: MovFilters = {}) {
 
       const { data, error } = await q.limit(1000);
       if (error) throw error;
-      const mapped = ((data ?? []) as any[]).map((m) => ({ ...m, valor: Number(m.valor) })) as MovimentacaoFinanceira[];
+      let mapped = ((data ?? []) as any[]).map((m) => ({ ...m, valor: Number(m.valor) })) as MovimentacaoFinanceira[];
+
+      // Filtro de período pela data efetiva (data_pagamento se pago, senão data_vencimento)
+      if (filters.dataInicio || filters.dataFim) {
+        mapped = mapped.filter((m: any) => {
+          const d = (m.status === "pago" ? m.data_pagamento : m.data_vencimento) ?? "";
+          if (!d) return false;
+          if (filters.dataInicio && d < filters.dataInicio) return false;
+          if (filters.dataFim && d > filters.dataFim) return false;
+          return true;
+        });
+      }
 
       // Ordena: ordem_manual (asc, NULLS LAST) → data efetiva desc → created_at desc
       mapped.sort((a: any, b: any) => {

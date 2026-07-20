@@ -169,6 +169,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                 .from("movimentacoes_financeiras" as any)
                 .update({
                   status: "pago",
+                  data_vencimento: r.tx.data,
                   data_pagamento: r.tx.data,
                   fitid: r.tx.fitid,
                 } as any)

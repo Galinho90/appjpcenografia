@@ -35,6 +35,21 @@ type Row = {
   alreadyImported: boolean;
 };
 
+type OFXMeta = {
+  ledgerBal?: number;
+  ledgerBalDate?: string;
+  dtStart?: string;
+  dtEnd?: string;
+};
+
+type SistemaExtra = {
+  id: string;
+  descricao: string;
+  valor: number;
+  tipo: string;
+  data: string;
+};
+
 function daysDiff(a: string, b: string): number {
   const da = new Date(a + "T00:00:00").getTime();
   const db = new Date(b + "T00:00:00").getTime();

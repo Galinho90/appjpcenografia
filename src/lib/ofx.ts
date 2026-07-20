@@ -13,6 +13,10 @@ export type OFXParseResult = {
   bankId?: string;
   acctId?: string;
   transactions: OFXTransaction[];
+  ledgerBal?: number;
+  ledgerBalDate?: string;
+  dtStart?: string;
+  dtEnd?: string;
 };
 
 function parseDate(raw: string): string {

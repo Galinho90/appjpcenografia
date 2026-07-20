@@ -216,18 +216,19 @@ export function useMovimentacoes(filters: MovFilters = {}) {
         });
       }
 
-      // Ordena: ordem_manual (asc, NULLS LAST) → data efetiva desc → created_at desc
+      // Ordena: data efetiva desc → ordem_manual (asc, NULLS LAST) → created_at desc
       mapped.sort((a: any, b: any) => {
+        const dataA = (a.status === "pago" ? a.data_pagamento : a.data_vencimento) ?? "";
+        const dataB = (b.status === "pago" ? b.data_pagamento : b.data_vencimento) ?? "";
+        if (dataA !== dataB) return dataB.localeCompare(dataA);
         const oA = a.ordem_manual;
         const oB = b.ordem_manual;
         if (oA != null && oB != null && oA !== oB) return oA - oB;
         if (oA != null && oB == null) return -1;
         if (oA == null && oB != null) return 1;
-        const dataA = (a.status === "pago" ? a.data_pagamento : a.data_vencimento) ?? "";
-        const dataB = (b.status === "pago" ? b.data_pagamento : b.data_vencimento) ?? "";
-        if (dataA !== dataB) return dataB.localeCompare(dataA);
         return b.created_at.localeCompare(a.created_at);
       });
+
 
       return mapped;
     },

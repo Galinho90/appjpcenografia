@@ -1,0 +1,1 @@
+UPDATE public.movimentacoes_financeiras SET ordem_manual = NULL WHERE ordem_manual IS NOT NULL;

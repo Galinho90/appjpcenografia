@@ -216,6 +216,52 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     return { criar, vincular, ignorar };
   }, [rows]);
 
+  // Reconciliação de saldo: LEDGERBAL do OFX vs saldo esperado no sistema após conciliação
+  const reconciliacao = useMemo(() => {
+    if (ofxMeta.ledgerBal == null || saldoSistema == null) return null;
+
+    // Delta líquido gerado apenas pelas ações desta importação:
+    // - "criar": adiciona ao saldo do sistema (entrada +, saida -)
+    // - "vincular": mov já existe e pode já estar em outro status/data; se não era 'pago',
+    //   passar a 'pago' também afeta o saldo. Aqui simplificamos assumindo que candidatos
+    //   típicos vêm de movs pendentes → então também impactam.
+    let deltaAcoes = 0;
+    for (const r of rows) {
+      if (r.action === "criar") {
+        deltaAcoes += r.tx.tipo === "entrada" ? r.tx.valor : -r.tx.valor;
+      } else if (r.action === "vincular" && r.movId) {
+        const cand = r.candidates.find((c) => c.id === r.movId);
+        if (cand && cand.status !== "pago") {
+          deltaAcoes += r.tx.tipo === "entrada" ? r.tx.valor : -r.tx.valor;
+        }
+      }
+    }
+
+    const saldoEsperado = Number((saldoSistema + deltaAcoes).toFixed(2));
+    const diff = Number((ofxMeta.ledgerBal - saldoEsperado).toFixed(2));
+    return {
+      ledgerBal: ofxMeta.ledgerBal,
+      saldoEsperado,
+      diff,
+      ok: Math.abs(diff) < 0.01,
+    };
+  }, [ofxMeta, saldoSistema, rows]);
+
+  // Somatório do impacto de possíveis causas (extras do sistema + linhas ignoradas)
+  const causasDelta = useMemo(() => {
+    let extrasImpacto = 0;
+    for (const e of extrasSistema) {
+      extrasImpacto += e.tipo === "entrada" ? e.valor : -e.valor;
+    }
+    let ignoradasImpacto = 0;
+    for (const r of rows) {
+      if (r.action === "ignorar" && !r.alreadyImported) {
+        ignoradasImpacto += r.tx.tipo === "entrada" ? r.tx.valor : -r.tx.valor;
+      }
+    }
+    return { extrasImpacto, ignoradasImpacto };
+  }, [extrasSistema, rows]);
+
   const updateRow = (i: number, patch: Partial<Row>) => {
     setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
   };

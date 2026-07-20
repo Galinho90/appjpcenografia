@@ -94,12 +94,15 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     setLoading(true);
     try {
       const text = await file.text();
-      const { transactions } = parseOFX(text);
+      const parsed = parseOFX(text);
+      const { transactions, ledgerBal, ledgerBalDate, dtStart, dtEnd } = parsed;
       if (transactions.length === 0) {
         toast({ title: "Nenhuma transação encontrada no arquivo", variant: "destructive" });
         setLoading(false);
         return;
       }
+
+      setOfxMeta({ ledgerBal, ledgerBalDate, dtStart, dtEnd });
 
       // Buscar movimentações da conta para match e fitids já importados
       const datas = transactions.map((t) => t.data).sort();
@@ -156,6 +159,46 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       });
 
       setRows(newRows);
+
+      // Buscar saldo do sistema na data do LEDGERBAL (ou fim do período)
+      const dataRef = ledgerBalDate || dtEnd || datas[datas.length - 1];
+      if (dataRef) {
+        const { data: saldoData } = await supabase.rpc("get_saldo_conta", {
+          _conta_id: contaId,
+          _data_ref: dataRef,
+        });
+        if (saldoData != null) setSaldoSistema(Number(saldoData));
+      }
+
+      // Identificar "extras" no sistema: movs pagas na conta dentro do período OFX
+      // que NÃO estão no arquivo (nem por fitid, nem por candidato vinculado)
+      const fitidsOFX = new Set(transactions.map((t) => t.fitid));
+      const candidatoIds = new Set<string>();
+      for (const r of newRows) {
+        if (r.action === "vincular" && r.movId) candidatoIds.add(r.movId);
+      }
+      const inicio = dtStart || datas[0];
+      const fim = dtEnd || datas[datas.length - 1];
+      const extras: SistemaExtra[] = ((movs ?? []) as any[])
+        .filter((m: any) => {
+          if (m.status !== "pago") return false;
+          const dEfet = m.data_pagamento ?? m.data_vencimento;
+          if (!dEfet) return false;
+          if (dEfet < inicio || dEfet > fim) return false;
+          // Já reconciliado via fitid do OFX
+          if (m.fitid && fitidsOFX.has(m.fitid)) return false;
+          // Vai ser vinculado nesta importação
+          if (candidatoIds.has(m.id)) return false;
+          return true;
+        })
+        .map((m: any) => ({
+          id: m.id,
+          descricao: m.descricao,
+          valor: Number(m.valor),
+          tipo: m.tipo,
+          data: m.data_pagamento ?? m.data_vencimento,
+        }));
+      setExtrasSistema(extras);
     } catch (e: any) {
       toast({ title: "Erro ao ler arquivo OFX", description: e.message, variant: "destructive" });
     } finally {

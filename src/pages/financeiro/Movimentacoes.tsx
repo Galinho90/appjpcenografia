@@ -673,11 +673,19 @@ export default function Movimentacoes() {
                             <TableCell colSpan={isAdmin ? 7 : 6} className="py-2 text-xs font-semibold">
                               {g.data ? fmtDate(g.data) : "Sem data"}
                               <span className="ml-2 font-normal text-muted-foreground">
-                                {g.itens.length} lançamento(s)
+                                {g.itens.length} lançamento(s) · movimento do dia{" "}
+                                <span className={g.total >= 0 ? "text-success" : "text-destructive"}>
+                                  {fmtBRL(g.total)}
+                                </span>
                               </span>
                             </TableCell>
-                            <TableCell className={`py-2 text-right text-xs font-semibold ${g.total >= 0 ? "text-success" : "text-destructive"}`}>
-                              {fmtBRL(g.total)}
+                            <TableCell className="py-2 text-right text-xs">
+                              <div className="text-[10px] font-normal text-muted-foreground leading-none">
+                                Saldo do dia
+                              </div>
+                              <div className={`font-semibold ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
+                                {saldoDoDia(g.data) == null ? "—" : fmtBRL(saldoDoDia(g.data) as number)}
+                              </div>
                             </TableCell>
                             {isAdmin && <TableCell />}
                           </TableRow>

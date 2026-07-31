@@ -372,9 +372,6 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       return;
     }
     setSaving(true);
-
-  const handleConciliar = async () => {
-    setSaving(true);
     let ok = 0, fail = 0;
     try {
       await Promise.all(

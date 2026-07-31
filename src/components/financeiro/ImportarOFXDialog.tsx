@@ -127,13 +127,15 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);
         const candidates: MovCandidate[] = ((movs ?? []) as any[])
-          .filter((m: any) =>
-            !m.fitid &&
-            m.tipo === tx.tipo &&
-            Number(m.valor) === tx.valor &&
-            m.data_vencimento &&
-            daysDiff(m.data_vencimento, tx.data) <= 3
-          )
+          .filter((m: any) => {
+            if (m.fitid) return false;
+            if (m.tipo !== tx.tipo) return false;
+            if (Number(m.valor) !== tx.valor) return false;
+            // Vínculo permitido SOMENTE quando a data efetiva do lançamento
+            // é exatamente a mesma data da transação do OFX.
+            const dEfet = m.data_pagamento ?? m.data_vencimento;
+            return dEfet === tx.data;
+          })
           .map((m: any) => ({
             id: m.id,
             descricao: m.descricao,

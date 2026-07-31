@@ -95,12 +95,16 @@ export default function Movimentacoes() {
 
   const openCreate = (tipo: TipoMovimentacao = "saida") => {
     setEditingId(null);
+    setValorOriginal(null);
+    setMotivoAjuste("");
     setForm({ ...emptyForm, tipo, conta_id: contas[0]?.id ?? "" });
     setDialogOpen(true);
   };
 
   const openEdit = (m: MovimentacaoFinanceira) => {
     setEditingId(m.id);
+    setValorOriginal(Number(m.valor) || 0);
+    setMotivoAjuste("");
     setForm({
       tipo: m.tipo,
       conta_id: m.conta_id,
@@ -127,6 +131,11 @@ export default function Movimentacoes() {
       toast({ title: "Selecione a conta de destino", variant: "destructive" });
       return;
     }
+    // Ajuste manual de valor exige justificativa para a trilha de auditoria.
+    if (valorAlterado && !motivoAjuste.trim()) {
+      toast({ title: "Informe o motivo do ajuste de valor", variant: "destructive" });
+      return;
+    }
     const payload: any = {
       tipo: form.tipo,
       conta_id: form.conta_id,
@@ -143,17 +152,36 @@ export default function Movimentacoes() {
     };
     try {
       if (editingId) {
+        const precisaMotivo = valorAlterado;
         await updateMutation.mutateAsync({ id: editingId, ...payload });
+        if (precisaMotivo) {
+          try {
+            await registrarMotivo.mutateAsync({
+              tabela: "movimentacoes_financeiras",
+              registroId: editingId,
+              motivo: motivoAjuste,
+            });
+          } catch (err: any) {
+            // O ajuste já foi salvo e auditado; apenas o motivo falhou.
+            toast({
+              title: "Motivo não registrado",
+              description: err?.message ?? "Tente registrar o motivo novamente.",
+              variant: "destructive",
+            });
+          }
+        }
         toast({ title: "Movimentação atualizada" });
       } else {
         await createMutation.mutateAsync(payload);
         toast({ title: "Movimentação criada" });
       }
       setDialogOpen(false);
+      setMotivoAjuste("");
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
     }
   };
+
 
   const handleDelete = async () => {
     if (!deleteId) return;

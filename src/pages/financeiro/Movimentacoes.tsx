@@ -624,6 +624,25 @@ export default function Movimentacoes() {
               <Textarea rows={2} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
             </div>
 
+            {valorAlterado && (
+              <div className="space-y-1.5 rounded-lg border border-accent/40 bg-accent/5 p-3">
+                <Label htmlFor="motivo-ajuste">
+                  Motivo do ajuste de valor <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="motivo-ajuste"
+                  rows={2}
+                  placeholder="Ex.: valor corrigido conforme extrato do banco (OFX)"
+                  value={motivoAjuste}
+                  onChange={(e) => setMotivoAjuste(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Valor original: {fmtBRL(valorOriginal ?? 0)} — o ajuste será registrado na auditoria com seu usuário e data.
+                </p>
+              </div>
+            )}
+
+
             <Button className="w-full" onClick={handleSave} disabled={createMutation.isPending || updateMutation.isPending}>
               {createMutation.isPending || updateMutation.isPending ? "Salvando..." : "Salvar"}
             </Button>

@@ -121,7 +121,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       // Tolerância de centavos/tarifa: diferenças de até R$ 1,00 ainda são
       // consideradas o mesmo pagamento (mesma data e mesmo tipo).
       const TOLERANCIA = 1;
-      const TOLERANCIA_DIAS = 7; // Aumentado para 7 dias para captar lançamentos feitos antecipadamente ou com atraso bancário maior
+      const TOLERANCIA_DIAS = 15; // Aumentado para 15 dias para captar pagamentos que demoram a processar ou são feitos antecipadamente
 
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);
@@ -179,23 +179,17 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             
             const mDesc = (m.descricao || "").toUpperCase();
             
-            // Se o nome for encontrado em ambos, consideramos um forte candidato
+            // Match flexível: removemos prefixos comuns de fechamento para comparar apenas os nomes
+            const cleanMDesc = mDesc.replace("PAGAMENTO FECHAMENTO ", "").trim();
             const names = ["BRUNO CARDOSO", "THIAGO GON", "JOSE SANTOS", "PAULO VICTOR"];
-            const isMatch = names.some(n => mDesc.includes(n) && txDesc.includes(n));
+            
+            const isMatch = names.some(n => cleanMDesc.includes(n) && txDesc.includes(n));
             
             if (!isMatch) return false;
 
-            // Para match por nome, permitimos uma tolerância maior de valor (R$ 5,00)
-            const diffValor = Math.abs(Number(m.valor) - tx.valor);
-            if (diffValor > 5) return false;
-
-            // E uma tolerância maior de data (10 dias)
-            const dEfet = m.data_pagamento ?? m.data_vencimento;
-            if (!dEfet) return false;
-            const diffMs = Math.abs(new Date(dEfet + "T00:00:00").getTime() - new Date(tx.data + "T00:00:00").getTime());
-            const diffDias = diffMs / (1000 * 60 * 60 * 24);
-            
-            return diffDias <= 10;
+            // Se for match por nome de colaborador, aceitamos qualquer valor e data dentro do range buscado
+            // (visto que o usuário confirmou que são os mesmos registros)
+            return true;
           });
 
           if (candidateByName) {

@@ -31,6 +31,7 @@ import ContasBancarias from "./pages/financeiro/ContasBancarias";
 import RelatoriosFinanceiros from "./pages/financeiro/RelatoriosFinanceiros";
 import Fornecedores from "./pages/financeiro/Fornecedores";
 import AuditoriaAjustes from "./pages/financeiro/AuditoriaAjustes";
+import ConciliacaoOFX from "./pages/financeiro/ConciliacaoOFX";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

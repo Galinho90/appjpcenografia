@@ -211,9 +211,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           // diferença de até R$ 1,00) — não é um "extra" de verdade
           const temEquivalente = transactions.some(
             (t) =>
-              t.data === dEfet &&
               t.tipo === m.tipo &&
-              Math.abs(Number(m.valor) - t.valor) <= TOLERANCIA
+              Math.abs(Number(m.valor) - t.valor) <= TOLERANCIA &&
+              Math.abs(new Date(dEfet + "T00:00:00").getTime() - new Date(t.data + "T00:00:00").getTime()) / (1000 * 60 * 60 * 24) <= TOLERANCIA_DIAS
           );
           if (temEquivalente) return false;
           return true;

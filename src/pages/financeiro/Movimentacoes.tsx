@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import {
   useMovimentacoes, useCreateMovimentacao, useUpdateMovimentacao, useDeleteMovimentacao,
-  useContasBancarias, useCategoriasFinanceiras, useFornecedores,
+  useContasBancarias, useCategoriasFinanceiras, useFornecedores, useSaldosPorDia,
   type MovimentacaoFinanceira, type TipoMovimentacao, type StatusMovimentacao,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/financeiro";
@@ -139,6 +139,14 @@ export default function Movimentacoes() {
     }
     return out;
   }, [pagedMovs]);
+
+  /** Saldo de fechamento de cada dia (conforme extrato bancário). */
+  const { data: saldosPorDia } = useSaldosPorDia(filters.contaId);
+  const saldoDoDia = (data: string): number | null => {
+    if (!data || !saldosPorDia) return null;
+    const v = saldosPorDia.get(data);
+    return v == null ? null : v;
+  };
 
   const activeFiltersCount =
     (filters.tipo !== "all" ? 1 : 0) +

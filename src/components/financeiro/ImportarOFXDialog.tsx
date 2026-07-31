@@ -50,12 +50,6 @@ type SistemaExtra = {
   data: string;
 };
 
-function daysDiff(a: string, b: string): number {
-  const da = new Date(a + "T00:00:00").getTime();
-  const db = new Date(b + "T00:00:00").getTime();
-  return Math.abs(Math.round((da - db) / 86400000));
-}
-
 export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -106,9 +100,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
 
       // Buscar movimentações da conta para match e fitids já importados
       const datas = transactions.map((t) => t.data).sort();
-      const dataMin = new Date(new Date(datas[0] + "T00:00:00").getTime() - 5 * 86400000)
+      const dataMin = new Date(new Date(datas[0] + "T00:00:00").getTime() - 60 * 86400000)
         .toISOString().slice(0, 10);
-      const dataMax = new Date(new Date(datas[datas.length - 1] + "T00:00:00").getTime() + 5 * 86400000)
+      const dataMax = new Date(new Date(datas[datas.length - 1] + "T00:00:00").getTime() + 60 * 86400000)
         .toISOString().slice(0, 10);
 
       const { data: movs, error } = await supabase

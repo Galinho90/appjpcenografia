@@ -425,7 +425,7 @@ export default function Movimentacoes() {
             </div>
           </CardContent>
         </Card>
-
+        <Card className="shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <TrendingUp className="h-3.5 w-3.5 text-success" /> Entradas

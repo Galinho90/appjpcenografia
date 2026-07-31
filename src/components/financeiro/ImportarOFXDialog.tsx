@@ -615,6 +615,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                             onValueChange={(v: any) => updateRow(i, {
                               action: v,
                               movId: v === "vincular" ? (r.movId ?? r.candidates[0]?.id) : undefined,
+                              // Troca manual de ação também exige confirmação do vínculo
+                              confirmado: v !== "vincular",
                             })}
                           >
                             <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
@@ -627,23 +629,36 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                             </SelectContent>
                           </Select>
                           {r.action === "vincular" && r.candidates.length > 0 && (
-                            <Select
-                              value={r.movId ?? r.candidates[0].id}
-                              onValueChange={(v) => updateRow(i, { movId: v })}
-                            >
-                              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                {r.candidates.map((c) => (
-                                  <SelectItem key={c.id} value={c.id}>
-                                    {fmtDate(c.data_pagamento ?? c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
-                                    {Math.abs(c.valor - r.tx.valor) > 0.001
-                                      ? ` • dif. ${fmtBRL(r.tx.valor - c.valor)} (ajusta p/ valor do banco)`
-                                      : ""}
-
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <>
+                              <Select
+                                value={r.movId ?? r.candidates[0].id}
+                                onValueChange={(v) => updateRow(i, { movId: v, confirmado: false })}
+                              >
+                                <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {r.candidates.map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>
+                                      {fmtDate(c.data_pagamento ?? c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
+                                      {Math.abs(c.valor - r.tx.valor) > 0.001
+                                        ? ` • dif. ${fmtBRL(r.tx.valor - c.valor)} (ajusta p/ valor do banco)`
+                                        : ""}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <label className="flex items-center gap-2 text-[11px] cursor-pointer">
+                                <Checkbox
+                                  checked={r.confirmado}
+                                  onCheckedChange={(v) => updateRow(i, { confirmado: v === true })}
+                                />
+                                <span className={r.confirmado ? "text-success" : "text-destructive font-medium"}>
+                                  {r.confirmado ? "Vínculo confirmado" : "Confirmar vínculo"}
+                                </span>
+                                {r.sugestao === "nome" && (
+                                  <Badge variant="outline" className="text-[9px]">match por nome</Badge>
+                                )}
+                              </label>
+                            </>
                           )}
                           {r.action === "criar" && (
                             <Select

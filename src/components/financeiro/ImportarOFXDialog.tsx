@@ -290,14 +290,20 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   };
 
   const stats = useMemo(() => {
-    let criar = 0, vincular = 0, ignorar = 0;
+    let criar = 0, vincular = 0, ignorar = 0, pendentesConfirmacao = 0;
     for (const r of rows) {
       if (r.action === "criar") criar++;
-      else if (r.action === "vincular") vincular++;
-      else ignorar++;
+      else if (r.action === "vincular") {
+        vincular++;
+        if (!r.confirmado) pendentesConfirmacao++;
+      } else ignorar++;
     }
-    return { criar, vincular, ignorar };
+    return { criar, vincular, ignorar, pendentesConfirmacao };
   }, [rows]);
+
+  const confirmarTodos = () => {
+    setRows((prev) => prev.map((r) => (r.action === "vincular" ? { ...r, confirmado: true } : r)));
+  };
 
   // Reconciliação de saldo: LEDGERBAL do OFX vs saldo esperado no sistema após conciliação
   const reconciliacao = useMemo(() => {
@@ -353,6 +359,19 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const updateRow = (i: number, patch: Partial<Row>) => {
     setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
   };
+
+  const handleConciliar = async () => {
+    // Guarda: nenhum vínculo é gravado sem confirmação explícita do usuário.
+    const naoConfirmados = rows.filter((r) => r.action === "vincular" && !r.confirmado).length;
+    if (naoConfirmados > 0) {
+      toast({
+        title: "Confirme os vínculos",
+        description: `${naoConfirmados} vínculo(s) sugerido(s) ainda não foram confirmados.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    setSaving(true);
 
   const handleConciliar = async () => {
     setSaving(true);

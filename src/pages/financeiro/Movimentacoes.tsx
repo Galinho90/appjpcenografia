@@ -144,8 +144,15 @@ export default function Movimentacoes() {
   const { data: saldosPorDia } = useSaldosPorDia(filters.contaId);
   const saldoDoDia = (data: string): number | null => {
     if (!data || !saldosPorDia) return null;
-    const v = saldosPorDia.get(data);
-    return v == null ? null : v;
+    const exato = saldosPorDia.get(data);
+    if (exato != null) return exato;
+    // Dia sem movimentação paga: repete o saldo do último dia com fechamento.
+    let ultimo: number | null = null;
+    for (const [dia, saldo] of [...saldosPorDia.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+      if (dia <= data) ultimo = saldo;
+      else break;
+    }
+    return ultimo;
   };
 
   const activeFiltersCount =

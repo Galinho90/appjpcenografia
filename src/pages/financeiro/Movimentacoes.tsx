@@ -155,6 +155,18 @@ export default function Movimentacoes() {
     return ultimo;
   };
 
+  /** Saldo atual da conta (ou de todas), na data final do filtro ou hoje. */
+  const saldoContaRef = useMemo(() => {
+    const hojeIso = new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+    return filters.dataFim || hojeIso;
+  }, [filters.dataFim]);
+  const saldoConta = saldoDoDia(saldoContaRef);
+  const contaLabel =
+    filters.contaId === "all"
+      ? "Todas as contas"
+      : contas.find((c) => c.id === filters.contaId)?.apelido ?? "Conta";
+
+
   const activeFiltersCount =
     (filters.tipo !== "all" ? 1 : 0) +
     (filters.status !== "all" ? 1 : 0) +
@@ -399,7 +411,20 @@ export default function Movimentacoes() {
       </div>
 
       {/* Resumo do resultado filtrado */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
+        <Card className="shadow-sm border-primary/30 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Wallet className="h-3.5 w-3.5 text-primary" /> Saldo da conta
+            </div>
+            <div className={`mt-1 text-lg font-bold ${(saldoConta ?? 0) >= 0 ? "text-foreground" : "text-destructive"}`}>
+              {saldoConta != null ? fmtBRL(saldoConta) : "—"}
+            </div>
+            <div className="text-[11px] text-muted-foreground truncate">
+              {contaLabel} · {saldoContaRef.split("-").reverse().join("/")}
+            </div>
+          </CardContent>
+        </Card>
         <Card className="shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">

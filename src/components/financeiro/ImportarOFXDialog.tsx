@@ -50,12 +50,6 @@ type SistemaExtra = {
   data: string;
 };
 
-function daysDiff(a: string, b: string): number {
-  const da = new Date(a + "T00:00:00").getTime();
-  const db = new Date(b + "T00:00:00").getTime();
-  return Math.abs(Math.round((da - db) / 86400000));
-}
-
 export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -106,9 +100,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
 
       // Buscar movimentações da conta para match e fitids já importados
       const datas = transactions.map((t) => t.data).sort();
-      const dataMin = new Date(new Date(datas[0] + "T00:00:00").getTime() - 5 * 86400000)
+      const dataMin = new Date(new Date(datas[0] + "T00:00:00").getTime() - 60 * 86400000)
         .toISOString().slice(0, 10);
-      const dataMax = new Date(new Date(datas[datas.length - 1] + "T00:00:00").getTime() + 5 * 86400000)
+      const dataMax = new Date(new Date(datas[datas.length - 1] + "T00:00:00").getTime() + 60 * 86400000)
         .toISOString().slice(0, 10);
 
       const { data: movs, error } = await supabase
@@ -127,13 +121,15 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);
         const candidates: MovCandidate[] = ((movs ?? []) as any[])
-          .filter((m: any) =>
-            !m.fitid &&
-            m.tipo === tx.tipo &&
-            Number(m.valor) === tx.valor &&
-            m.data_vencimento &&
-            daysDiff(m.data_vencimento, tx.data) <= 3
-          )
+          .filter((m: any) => {
+            if (m.fitid) return false;
+            if (m.tipo !== tx.tipo) return false;
+            if (Number(m.valor) !== tx.valor) return false;
+            // Vínculo permitido SOMENTE quando a data efetiva do lançamento
+            // é exatamente a mesma data da transação do OFX.
+            const dEfet = m.data_pagamento ?? m.data_vencimento;
+            return dEfet === tx.data;
+          })
           .map((m: any) => ({
             id: m.id,
             descricao: m.descricao,
@@ -483,7 +479,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                         {r.alreadyImported ? (
                           <Badge variant="outline" className="text-[10px]">—</Badge>
                         ) : r.candidates.length === 0 ? (
-                          <span title="Sem match"><AlertCircle className="h-4 w-4 text-destructive" /></span>
+                          <span title="Sem lançamento na mesma data"><AlertCircle className="h-4 w-4 text-destructive" /></span>
                         ) : r.candidates.length === 1 ? (
                           <span title="Match único"><CheckCircle2 className="h-4 w-4 text-success" /></span>
                         ) : (
@@ -517,7 +513,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                               <SelectContent>
                                 {r.candidates.map((c) => (
                                   <SelectItem key={c.id} value={c.id}>
-                                    {fmtDate(c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
+                                    {fmtDate(c.data_pagamento ?? c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
                                   </SelectItem>
                                 ))}
                               </SelectContent>

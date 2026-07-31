@@ -180,7 +180,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             (
               (m.descricao.toUpperCase().includes("BRUNO CARDOSO") && tx.descricao.toUpperCase().includes("BRUNO CARDOSO")) ||
               (m.descricao.toUpperCase().includes("THIAGO GON") && tx.descricao.toUpperCase().includes("THIAGO GON")) ||
-              (m.descricao.toUpperCase().includes("JOSE SANTOS") && tx.descricao.toUpperCase().includes("JOSE SANTOS"))
+              (m.descricao.toUpperCase().includes("JOSE SANTOS") && tx.descricao.toUpperCase().includes("JOSE SANTOS")) ||
+              (m.descricao.toUpperCase().includes("PAULO VICTOR") && tx.descricao.toUpperCase().includes("PAULO VICTOR"))
             )
           );
           if (candidateByName) {

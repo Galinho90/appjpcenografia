@@ -125,7 +125,6 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);
         
-        // Match exato ou próximo por data e valor
         const candidates: MovCandidate[] = ((movs ?? []) as any[])
           .filter((m: any) => {
             if (m.fitid) return false;

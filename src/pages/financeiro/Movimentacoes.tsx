@@ -426,16 +426,12 @@ export default function Movimentacoes() {
                             Pagar
                           </Button>
                         )}
-                        {m.origem !== "fechamento" && (
-                          <>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteId(m.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </>
-                        )}
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)} aria-label="Editar movimentação">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteId(m.id)} aria-label="Excluir movimentação">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -693,7 +689,12 @@ export default function Movimentacoes() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir movimentação?</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita.
+              {deleteOrigemFechamento
+                ? " Atenção: esta movimentação foi gerada por um fechamento de diarista. Excluí-la remove apenas o registro financeiro; o fechamento continuará marcado como pago e poderá gerar a movimentação novamente se for editado."
+                : ""}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
@@ -783,16 +784,12 @@ function SortableMovRow({
                 Pagar
               </Button>
             )}
-            {m.origem !== "fechamento" && (
-              <>
-                <Button variant="ghost" size="icon" onClick={() => onEdit(m)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => onDelete(m.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </>
-            )}
+            <Button variant="ghost" size="icon" onClick={() => onEdit(m)} aria-label="Editar movimentação">
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => onDelete(m.id)} aria-label="Excluir movimentação">
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
           </div>
         </TableCell>
       )}

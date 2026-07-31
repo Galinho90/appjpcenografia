@@ -246,8 +246,13 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         const cand = r.candidates.find((c) => c.id === r.movId);
         if (cand && cand.status !== "pago") {
           deltaAcoes += r.tx.tipo === "entrada" ? r.tx.valor : -r.tx.valor;
+        } else if (cand) {
+          // Já estava pago: só o ajuste de valor (tarifa/centavos) impacta o saldo
+          const ajuste = r.tx.valor - cand.valor;
+          deltaAcoes += r.tx.tipo === "entrada" ? ajuste : -ajuste;
         }
       }
+
     }
 
     const saldoEsperado = Number((saldoSistema + deltaAcoes).toFixed(2));

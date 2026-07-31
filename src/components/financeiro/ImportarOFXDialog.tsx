@@ -121,7 +121,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       // Tolerância de centavos/tarifa: diferenças de até R$ 1,00 ainda são
       // consideradas o mesmo pagamento (mesma data e mesmo tipo).
       const TOLERANCIA = 1;
-      const TOLERANCIA_DIAS = 3; // Aumentado para 3 dias para cobrir processamentos bancários em fins de semana/feriados
+      const TOLERANCIA_DIAS = 7; // Aumentado para 7 dias para captar lançamentos feitos antecipadamente ou com atraso bancário maior
 
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);

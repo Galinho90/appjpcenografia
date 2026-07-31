@@ -155,6 +155,18 @@ export default function Movimentacoes() {
     return ultimo;
   };
 
+  /** Saldo atual da conta (ou de todas), na data final do filtro ou hoje. */
+  const saldoContaRef = useMemo(() => {
+    const hojeIso = new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+    return filters.dataFim || hojeIso;
+  }, [filters.dataFim]);
+  const saldoConta = saldoDoDia(saldoContaRef);
+  const contaLabel =
+    filters.contaId === "all"
+      ? "Todas as contas"
+      : contas.find((c) => c.id === filters.contaId)?.apelido ?? "Conta";
+
+
   const activeFiltersCount =
     (filters.tipo !== "all" ? 1 : 0) +
     (filters.status !== "all" ? 1 : 0) +

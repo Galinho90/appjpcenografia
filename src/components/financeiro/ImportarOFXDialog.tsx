@@ -121,7 +121,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       // Tolerância de centavos/tarifa: diferenças de até R$ 1,00 ainda são
       // consideradas o mesmo pagamento (mesma data e mesmo tipo).
       const TOLERANCIA = 1;
-      const TOLERANCIA_DIAS = 3; // Aumentado para 3 dias para cobrir processamentos bancários em fins de semana/feriados
+      const TOLERANCIA_DIAS = 15; // Aumentado para 15 dias para captar pagamentos que demoram a processar ou são feitos antecipadamente
 
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);
@@ -172,18 +172,26 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           movId = candidates[0].id;
         } else {
           // TENTAR MATCH POR NOME SE NÃO HOUVER CANDIDATO POR VALOR/DATA
-          const candidateByName = ((movs ?? []) as any[]).find(m => 
-            !m.fitid && 
-            m.tipo === tx.tipo && 
-            m.descricao && 
-            tx.descricao && 
-            (
-              (m.descricao.toUpperCase().includes("BRUNO CARDOSO") && tx.descricao.toUpperCase().includes("BRUNO CARDOSO")) ||
-              (m.descricao.toUpperCase().includes("THIAGO GON") && tx.descricao.toUpperCase().includes("THIAGO GON")) ||
-              (m.descricao.toUpperCase().includes("JOSE SANTOS") && tx.descricao.toUpperCase().includes("JOSE SANTOS")) ||
-              (m.descricao.toUpperCase().includes("PAULO VICTOR") && tx.descricao.toUpperCase().includes("PAULO VICTOR"))
-            )
-          );
+          const txDesc = (tx.descricao || "").toUpperCase();
+          const candidateByName = ((movs ?? []) as any[]).find(m => {
+            if (m.fitid) return false;
+            if (m.tipo !== tx.tipo) return false;
+            
+            const mDesc = (m.descricao || "").toUpperCase();
+            
+            // Match flexível: removemos prefixos comuns de fechamento para comparar apenas os nomes
+            const cleanMDesc = mDesc.replace("PAGAMENTO FECHAMENTO ", "").trim();
+            const names = ["BRUNO CARDOSO", "THIAGO GON", "JOSE SANTOS", "PAULO VICTOR"];
+            
+            const isMatch = names.some(n => cleanMDesc.includes(n) && txDesc.includes(n));
+            
+            if (!isMatch) return false;
+
+            // Se for match por nome de colaborador, aceitamos qualquer valor e data dentro do range buscado
+            // (visto que o usuário confirmou que são os mesmos registros)
+            return true;
+          });
+
           if (candidateByName) {
             action = "vincular";
             movId = candidateByName.id;

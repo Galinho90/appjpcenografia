@@ -177,7 +177,11 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             m.tipo === tx.tipo && 
             m.descricao && 
             tx.descricao && 
-            (m.descricao.toUpperCase().includes("BRUNO CARDOSO") && tx.descricao.toUpperCase().includes("BRUNO CARDOSO"))
+            (
+              (m.descricao.toUpperCase().includes("BRUNO CARDOSO") && tx.descricao.toUpperCase().includes("BRUNO CARDOSO")) ||
+              (m.descricao.toUpperCase().includes("THIAGO GON") && tx.descricao.toUpperCase().includes("THIAGO GON")) ||
+              (m.descricao.toUpperCase().includes("JOSE SANTOS") && tx.descricao.toUpperCase().includes("JOSE SANTOS"))
+            )
           );
           if (candidateByName) {
             action = "vincular";

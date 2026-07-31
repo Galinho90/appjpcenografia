@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { GitCompareArrows, Download } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { GitCompareArrows, Download, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +27,22 @@ export default function ConciliacaoOFX() {
   });
 
   const { data: colaboradores = [] } = useColaboradores();
-  const { data: itens = [], isLoading } = useConciliacaoFechamentos(filters);
+  const queryClient = useQueryClient();
+  const { data: itens = [], isLoading, refetch } = useConciliacaoFechamentos(filters);
+
+  const [reprocessing, setReprocessing] = useState(false);
+
+  const handleReprocessar = async () => {
+    setReprocessing(true);
+    // Invalida caches para forçar recálculo total
+    await queryClient.invalidateQueries({ queryKey: ["saldo_contas"] });
+    await queryClient.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
+    await queryClient.invalidateQueries({ queryKey: ["conciliacao_fechamentos"] });
+    await refetch();
+    setTimeout(() => {
+      setReprocessing(false);
+    }, 1000);
+  };
 
   const resumo = useMemo(() => {
     const base = { ok: 0, divergente: 0, nao_conciliado: 0, sem_movimentacao: 0, nao_pago: 0 };
@@ -139,6 +155,15 @@ export default function ConciliacaoOFX() {
               </SelectContent>
             </Select>
           </div>
+          <Button 
+            variant="default" 
+            onClick={handleReprocessar} 
+            disabled={reprocessing}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <RefreshCw className={cn("mr-2 h-4 w-4", reprocessing && "animate-spin")} />
+            Reprocessar 31/07
+          </Button>
           <Button variant="outline" onClick={exportarCSV} disabled={itens.length === 0}>
             <Download className="mr-2 h-4 w-4" aria-hidden="true" /> CSV
           </Button>

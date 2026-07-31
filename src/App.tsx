@@ -70,6 +70,7 @@ const App = () => (
             <Route path="/financeiro/categorias" element={<Protected><Staff><CategoriasFinanceiras /></Staff></Protected>} />
             <Route path="/financeiro/contas-bancarias" element={<Protected><Staff><ContasBancarias /></Staff></Protected>} />
             <Route path="/financeiro/relatorios" element={<Protected><Staff><RelatoriosFinanceiros /></Staff></Protected>} />
+            <Route path="/financeiro/conciliacao" element={<Protected><Staff><ConciliacaoOFX /></Staff></Protected>} />
             <Route path="/financeiro/auditoria" element={<Protected><Staff><AuditoriaAjustes /></Staff></Protected>} />
 
             <Route path="/financeiro/fornecedores" element={<Protected><Staff><Fornecedores /></Staff></Protected>} />

@@ -538,6 +538,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                                 {r.candidates.map((c) => (
                                   <SelectItem key={c.id} value={c.id}>
                                     {fmtDate(c.data_pagamento ?? c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
+                                    {Math.abs(c.valor - r.tx.valor) > 0.001
+                                      ? ` • dif. ${fmtBRL(r.tx.valor - c.valor)} (ajusta p/ valor do banco)`
+                                      : ""}
+
                                   </SelectItem>
                                 ))}
                               </SelectContent>

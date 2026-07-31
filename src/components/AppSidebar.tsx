@@ -52,6 +52,8 @@ const financeiroItems: MenuItem[] = [
   { title: "Contas Bancárias", url: "/financeiro/contas-bancarias", icon: Landmark },
   { title: "Plano de Contas", url: "/financeiro/categorias", icon: Tags },
   { title: "Relatórios", url: "/financeiro/relatorios", icon: BarChart3 },
+  { title: "Auditoria de Ajustes", url: "/financeiro/auditoria", icon: History },
+
 ];
 
 const diaristaMenuItems: MenuItem[] = [

@@ -586,8 +586,11 @@ export default function Movimentacoes() {
                   <div key={g.data || "sem-data"}>
                     <div className="flex items-center justify-between px-3 py-2 bg-muted/60 sticky top-0 z-10">
                       <span className="text-xs font-semibold">{g.data ? fmtDate(g.data) : "Sem data"}</span>
-                      <span className={`text-xs font-semibold ${g.total >= 0 ? "text-success" : "text-destructive"}`}>
-                        {fmtBRL(g.total)}
+                      <span className="text-right">
+                        <span className="block text-[10px] text-muted-foreground leading-none">Saldo do dia</span>
+                        <span className={`text-xs font-semibold ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
+                          {saldoDoDia(g.data) == null ? "—" : fmtBRL(saldoDoDia(g.data) as number)}
+                        </span>
                       </span>
                     </div>
                     <div className="divide-y">

@@ -75,6 +75,8 @@ export default function Movimentacoes() {
   const [motivoAjuste, setMotivoAjuste] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [search, setSearch] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const registrarMotivo = useRegistrarMotivoAjuste();
 
@@ -84,14 +86,91 @@ export default function Movimentacoes() {
     valorOriginal !== null &&
     Math.abs(Number(form.valor || 0) - valorOriginal) > 0.004;
 
-  useEffect(() => { setPage(1); }, [filters, pageSize]);
+  useEffect(() => { setPage(1); }, [filters, pageSize, search]);
 
-  const totalPages = Math.max(1, Math.ceil(movs.length / pageSize));
+  /** Busca textual local (descrição, fornecedor, cliente, categoria, conta). */
+  const filteredMovs = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return movs;
+    return movs.filter((m) =>
+      [
+        m.descricao,
+        m.fornecedor?.nome,
+        m.cliente?.razao_social,
+        m.categoria?.nome,
+        m.conta?.apelido,
+      ]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [movs, search]);
+
+  /** Totais do resultado filtrado — visão rápida do período. */
+  const resumo = useMemo(() => {
+    let entradas = 0, saidas = 0, pendentes = 0, qtdPendentes = 0;
+    for (const m of filteredMovs) {
+      const v = Number(m.valor) || 0;
+      if (m.tipo === "entrada") entradas += v;
+      else if (m.tipo === "saida") saidas += v;
+      if (m.status !== "pago" && m.status !== "cancelado") { pendentes += v; qtdPendentes++; }
+    }
+    return { entradas, saidas, saldo: entradas - saidas, pendentes, qtdPendentes };
+  }, [filteredMovs]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredMovs.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const pagedMovs = useMemo(
-    () => movs.slice((currentPage - 1) * pageSize, currentPage * pageSize),
-    [movs, currentPage, pageSize]
+    () => filteredMovs.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [filteredMovs, currentPage, pageSize]
   );
+
+  /** Agrupamento por data efetiva (pagamento quando pago, senão vencimento). */
+  const grupos = useMemo(() => {
+    const effDate = (m: MovimentacaoFinanceira) =>
+      ((m.status === "pago" ? m.data_pagamento : m.data_vencimento) ?? "") as string;
+    const out: { data: string; itens: MovimentacaoFinanceira[]; total: number }[] = [];
+    for (const m of pagedMovs) {
+      const d = effDate(m);
+      let g = out[out.length - 1];
+      if (!g || g.data !== d) { g = { data: d, itens: [], total: 0 }; out.push(g); }
+      g.itens.push(m);
+      const v = Number(m.valor) || 0;
+      g.total += m.tipo === "entrada" ? v : m.tipo === "saida" ? -v : 0;
+    }
+    return out;
+  }, [pagedMovs]);
+
+  const activeFiltersCount =
+    (filters.tipo !== "all" ? 1 : 0) +
+    (filters.status !== "all" ? 1 : 0) +
+    (filters.contaId !== "all" ? 1 : 0) +
+    (filters.categoriaId !== "all" ? 1 : 0) +
+    (filters.dataInicio ? 1 : 0) +
+    (filters.dataFim ? 1 : 0);
+
+  /** Presets de período — reduz cliques no caso de uso mais comum. */
+  const setPeriodoPreset = (preset: "hoje" | "7d" | "mes" | "quinzena" | "tudo") => {
+    const hoje = new Date(todayISO() + "T12:00:00");
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    if (preset === "tudo") { setFilters({ ...filters, dataInicio: "", dataFim: "" }); return; }
+    if (preset === "hoje") { setFilters({ ...filters, dataInicio: iso(hoje), dataFim: iso(hoje) }); return; }
+    if (preset === "7d") {
+      const ini = new Date(hoje); ini.setDate(ini.getDate() - 6);
+      setFilters({ ...filters, dataInicio: iso(ini), dataFim: iso(hoje) }); return;
+    }
+    if (preset === "mes") {
+      const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1, 12);
+      const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 12);
+      setFilters({ ...filters, dataInicio: iso(ini), dataFim: iso(fim) }); return;
+    }
+    // quinzena vigente: 01–15 ou 16–fim do mês
+    const dia = hoje.getDate();
+    const ini = new Date(hoje.getFullYear(), hoje.getMonth(), dia <= 15 ? 1 : 16, 12);
+    const fim = dia <= 15
+      ? new Date(hoje.getFullYear(), hoje.getMonth(), 15, 12)
+      : new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 12);
+    setFilters({ ...filters, dataInicio: iso(ini), dataFim: iso(fim) });
+  };
 
   const openCreate = (tipo: TipoMovimentacao = "saida") => {
     setEditingId(null);

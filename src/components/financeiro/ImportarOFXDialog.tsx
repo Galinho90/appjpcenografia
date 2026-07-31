@@ -179,31 +179,23 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             
             const mDesc = (m.descricao || "").toUpperCase();
             
-            // Lista de termos para busca flexível
-            const pairs = [
-              ["BRUNO CARDOSO", "BRUNO CARDOSO"],
-              ["THIAGO GON", "THIAGO GON"],
-              ["JOSE SANTOS", "JOSE SANTOS"],
-              ["PAULO VICTOR", "PAULO VICTOR"]
-            ];
+            // Se o nome for encontrado em ambos, consideramos um forte candidato
+            const names = ["BRUNO CARDOSO", "THIAGO GON", "JOSE SANTOS", "PAULO VICTOR"];
+            const isMatch = names.some(n => mDesc.includes(n) && txDesc.includes(n));
+            
+            if (!isMatch) return false;
 
-            const matchNome = pairs.some(([mTerm, txTerm]) => 
-              mDesc.includes(mTerm) && txDesc.includes(txTerm)
-            );
-
-            if (!matchNome) return false;
-
-            // Se for match por nome, ainda validamos o valor com tolerância
+            // Para match por nome, permitimos uma tolerância maior de valor (R$ 5,00)
             const diffValor = Math.abs(Number(m.valor) - tx.valor);
-            if (diffValor > TOLERANCIA) return false;
+            if (diffValor > 5) return false;
 
-            // E a data com a tolerância de dias
+            // E uma tolerância maior de data (10 dias)
             const dEfet = m.data_pagamento ?? m.data_vencimento;
             if (!dEfet) return false;
             const diffMs = Math.abs(new Date(dEfet + "T00:00:00").getTime() - new Date(tx.data + "T00:00:00").getTime());
             const diffDias = diffMs / (1000 * 60 * 60 * 24);
             
-            return diffDias <= TOLERANCIA_DIAS;
+            return diffDias <= 10;
           });
 
           if (candidateByName) {

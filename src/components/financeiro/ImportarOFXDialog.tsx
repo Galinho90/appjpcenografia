@@ -394,10 +394,22 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
 
         {rows.length > 0 && (
           <>
-            <div className="flex flex-wrap gap-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
               <Badge className="bg-success text-success-foreground">Vincular: {stats.vincular}</Badge>
               <Badge className="bg-info text-info-foreground">Criar: {stats.criar}</Badge>
               <Badge variant="outline">Ignorar: {stats.ignorar}</Badge>
+              
+              {/* Alertas de duplicidade ou não encontrados */}
+              {rows.some(r => r.candidates.length > 1 && !r.alreadyImported) && (
+                <Badge variant="destructive" className="animate-pulse gap-1">
+                  <HelpCircle className="h-3 w-3" /> Valores Duplicados Detectados
+                </Badge>
+              )}
+              {rows.some(r => r.candidates.length === 0 && !r.alreadyImported && r.action !== "ignorar") && (
+                <Badge variant="secondary" className="gap-1 bg-yellow-100 text-yellow-800 border-yellow-200">
+                  <AlertCircle className="h-3 w-3" /> Lançamentos não encontrados
+                </Badge>
+              )}
             </div>
 
             {reconciliacao && (

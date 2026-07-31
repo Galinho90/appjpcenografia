@@ -31,6 +31,7 @@ import ContasBancarias from "./pages/financeiro/ContasBancarias";
 import RelatoriosFinanceiros from "./pages/financeiro/RelatoriosFinanceiros";
 import Fornecedores from "./pages/financeiro/Fornecedores";
 import AuditoriaAjustes from "./pages/financeiro/AuditoriaAjustes";
+import ConciliacaoOFX from "./pages/financeiro/ConciliacaoOFX";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,7 @@ const App = () => (
             <Route path="/financeiro/categorias" element={<Protected><Staff><CategoriasFinanceiras /></Staff></Protected>} />
             <Route path="/financeiro/contas-bancarias" element={<Protected><Staff><ContasBancarias /></Staff></Protected>} />
             <Route path="/financeiro/relatorios" element={<Protected><Staff><RelatoriosFinanceiros /></Staff></Protected>} />
+            <Route path="/financeiro/conciliacao" element={<Protected><Staff><ConciliacaoOFX /></Staff></Protected>} />
             <Route path="/financeiro/auditoria" element={<Protected><Staff><AuditoriaAjustes /></Staff></Protected>} />
 
             <Route path="/financeiro/fornecedores" element={<Protected><Staff><Fornecedores /></Staff></Protected>} />

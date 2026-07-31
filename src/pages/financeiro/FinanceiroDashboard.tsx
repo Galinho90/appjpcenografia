@@ -20,7 +20,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from "recharts";
 import {
-  useContasBancarias, useMovimentacoes, useSaldoConta,
+  useContasBancarias, useMovimentacoes, useSaldoContas,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate } from "@/lib/financeiro";
 
@@ -32,11 +32,19 @@ export default function FinanceiroDashboard() {
   const [dataInicio, setDataInicio] = useState<Date>(new Date(hoje.getFullYear(), hoje.getMonth(), 1));
   const [dataFim, setDataFim] = useState<Date>(new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0));
 
-  const inicioStr = dataInicio.toISOString().slice(0, 10);
-  const fimStr = dataFim.toISOString().slice(0, 10);
+  // Datas em ISO usando componentes locais (evita o shift de fuso do toISOString)
+  const toISO = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-  const contaSelecionada = contaId === "all" ? contas[0]?.id ?? null : contaId;
-  const { data: saldo = 0 } = useSaldoConta(contaSelecionada, fimStr);
+  const inicioStr = toISO(dataInicio);
+  const fimStr = toISO(dataFim);
+
+  // Saldo do caixa: soma TODAS as contas quando o filtro é "Todas as contas"
+  const contasSelecionadas = contaId === "all" ? contas.map((c) => c.id) : [contaId];
+  const hojeStrLocal = toISO(hoje);
+  // Referência do saldo: nunca antes de hoje, para o card refletir o caixa real
+  const saldoRef = fimStr > hojeStrLocal ? fimStr : hojeStrLocal;
+  const { data: saldo = 0 } = useSaldoContas(contasSelecionadas, saldoRef);
 
   // Buscamos sem filtro de data e filtramos no cliente usando a data efetiva
   // (data_pagamento para pagos, data_vencimento para os demais)
@@ -60,8 +68,8 @@ export default function FinanceiroDashboard() {
   const resultadoPeriodo = entradasPeriodo - saidasPeriodo;
 
   // Próximos vencimentos (7 dias) — usamos a lista completa, não restrita ao período
-  const hojeStr = hoje.toISOString().slice(0, 10);
-  const em7Dias = new Date(hoje.getTime() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+  const hojeStr = hojeStrLocal;
+  const em7Dias = toISO(new Date(hoje.getTime() + 7 * 24 * 3600 * 1000));
   const proximosVencimentos = todasMovs
     .filter((m) => m.status === "pendente" && m.data_vencimento && m.data_vencimento >= hojeStr && m.data_vencimento <= em7Dias)
     .sort((a, b) => (a.data_vencimento ?? "").localeCompare(b.data_vencimento ?? ""))

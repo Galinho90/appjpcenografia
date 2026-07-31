@@ -183,6 +183,9 @@ export default function Movimentacoes() {
   };
 
 
+  const deleteOrigemFechamento =
+    !!deleteId && pagedMovs.some((m) => m.id === deleteId && m.origem === "fechamento");
+
   const handleDelete = async () => {
     if (!deleteId) return;
     try {

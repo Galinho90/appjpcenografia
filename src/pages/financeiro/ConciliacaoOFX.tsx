@@ -76,9 +76,20 @@ export default function ConciliacaoOFX() {
             <GitCompareArrows className="h-6 w-6 text-primary" aria-hidden="true" />
             Conciliação OFX × Fechamentos
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Divergências por colaborador e período: valor esperado do fechamento contra o valor bancário.
-          </p>
+            <div className="flex flex-col gap-1">
+              <p className="text-sm text-muted-foreground">
+                Divergências por colaborador e período: valor esperado do fechamento contra o valor bancário.
+              </p>
+              <div className="mt-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+                <p className="font-semibold">⚠️ Análise de Divergência (31/07/2026)</p>
+                <p>O saldo da conta informado é <strong>R$ 17.505,93</strong>, mas o Dashboard exibe <strong>R$ 16.539,43</strong>.</p>
+                <p className="mt-1">
+                  <strong>Diferença: R$ 966,50.</strong> Foi identificado um lançamento de <strong>ALIMENTAÇÃO - CARLOS EDUARDO (R$ 282,00)</strong> e 
+                  <strong>ALIMENTAÇÃO - KAUE VICENTE (R$ 154,00)</strong> vinculados ao mesmo FITID (202607310771 e 202607310773). 
+                  Verifique duplicidades manuais e transações sem FITID que impactam o caixa.
+                </p>
+              </div>
+            </div>
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">

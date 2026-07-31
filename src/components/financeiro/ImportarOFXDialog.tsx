@@ -192,7 +192,17 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           if (m.fitid && fitidsOFX.has(m.fitid)) return false;
           // Vai ser vinculado nesta importação
           if (candidatoIds.has(m.id)) return false;
+          // Existe transação equivalente no OFX (mesma data, mesmo tipo,
+          // diferença de até R$ 1,00) — não é um "extra" de verdade
+          const temEquivalente = transactions.some(
+            (t) =>
+              t.data === dEfet &&
+              t.tipo === m.tipo &&
+              Math.abs(Number(m.valor) - t.valor) <= TOLERANCIA
+          );
+          if (temEquivalente) return false;
           return true;
+
         })
         .map((m: any) => ({
           id: m.id,

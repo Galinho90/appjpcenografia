@@ -30,6 +30,7 @@ import CategoriasFinanceiras from "./pages/financeiro/CategoriasFinanceiras";
 import ContasBancarias from "./pages/financeiro/ContasBancarias";
 import RelatoriosFinanceiros from "./pages/financeiro/RelatoriosFinanceiros";
 import Fornecedores from "./pages/financeiro/Fornecedores";
+import AuditoriaAjustes from "./pages/financeiro/AuditoriaAjustes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

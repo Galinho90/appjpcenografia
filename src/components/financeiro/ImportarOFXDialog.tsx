@@ -121,6 +121,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       // Tolerância de centavos/tarifa: diferenças de até R$ 1,00 ainda são
       // consideradas o mesmo pagamento (mesma data e mesmo tipo).
       const TOLERANCIA = 1;
+      const TOLERANCIA_DIAS = 3; // Aumentado para 3 dias para cobrir processamentos bancários em fins de semana/feriados
 
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);
@@ -135,10 +136,13 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             const diffValor = Math.abs(Number(m.valor) - tx.valor);
             if (diffValor > TOLERANCIA) return false;
             
-            // Vínculo permitido SOMENTE quando a data efetiva do lançamento
-            // é exatamente a mesma data da transação do OFX.
+            // Vínculo permitido quando a data efetiva do lançamento está dentro da tolerância
             const dEfet = m.data_pagamento ?? m.data_vencimento;
-            return dEfet === tx.data;
+            if (!dEfet) return false;
+            
+            const diffMs = Math.abs(new Date(dEfet + "T00:00:00").getTime() - new Date(tx.data + "T00:00:00").getTime());
+            const diffDias = diffMs / (1000 * 60 * 60 * 24);
+            return diffDias <= TOLERANCIA_DIAS;
           })
           .map((m: any) => ({
             id: m.id,
@@ -149,7 +153,13 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             status: m.status,
             fitid: m.fitid,
           }))
-          .sort((a, b) => Math.abs(a.valor - tx.valor) - Math.abs(b.valor - tx.valor));
+          .sort((a, b) => {
+            // Prioriza match exato de data, depois menor diferença de valor
+            const dataMatchA = (a.data_pagamento ?? a.data_vencimento) === tx.data ? 0 : 1;
+            const dataMatchB = (b.data_pagamento ?? b.data_vencimento) === tx.data ? 0 : 1;
+            if (dataMatchA !== dataMatchB) return dataMatchA - dataMatchB;
+            return Math.abs(a.valor - tx.valor) - Math.abs(b.valor - tx.valor);
+          });
 
         let action: Row["action"] = "criar";
         let movId: string | undefined;
@@ -157,9 +167,27 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         if (alreadyImported) {
           action = "ignorar";
         } else if (candidates.length >= 1) {
-          // AUTO-VINCULAR TUDO O QUE FOR ENCONTRADO (Conforme pedido pelo usuário)
+          // AUTO-VINCULAR TUDO O QUE FOR ENCONTRADO
           action = "vincular";
           movId = candidates[0].id;
+        } else {
+          // TENTAR MATCH POR NOME SE NÃO HOUVER CANDIDATO POR VALOR/DATA
+          const candidateByName = ((movs ?? []) as any[]).find(m => 
+            !m.fitid && 
+            m.tipo === tx.tipo && 
+            m.descricao && 
+            tx.descricao && 
+            (
+              (m.descricao.toUpperCase().includes("BRUNO CARDOSO") && tx.descricao.toUpperCase().includes("BRUNO CARDOSO")) ||
+              (m.descricao.toUpperCase().includes("THIAGO GON") && tx.descricao.toUpperCase().includes("THIAGO GON")) ||
+              (m.descricao.toUpperCase().includes("JOSE SANTOS") && tx.descricao.toUpperCase().includes("JOSE SANTOS")) ||
+              (m.descricao.toUpperCase().includes("PAULO VICTOR") && tx.descricao.toUpperCase().includes("PAULO VICTOR"))
+            )
+          );
+          if (candidateByName) {
+            action = "vincular";
+            movId = candidateByName.id;
+          }
         }
         
         return { tx, action, movId, categoriaId: undefined, candidates, alreadyImported };
@@ -201,9 +229,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           // diferença de até R$ 1,00) — não é um "extra" de verdade
           const temEquivalente = transactions.some(
             (t) =>
-              t.data === dEfet &&
               t.tipo === m.tipo &&
-              Math.abs(Number(m.valor) - t.valor) <= TOLERANCIA
+              Math.abs(Number(m.valor) - t.valor) <= TOLERANCIA &&
+              Math.abs(new Date(dEfet + "T00:00:00").getTime() - new Date(t.data + "T00:00:00").getTime()) / (1000 * 60 * 60 * 24) <= TOLERANCIA_DIAS
           );
           if (temEquivalente) return false;
           return true;

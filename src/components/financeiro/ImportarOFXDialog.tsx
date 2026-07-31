@@ -118,13 +118,17 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         ((movs ?? []) as any[]).filter((m) => m.fitid).map((m) => m.fitid as string)
       );
 
+      // Tolerância de centavos/tarifa: diferenças de até R$ 1,00 ainda são
+      // consideradas o mesmo pagamento (mesma data e mesmo tipo).
+      const TOLERANCIA = 1;
+
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);
         const candidates: MovCandidate[] = ((movs ?? []) as any[])
           .filter((m: any) => {
             if (m.fitid) return false;
             if (m.tipo !== tx.tipo) return false;
-            if (Number(m.valor) !== tx.valor) return false;
+            if (Math.abs(Number(m.valor) - tx.valor) > TOLERANCIA) return false;
             // Vínculo permitido SOMENTE quando a data efetiva do lançamento
             // é exatamente a mesma data da transação do OFX.
             const dEfet = m.data_pagamento ?? m.data_vencimento;
@@ -138,21 +142,24 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             data_pagamento: m.data_pagamento,
             status: m.status,
             fitid: m.fitid,
-          }));
+          }))
+          // Match exato primeiro, depois os aproximados
+          .sort(
+            (a, b) =>
+              Math.abs(a.valor - tx.valor) - Math.abs(b.valor - tx.valor)
+          );
 
         let action: Row["action"] = "criar";
         let movId: string | undefined;
         if (alreadyImported) {
           action = "ignorar";
-        } else if (candidates.length === 1) {
-          action = "vincular";
-          movId = candidates[0].id;
-        } else if (candidates.length > 1) {
+        } else if (candidates.length >= 1) {
           action = "vincular";
           movId = candidates[0].id;
         }
         return { tx, action, movId, categoriaId: undefined, candidates, alreadyImported };
       });
+
 
       setRows(newRows);
 

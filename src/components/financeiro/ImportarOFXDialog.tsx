@@ -118,13 +118,17 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         ((movs ?? []) as any[]).filter((m) => m.fitid).map((m) => m.fitid as string)
       );
 
+      // Tolerância de centavos/tarifa: diferenças de até R$ 1,00 ainda são
+      // consideradas o mesmo pagamento (mesma data e mesmo tipo).
+      const TOLERANCIA = 1;
+
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);
         const candidates: MovCandidate[] = ((movs ?? []) as any[])
           .filter((m: any) => {
             if (m.fitid) return false;
             if (m.tipo !== tx.tipo) return false;
-            if (Number(m.valor) !== tx.valor) return false;
+            if (Math.abs(Number(m.valor) - tx.valor) > TOLERANCIA) return false;
             // Vínculo permitido SOMENTE quando a data efetiva do lançamento
             // é exatamente a mesma data da transação do OFX.
             const dEfet = m.data_pagamento ?? m.data_vencimento;
@@ -138,21 +142,24 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             data_pagamento: m.data_pagamento,
             status: m.status,
             fitid: m.fitid,
-          }));
+          }))
+          // Match exato primeiro, depois os aproximados
+          .sort(
+            (a, b) =>
+              Math.abs(a.valor - tx.valor) - Math.abs(b.valor - tx.valor)
+          );
 
         let action: Row["action"] = "criar";
         let movId: string | undefined;
         if (alreadyImported) {
           action = "ignorar";
-        } else if (candidates.length === 1) {
-          action = "vincular";
-          movId = candidates[0].id;
-        } else if (candidates.length > 1) {
+        } else if (candidates.length >= 1) {
           action = "vincular";
           movId = candidates[0].id;
         }
         return { tx, action, movId, categoriaId: undefined, candidates, alreadyImported };
       });
+
 
       setRows(newRows);
 
@@ -185,7 +192,17 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           if (m.fitid && fitidsOFX.has(m.fitid)) return false;
           // Vai ser vinculado nesta importação
           if (candidatoIds.has(m.id)) return false;
+          // Existe transação equivalente no OFX (mesma data, mesmo tipo,
+          // diferença de até R$ 1,00) — não é um "extra" de verdade
+          const temEquivalente = transactions.some(
+            (t) =>
+              t.data === dEfet &&
+              t.tipo === m.tipo &&
+              Math.abs(Number(m.valor) - t.valor) <= TOLERANCIA
+          );
+          if (temEquivalente) return false;
           return true;
+
         })
         .map((m: any) => ({
           id: m.id,
@@ -229,8 +246,13 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         const cand = r.candidates.find((c) => c.id === r.movId);
         if (cand && cand.status !== "pago") {
           deltaAcoes += r.tx.tipo === "entrada" ? r.tx.valor : -r.tx.valor;
+        } else if (cand) {
+          // Já estava pago: só o ajuste de valor (tarifa/centavos) impacta o saldo
+          const ajuste = r.tx.valor - cand.valor;
+          deltaAcoes += r.tx.tipo === "entrada" ? ajuste : -ajuste;
         }
       }
+
     }
 
     const saldoEsperado = Number((saldoSistema + deltaAcoes).toFixed(2));
@@ -275,10 +297,12 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                 .from("movimentacoes_financeiras" as any)
                 .update({
                   status: "pago",
+                  valor: r.tx.valor,
                   data_vencimento: r.tx.data,
                   data_pagamento: r.tx.data,
                   fitid: r.tx.fitid,
                 } as any)
+
                 .eq("id", r.movId);
               if (error) throw error;
             } else if (r.action === "criar") {
@@ -514,6 +538,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                                 {r.candidates.map((c) => (
                                   <SelectItem key={c.id} value={c.id}>
                                     {fmtDate(c.data_pagamento ?? c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
+                                    {Math.abs(c.valor - r.tx.valor) > 0.001
+                                      ? ` • dif. ${fmtBRL(r.tx.valor - c.valor)} (ajusta p/ valor do banco)`
+                                      : ""}
+
                                   </SelectItem>
                                 ))}
                               </SelectContent>

@@ -308,6 +308,66 @@ export function useSaldoContas(contaIds: string[] | null, dataRef?: string) {
   });
 }
 
+/**
+ * Saldo acumulado (fechamento) de cada dia que possui movimentação paga.
+ *
+ * Espelha a lógica de `get_saldo_conta`:
+ *  - saldo inicial das contas consideradas
+ *  - + entradas, - saídas (status = 'pago')
+ *  - transferências: -valor na conta origem, +valor na conta destino
+ *
+ * Retorna um Map<data ISO, saldo ao final do dia>, independente dos filtros
+ * aplicados na tela — o saldo do dia precisa refletir o extrato bancário real.
+ */
+export function useSaldosPorDia(contaId?: string | null) {
+  const { data: contas = [] } = useContasBancarias();
+  const todosIds = contas.map((c) => c.id).sort();
+  const escopo = contaId && contaId !== "all" ? [contaId] : todosIds;
+
+  return useQuery({
+    queryKey: ["saldos_por_dia", escopo.join(",")],
+    enabled: contas.length > 0,
+    queryFn: async () => {
+      const ids = new Set(escopo);
+      const saldoInicial = contas
+        .filter((c) => ids.has(c.id))
+        .reduce((s, c) => s + (Number(c.saldo_inicial) || 0), 0);
+
+      const { data, error } = await supabase
+        .from("movimentacoes_financeiras" as any)
+        .select("tipo, valor, status, data_pagamento, data_vencimento, conta_id, conta_destino_id")
+        .eq("status", "pago");
+      if (error) throw error;
+
+      // Delta por dia (data efetiva = pagamento, com fallback para vencimento)
+      const porDia = new Map<string, number>();
+      for (const m of ((data ?? []) as any[])) {
+        const dia: string = m.data_pagamento ?? m.data_vencimento ?? "";
+        if (!dia) continue;
+        const valor = Number(m.valor) || 0;
+        let delta = 0;
+        if (m.tipo === "entrada" && ids.has(m.conta_id)) delta = valor;
+        else if (m.tipo === "saida" && ids.has(m.conta_id)) delta = -valor;
+        else if (m.tipo === "transferencia") {
+          if (ids.has(m.conta_id)) delta -= valor;
+          if (m.conta_destino_id && ids.has(m.conta_destino_id)) delta += valor;
+        }
+        if (delta === 0) continue;
+        porDia.set(dia, (porDia.get(dia) ?? 0) + delta);
+      }
+
+      // Acumula em ordem crescente de data
+      const saldos = new Map<string, number>();
+      let acumulado = saldoInicial;
+      for (const dia of [...porDia.keys()].sort()) {
+        acumulado += porDia.get(dia) ?? 0;
+        saldos.set(dia, acumulado);
+      }
+      return saldos;
+    },
+  });
+}
+
 // ── Fornecedores ──
 export function useFornecedores(onlyActive = false) {
   return useQuery({

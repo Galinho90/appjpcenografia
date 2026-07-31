@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import {
   useMovimentacoes, useCreateMovimentacao, useUpdateMovimentacao, useDeleteMovimentacao,
-  useContasBancarias, useCategoriasFinanceiras, useFornecedores,
+  useContasBancarias, useCategoriasFinanceiras, useFornecedores, useSaldosPorDia,
   type MovimentacaoFinanceira, type TipoMovimentacao, type StatusMovimentacao,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/financeiro";
@@ -139,6 +139,21 @@ export default function Movimentacoes() {
     }
     return out;
   }, [pagedMovs]);
+
+  /** Saldo de fechamento de cada dia (conforme extrato bancário). */
+  const { data: saldosPorDia } = useSaldosPorDia(filters.contaId);
+  const saldoDoDia = (data: string): number | null => {
+    if (!data || !saldosPorDia) return null;
+    const exato = saldosPorDia.get(data);
+    if (exato != null) return exato;
+    // Dia sem movimentação paga: repete o saldo do último dia com fechamento.
+    let ultimo: number | null = null;
+    for (const [dia, saldo] of [...saldosPorDia.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+      if (dia <= data) ultimo = saldo;
+      else break;
+    }
+    return ultimo;
+  };
 
   const activeFiltersCount =
     (filters.tipo !== "all" ? 1 : 0) +
@@ -586,8 +601,11 @@ export default function Movimentacoes() {
                   <div key={g.data || "sem-data"}>
                     <div className="flex items-center justify-between px-3 py-2 bg-muted/60 sticky top-0 z-10">
                       <span className="text-xs font-semibold">{g.data ? fmtDate(g.data) : "Sem data"}</span>
-                      <span className={`text-xs font-semibold ${g.total >= 0 ? "text-success" : "text-destructive"}`}>
-                        {fmtBRL(g.total)}
+                      <span className="text-right">
+                        <span className="block text-[10px] text-muted-foreground leading-none">Saldo do dia</span>
+                        <span className={`text-xs font-semibold ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
+                          {saldoDoDia(g.data) == null ? "—" : fmtBRL(saldoDoDia(g.data) as number)}
+                        </span>
                       </span>
                     </div>
                     <div className="divide-y">
@@ -673,11 +691,19 @@ export default function Movimentacoes() {
                             <TableCell colSpan={isAdmin ? 7 : 6} className="py-2 text-xs font-semibold">
                               {g.data ? fmtDate(g.data) : "Sem data"}
                               <span className="ml-2 font-normal text-muted-foreground">
-                                {g.itens.length} lançamento(s)
+                                {g.itens.length} lançamento(s) · movimento do dia{" "}
+                                <span className={g.total >= 0 ? "text-success" : "text-destructive"}>
+                                  {fmtBRL(g.total)}
+                                </span>
                               </span>
                             </TableCell>
-                            <TableCell className={`py-2 text-right text-xs font-semibold ${g.total >= 0 ? "text-success" : "text-destructive"}`}>
-                              {fmtBRL(g.total)}
+                            <TableCell className="py-2 text-right text-xs">
+                              <div className="text-[10px] font-normal text-muted-foreground leading-none">
+                                Saldo do dia
+                              </div>
+                              <div className={`font-semibold ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
+                                {saldoDoDia(g.data) == null ? "—" : fmtBRL(saldoDoDia(g.data) as number)}
+                              </div>
                             </TableCell>
                             {isAdmin && <TableCell />}
                           </TableRow>

@@ -479,7 +479,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                         {r.alreadyImported ? (
                           <Badge variant="outline" className="text-[10px]">—</Badge>
                         ) : r.candidates.length === 0 ? (
-                          <span title="Sem match"><AlertCircle className="h-4 w-4 text-destructive" /></span>
+                          <span title="Sem lançamento na mesma data"><AlertCircle className="h-4 w-4 text-destructive" /></span>
                         ) : r.candidates.length === 1 ? (
                           <span title="Match único"><CheckCircle2 className="h-4 w-4 text-success" /></span>
                         ) : (
@@ -513,7 +513,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                               <SelectContent>
                                 {r.candidates.map((c) => (
                                   <SelectItem key={c.id} value={c.id}>
-                                    {fmtDate(c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
+                                    {fmtDate(c.data_pagamento ?? c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
                                   </SelectItem>
                                 ))}
                               </SelectContent>

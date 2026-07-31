@@ -283,6 +283,31 @@ export function useSaldoConta(contaId: string | null, dataRef?: string) {
   });
 }
 
+/**
+ * Saldo somado de várias contas (ou de todas quando `contaIds` vem vazio/null).
+ * Evita a divergência de mostrar apenas o saldo da primeira conta no dashboard.
+ */
+export function useSaldoContas(contaIds: string[] | null, dataRef?: string) {
+  const ids = (contaIds ?? []).filter(Boolean);
+  return useQuery({
+    queryKey: ["saldo_contas", ids.slice().sort().join(","), dataRef],
+    enabled: ids.length > 0,
+    queryFn: async () => {
+      const results = await Promise.all(
+        ids.map(async (id) => {
+          const { data, error } = await supabase.rpc("get_saldo_conta" as any, {
+            _conta_id: id,
+            ...(dataRef ? { _data_ref: dataRef } : {}),
+          } as any);
+          if (error) throw error;
+          return Number(data ?? 0);
+        })
+      );
+      return results.reduce((s, v) => s + v, 0);
+    },
+  });
+}
+
 // ── Fornecedores ──
 export function useFornecedores(onlyActive = false) {
   return useQuery({

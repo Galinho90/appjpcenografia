@@ -70,8 +70,18 @@ export default function Movimentacoes() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [valorOriginal, setValorOriginal] = useState<number | null>(null);
+  const [motivoAjuste, setMotivoAjuste] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+
+  const registrarMotivo = useRegistrarMotivoAjuste();
+
+  // Estado derivado: houve alteração de valor em um registro existente?
+  const valorAlterado =
+    !!editingId &&
+    valorOriginal !== null &&
+    Math.abs(Number(form.valor || 0) - valorOriginal) > 0.004;
 
   useEffect(() => { setPage(1); }, [filters, pageSize]);
 

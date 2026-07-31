@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
@@ -478,6 +479,17 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
               <Badge className="bg-success text-success-foreground">Vincular: {stats.vincular}</Badge>
               <Badge className="bg-info text-info-foreground">Criar: {stats.criar}</Badge>
               <Badge variant="outline">Ignorar: {stats.ignorar}</Badge>
+              {stats.pendentesConfirmacao > 0 && (
+                <>
+                  <Badge variant="destructive" className="gap-1">
+                    <AlertTriangle className="h-3 w-3" /> {stats.pendentesConfirmacao} vínculo(s) aguardando confirmação
+                  </Badge>
+                  <Button size="sm" variant="outline" className="h-6 text-xs" onClick={confirmarTodos}>
+                    Confirmar todos os vínculos
+                  </Button>
+                </>
+              )}
+              
               
               {/* Alertas de duplicidade ou não encontrados */}
               {rows.some(r => r.candidates.length > 1 && !r.alreadyImported) && (

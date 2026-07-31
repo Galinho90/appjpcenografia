@@ -411,8 +411,21 @@ export default function Movimentacoes() {
       </div>
 
       {/* Resumo do resultado filtrado */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-sm">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
+        <Card className="shadow-sm border-primary/30 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Wallet className="h-3.5 w-3.5 text-primary" /> Saldo da conta
+            </div>
+            <div className={`mt-1 text-lg font-bold ${(saldoConta ?? 0) >= 0 ? "text-foreground" : "text-destructive"}`}>
+              {saldoConta != null ? fmtBRL(saldoConta) : "—"}
+            </div>
+            <div className="text-[11px] text-muted-foreground truncate">
+              {contaLabel} · {saldoContaRef.split("-").reverse().join("/")}
+            </div>
+          </CardContent>
+        </Card>
+
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <TrendingUp className="h-3.5 w-3.5 text-success" /> Entradas

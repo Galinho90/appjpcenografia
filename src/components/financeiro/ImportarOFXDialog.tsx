@@ -153,7 +153,13 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             status: m.status,
             fitid: m.fitid,
           }))
-          .sort((a, b) => Math.abs(a.valor - tx.valor) - Math.abs(b.valor - tx.valor));
+          .sort((a, b) => {
+            // Prioriza match exato de data, depois menor diferença de valor
+            const dataMatchA = (a.data_pagamento ?? a.data_vencimento) === tx.data ? 0 : 1;
+            const dataMatchB = (b.data_pagamento ?? b.data_vencimento) === tx.data ? 0 : 1;
+            if (dataMatchA !== dataMatchB) return dataMatchA - dataMatchB;
+            return Math.abs(a.valor - tx.valor) - Math.abs(b.valor - tx.valor);
+          });
 
         let action: Row["action"] = "criar";
         let movId: string | undefined;

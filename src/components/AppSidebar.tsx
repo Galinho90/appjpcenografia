@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Users, CalendarDays, FileBarChart, FileText,
   Settings, Building2, Tags, LogOut, Wallet, BarChart3, Receipt,
-  DollarSign, ArrowDownUp, CalendarClock, Landmark, ChevronRight,
+  DollarSign, ArrowDownUp, CalendarClock, Landmark, ChevronRight, History,
   ClipboardList, FolderKanban, Truck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
@@ -52,6 +52,8 @@ const financeiroItems: MenuItem[] = [
   { title: "Contas Bancárias", url: "/financeiro/contas-bancarias", icon: Landmark },
   { title: "Plano de Contas", url: "/financeiro/categorias", icon: Tags },
   { title: "Relatórios", url: "/financeiro/relatorios", icon: BarChart3 },
+  { title: "Auditoria de Ajustes", url: "/financeiro/auditoria", icon: History },
+
 ];
 
 const diaristaMenuItems: MenuItem[] = [

@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      auditoria_ajustes: {
+        Row: {
+          campo: string
+          created_at: string
+          descricao_registro: string | null
+          id: string
+          motivo: string | null
+          registro_id: string
+          tabela: string
+          user_id: string | null
+          valor_anterior: number | null
+          valor_novo: number | null
+        }
+        Insert: {
+          campo: string
+          created_at?: string
+          descricao_registro?: string | null
+          id?: string
+          motivo?: string | null
+          registro_id: string
+          tabela: string
+          user_id?: string | null
+          valor_anterior?: number | null
+          valor_novo?: number | null
+        }
+        Update: {
+          campo?: string
+          created_at?: string
+          descricao_registro?: string | null
+          id?: string
+          motivo?: string | null
+          registro_id?: string
+          tabela?: string
+          user_id?: string | null
+          valor_anterior?: number | null
+          valor_novo?: number | null
+        }
+        Relationships: []
+      }
       categorias: {
         Row: {
           ativo: boolean
@@ -1154,6 +1193,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin_or_gerente: { Args: { _user_id: string }; Returns: boolean }
+      registrar_motivo_ajuste: {
+        Args: { _motivo: string; _registro_id: string; _tabela: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "gerente" | "visualizador"

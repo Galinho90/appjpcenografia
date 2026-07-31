@@ -26,6 +26,7 @@ import {
 } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/financeiro";
 import { useClientes } from "@/hooks/useSupabaseData";
+import { useRegistrarMotivoAjuste } from "@/hooks/useAuditoria";
 
 const emptyForm = {
   tipo: "saida" as TipoMovimentacao,
@@ -70,8 +71,18 @@ export default function Movimentacoes() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [valorOriginal, setValorOriginal] = useState<number | null>(null);
+  const [motivoAjuste, setMotivoAjuste] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+
+  const registrarMotivo = useRegistrarMotivoAjuste();
+
+  // Estado derivado: houve alteração de valor em um registro existente?
+  const valorAlterado =
+    !!editingId &&
+    valorOriginal !== null &&
+    Math.abs(Number(form.valor || 0) - valorOriginal) > 0.004;
 
   useEffect(() => { setPage(1); }, [filters, pageSize]);
 
@@ -84,12 +95,16 @@ export default function Movimentacoes() {
 
   const openCreate = (tipo: TipoMovimentacao = "saida") => {
     setEditingId(null);
+    setValorOriginal(null);
+    setMotivoAjuste("");
     setForm({ ...emptyForm, tipo, conta_id: contas[0]?.id ?? "" });
     setDialogOpen(true);
   };
 
   const openEdit = (m: MovimentacaoFinanceira) => {
     setEditingId(m.id);
+    setValorOriginal(Number(m.valor) || 0);
+    setMotivoAjuste("");
     setForm({
       tipo: m.tipo,
       conta_id: m.conta_id,
@@ -116,6 +131,11 @@ export default function Movimentacoes() {
       toast({ title: "Selecione a conta de destino", variant: "destructive" });
       return;
     }
+    // Ajuste manual de valor exige justificativa para a trilha de auditoria.
+    if (valorAlterado && !motivoAjuste.trim()) {
+      toast({ title: "Informe o motivo do ajuste de valor", variant: "destructive" });
+      return;
+    }
     const payload: any = {
       tipo: form.tipo,
       conta_id: form.conta_id,
@@ -132,17 +152,36 @@ export default function Movimentacoes() {
     };
     try {
       if (editingId) {
+        const precisaMotivo = valorAlterado;
         await updateMutation.mutateAsync({ id: editingId, ...payload });
+        if (precisaMotivo) {
+          try {
+            await registrarMotivo.mutateAsync({
+              tabela: "movimentacoes_financeiras",
+              registroId: editingId,
+              motivo: motivoAjuste,
+            });
+          } catch (err: any) {
+            // O ajuste já foi salvo e auditado; apenas o motivo falhou.
+            toast({
+              title: "Motivo não registrado",
+              description: err?.message ?? "Tente registrar o motivo novamente.",
+              variant: "destructive",
+            });
+          }
+        }
         toast({ title: "Movimentação atualizada" });
       } else {
         await createMutation.mutateAsync(payload);
         toast({ title: "Movimentação criada" });
       }
       setDialogOpen(false);
+      setMotivoAjuste("");
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
     }
   };
+
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -623,6 +662,25 @@ export default function Movimentacoes() {
               <Label>Observações</Label>
               <Textarea rows={2} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
             </div>
+
+            {valorAlterado && (
+              <div className="space-y-1.5 rounded-lg border border-accent/40 bg-accent/5 p-3">
+                <Label htmlFor="motivo-ajuste">
+                  Motivo do ajuste de valor <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="motivo-ajuste"
+                  rows={2}
+                  placeholder="Ex.: valor corrigido conforme extrato do banco (OFX)"
+                  value={motivoAjuste}
+                  onChange={(e) => setMotivoAjuste(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Valor original: {fmtBRL(valorOriginal ?? 0)} — o ajuste será registrado na auditoria com seu usuário e data.
+                </p>
+              </div>
+            )}
+
 
             <Button className="w-full" onClick={handleSave} disabled={createMutation.isPending || updateMutation.isPending}>
               {createMutation.isPending || updateMutation.isPending ? "Salvando..." : "Salvar"}

@@ -184,6 +184,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           const candidateByName = ((movs ?? []) as any[]).find(m => {
             if (m.fitid) return false;
             if (m.tipo !== tx.tipo) return false;
+            // Mesma data da transação bancária (obrigatório)
+            const dEfet = m.data_pagamento ?? m.data_vencimento;
+            if (dEfet !== tx.data) return false;
+
 
             const mDesc = (m.descricao || "").toUpperCase();
 

@@ -167,9 +167,22 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         if (alreadyImported) {
           action = "ignorar";
         } else if (candidates.length >= 1) {
-          // AUTO-VINCULAR TUDO O QUE FOR ENCONTRADO (Conforme pedido pelo usuário)
+          // AUTO-VINCULAR TUDO O QUE FOR ENCONTRADO
           action = "vincular";
           movId = candidates[0].id;
+        } else {
+          // TENTAR MATCH POR NOME SE NÃO HOUVER CANDIDATO POR VALOR/DATA
+          const candidateByName = ((movs ?? []) as any[]).find(m => 
+            !m.fitid && 
+            m.tipo === tx.tipo && 
+            m.descricao && 
+            tx.descricao && 
+            (m.descricao.toUpperCase().includes("BRUNO CARDOSO") && tx.descricao.toUpperCase().includes("BRUNO CARDOSO"))
+          );
+          if (candidateByName) {
+            action = "vincular";
+            movId = candidateByName.id;
+          }
         }
         
         return { tx, action, movId, categoriaId: undefined, candidates, alreadyImported };

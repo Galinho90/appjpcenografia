@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +34,10 @@ type Row = {
   categoriaId?: string;
   candidates: MovCandidate[];
   alreadyImported: boolean;
+  /** Vínculos sugeridos automaticamente precisam ser confirmados pelo usuário antes de conciliar. */
+  confirmado: boolean;
+  /** Motivo da sugestão automática, exibido para facilitar a conferência. */
+  sugestao?: "valor_data" | "nome";
 };
 
 type OFXMeta = {
@@ -163,42 +168,67 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
 
         let action: Row["action"] = "criar";
         let movId: string | undefined;
+        let sugestao: Row["sugestao"];
 
         if (alreadyImported) {
           action = "ignorar";
         } else if (candidates.length >= 1) {
-          // AUTO-VINCULAR TUDO O QUE FOR ENCONTRADO
+          // Sugestão automática por valor + data (precisa de confirmação)
           action = "vincular";
           movId = candidates[0].id;
+          sugestao = "valor_data";
         } else {
           // TENTAR MATCH POR NOME SE NÃO HOUVER CANDIDATO POR VALOR/DATA
           const txDesc = (tx.descricao || "").toUpperCase();
           const candidateByName = ((movs ?? []) as any[]).find(m => {
             if (m.fitid) return false;
             if (m.tipo !== tx.tipo) return false;
-            
+
             const mDesc = (m.descricao || "").toUpperCase();
-            
+
             // Match flexível: removemos prefixos comuns de fechamento para comparar apenas os nomes
             const cleanMDesc = mDesc.replace("PAGAMENTO FECHAMENTO ", "").trim();
             const names = ["BRUNO CARDOSO", "THIAGO GON", "JOSE SANTOS", "PAULO VICTOR"];
-            
-            const isMatch = names.some(n => cleanMDesc.includes(n) && txDesc.includes(n));
-            
-            if (!isMatch) return false;
 
-            // Se for match por nome de colaborador, aceitamos qualquer valor e data dentro do range buscado
-            // (visto que o usuário confirmou que são os mesmos registros)
-            return true;
+            return names.some(n => cleanMDesc.includes(n) && txDesc.includes(n));
           });
 
           if (candidateByName) {
             action = "vincular";
             movId = candidateByName.id;
+            sugestao = "nome";
           }
         }
-        
-        return { tx, action, movId, categoriaId: undefined, candidates, alreadyImported };
+
+        return {
+          tx,
+          action,
+          movId,
+          categoriaId: undefined,
+          // Quando há match por nome, o candidato não está na lista filtrada por valor/data:
+          // incluímos manualmente para permitir a conferência no select.
+          candidates:
+            sugestao === "nome" && movId && !candidates.some((c) => c.id === movId)
+              ? [
+                  ...(((movs ?? []) as any[])
+                    .filter((m: any) => m.id === movId)
+                    .map((m: any) => ({
+                      id: m.id,
+                      descricao: m.descricao,
+                      valor: Number(m.valor),
+                      data_vencimento: m.data_vencimento,
+                      data_pagamento: m.data_pagamento,
+                      status: m.status,
+                      fitid: m.fitid,
+                    })) as MovCandidate[]),
+                  ...candidates,
+                ]
+              : candidates,
+          alreadyImported,
+          // Nada sugerido automaticamente entra confirmado: o usuário confere sempre.
+          confirmado: action !== "vincular",
+          sugestao,
+        };
       });
 
 
@@ -261,14 +291,20 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   };
 
   const stats = useMemo(() => {
-    let criar = 0, vincular = 0, ignorar = 0;
+    let criar = 0, vincular = 0, ignorar = 0, pendentesConfirmacao = 0;
     for (const r of rows) {
       if (r.action === "criar") criar++;
-      else if (r.action === "vincular") vincular++;
-      else ignorar++;
+      else if (r.action === "vincular") {
+        vincular++;
+        if (!r.confirmado) pendentesConfirmacao++;
+      } else ignorar++;
     }
-    return { criar, vincular, ignorar };
+    return { criar, vincular, ignorar, pendentesConfirmacao };
   }, [rows]);
+
+  const confirmarTodos = () => {
+    setRows((prev) => prev.map((r) => (r.action === "vincular" ? { ...r, confirmado: true } : r)));
+  };
 
   // Reconciliação de saldo: LEDGERBAL do OFX vs saldo esperado no sistema após conciliação
   const reconciliacao = useMemo(() => {
@@ -326,6 +362,16 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   };
 
   const handleConciliar = async () => {
+    // Guarda: nenhum vínculo é gravado sem confirmação explícita do usuário.
+    const naoConfirmados = rows.filter((r) => r.action === "vincular" && !r.confirmado).length;
+    if (naoConfirmados > 0) {
+      toast({
+        title: "Confirme os vínculos",
+        description: `${naoConfirmados} vínculo(s) sugerido(s) ainda não foram confirmados.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setSaving(true);
     let ok = 0, fail = 0;
     try {
@@ -433,6 +479,17 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
               <Badge className="bg-success text-success-foreground">Vincular: {stats.vincular}</Badge>
               <Badge className="bg-info text-info-foreground">Criar: {stats.criar}</Badge>
               <Badge variant="outline">Ignorar: {stats.ignorar}</Badge>
+              {stats.pendentesConfirmacao > 0 && (
+                <>
+                  <Badge variant="destructive" className="gap-1">
+                    <AlertTriangle className="h-3 w-3" /> {stats.pendentesConfirmacao} vínculo(s) aguardando confirmação
+                  </Badge>
+                  <Button size="sm" variant="outline" className="h-6 text-xs" onClick={confirmarTodos}>
+                    Confirmar todos os vínculos
+                  </Button>
+                </>
+              )}
+              
               
               {/* Alertas de duplicidade ou não encontrados */}
               {rows.some(r => r.candidates.length > 1 && !r.alreadyImported) && (
@@ -570,6 +627,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                             onValueChange={(v: any) => updateRow(i, {
                               action: v,
                               movId: v === "vincular" ? (r.movId ?? r.candidates[0]?.id) : undefined,
+                              // Troca manual de ação também exige confirmação do vínculo
+                              confirmado: v !== "vincular",
                             })}
                           >
                             <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
@@ -582,23 +641,36 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                             </SelectContent>
                           </Select>
                           {r.action === "vincular" && r.candidates.length > 0 && (
-                            <Select
-                              value={r.movId ?? r.candidates[0].id}
-                              onValueChange={(v) => updateRow(i, { movId: v })}
-                            >
-                              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                {r.candidates.map((c) => (
-                                  <SelectItem key={c.id} value={c.id}>
-                                    {fmtDate(c.data_pagamento ?? c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
-                                    {Math.abs(c.valor - r.tx.valor) > 0.001
-                                      ? ` • dif. ${fmtBRL(r.tx.valor - c.valor)} (ajusta p/ valor do banco)`
-                                      : ""}
-
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <>
+                              <Select
+                                value={r.movId ?? r.candidates[0].id}
+                                onValueChange={(v) => updateRow(i, { movId: v, confirmado: false })}
+                              >
+                                <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {r.candidates.map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>
+                                      {fmtDate(c.data_pagamento ?? c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
+                                      {Math.abs(c.valor - r.tx.valor) > 0.001
+                                        ? ` • dif. ${fmtBRL(r.tx.valor - c.valor)} (ajusta p/ valor do banco)`
+                                        : ""}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <label className="flex items-center gap-2 text-[11px] cursor-pointer">
+                                <Checkbox
+                                  checked={r.confirmado}
+                                  onCheckedChange={(v) => updateRow(i, { confirmado: v === true })}
+                                />
+                                <span className={r.confirmado ? "text-success" : "text-destructive font-medium"}>
+                                  {r.confirmado ? "Vínculo confirmado" : "Confirmar vínculo"}
+                                </span>
+                                {r.sugestao === "nome" && (
+                                  <Badge variant="outline" className="text-[9px]">match por nome</Badge>
+                                )}
+                              </label>
+                            </>
                           )}
                           {r.action === "criar" && (
                             <Select
@@ -627,13 +699,23 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           </>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row sm:items-center gap-2">
+          {stats.pendentesConfirmacao > 0 && (
+            <span className="text-xs text-destructive mr-auto">
+              Confirme os {stats.pendentesConfirmacao} vínculo(s) sugerido(s) antes de conciliar.
+            </span>
+          )}
           <Button variant="outline" onClick={() => handleClose(false)} disabled={saving}>
             Cancelar
           </Button>
           <Button
             onClick={handleConciliar}
-            disabled={rows.length === 0 || saving || rows.some((r) => r.action === "criar" && !r.categoriaId)}
+            disabled={
+              rows.length === 0 ||
+              saving ||
+              stats.pendentesConfirmacao > 0 ||
+              rows.some((r) => r.action === "criar" && !r.categoriaId)
+            }
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             Conciliar tudo

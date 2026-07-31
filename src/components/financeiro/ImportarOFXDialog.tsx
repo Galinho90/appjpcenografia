@@ -172,18 +172,40 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           movId = candidates[0].id;
         } else {
           // TENTAR MATCH POR NOME SE NÃO HOUVER CANDIDATO POR VALOR/DATA
-          const candidateByName = ((movs ?? []) as any[]).find(m => 
-            !m.fitid && 
-            m.tipo === tx.tipo && 
-            m.descricao && 
-            tx.descricao && 
-            (
-              (m.descricao.toUpperCase().includes("BRUNO CARDOSO") && tx.descricao.toUpperCase().includes("BRUNO CARDOSO")) ||
-              (m.descricao.toUpperCase().includes("THIAGO GON") && tx.descricao.toUpperCase().includes("THIAGO GON")) ||
-              (m.descricao.toUpperCase().includes("JOSE SANTOS") && tx.descricao.toUpperCase().includes("JOSE SANTOS")) ||
-              (m.descricao.toUpperCase().includes("PAULO VICTOR") && tx.descricao.toUpperCase().includes("PAULO VICTOR"))
-            )
-          );
+          const txDesc = (tx.descricao || "").toUpperCase();
+          const candidateByName = ((movs ?? []) as any[]).find(m => {
+            if (m.fitid) return false;
+            if (m.tipo !== tx.tipo) return false;
+            
+            const mDesc = (m.descricao || "").toUpperCase();
+            
+            // Lista de termos para busca flexível
+            const pairs = [
+              ["BRUNO CARDOSO", "BRUNO CARDOSO"],
+              ["THIAGO GON", "THIAGO GON"],
+              ["JOSE SANTOS", "JOSE SANTOS"],
+              ["PAULO VICTOR", "PAULO VICTOR"]
+            ];
+
+            const matchNome = pairs.some(([mTerm, txTerm]) => 
+              mDesc.includes(mTerm) && txDesc.includes(txTerm)
+            );
+
+            if (!matchNome) return false;
+
+            // Se for match por nome, ainda validamos o valor com tolerância
+            const diffValor = Math.abs(Number(m.valor) - tx.valor);
+            if (diffValor > TOLERANCIA) return false;
+
+            // E a data com a tolerância de dias
+            const dEfet = m.data_pagamento ?? m.data_vencimento;
+            if (!dEfet) return false;
+            const diffMs = Math.abs(new Date(dEfet + "T00:00:00").getTime() - new Date(tx.data + "T00:00:00").getTime());
+            const diffDias = diffMs / (1000 * 60 * 60 * 24);
+            
+            return diffDias <= TOLERANCIA_DIAS;
+          });
+
           if (candidateByName) {
             action = "vincular";
             movId = candidateByName.id;

@@ -33,6 +33,10 @@ type Row = {
   categoriaId?: string;
   candidates: MovCandidate[];
   alreadyImported: boolean;
+  /** Vínculos sugeridos automaticamente precisam ser confirmados pelo usuário antes de conciliar. */
+  confirmado: boolean;
+  /** Motivo da sugestão automática, exibido para facilitar a conferência. */
+  sugestao?: "valor_data" | "nome";
 };
 
 type OFXMeta = {
@@ -163,42 +167,67 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
 
         let action: Row["action"] = "criar";
         let movId: string | undefined;
+        let sugestao: Row["sugestao"];
 
         if (alreadyImported) {
           action = "ignorar";
         } else if (candidates.length >= 1) {
-          // AUTO-VINCULAR TUDO O QUE FOR ENCONTRADO
+          // Sugestão automática por valor + data (precisa de confirmação)
           action = "vincular";
           movId = candidates[0].id;
+          sugestao = "valor_data";
         } else {
           // TENTAR MATCH POR NOME SE NÃO HOUVER CANDIDATO POR VALOR/DATA
           const txDesc = (tx.descricao || "").toUpperCase();
           const candidateByName = ((movs ?? []) as any[]).find(m => {
             if (m.fitid) return false;
             if (m.tipo !== tx.tipo) return false;
-            
+
             const mDesc = (m.descricao || "").toUpperCase();
-            
+
             // Match flexível: removemos prefixos comuns de fechamento para comparar apenas os nomes
             const cleanMDesc = mDesc.replace("PAGAMENTO FECHAMENTO ", "").trim();
             const names = ["BRUNO CARDOSO", "THIAGO GON", "JOSE SANTOS", "PAULO VICTOR"];
-            
-            const isMatch = names.some(n => cleanMDesc.includes(n) && txDesc.includes(n));
-            
-            if (!isMatch) return false;
 
-            // Se for match por nome de colaborador, aceitamos qualquer valor e data dentro do range buscado
-            // (visto que o usuário confirmou que são os mesmos registros)
-            return true;
+            return names.some(n => cleanMDesc.includes(n) && txDesc.includes(n));
           });
 
           if (candidateByName) {
             action = "vincular";
             movId = candidateByName.id;
+            sugestao = "nome";
           }
         }
-        
-        return { tx, action, movId, categoriaId: undefined, candidates, alreadyImported };
+
+        return {
+          tx,
+          action,
+          movId,
+          categoriaId: undefined,
+          // Quando há match por nome, o candidato não está na lista filtrada por valor/data:
+          // incluímos manualmente para permitir a conferência no select.
+          candidates:
+            sugestao === "nome" && movId && !candidates.some((c) => c.id === movId)
+              ? [
+                  ...(((movs ?? []) as any[])
+                    .filter((m: any) => m.id === movId)
+                    .map((m: any) => ({
+                      id: m.id,
+                      descricao: m.descricao,
+                      valor: Number(m.valor),
+                      data_vencimento: m.data_vencimento,
+                      data_pagamento: m.data_pagamento,
+                      status: m.status,
+                      fitid: m.fitid,
+                    })) as MovCandidate[]),
+                  ...candidates,
+                ]
+              : candidates,
+          alreadyImported,
+          // Nada sugerido automaticamente entra confirmado: o usuário confere sempre.
+          confirmado: action !== "vincular",
+          sugestao,
+        };
       });
 
 

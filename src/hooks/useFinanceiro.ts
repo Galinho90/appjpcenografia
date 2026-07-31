@@ -242,7 +242,11 @@ export function useCreateMovimentacao() {
       const { error } = await supabase.from("movimentacoes_financeiras" as any).insert(data as any);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
+      qc.invalidateQueries({ queryKey: ["saldos_por_dia"] });
+      qc.invalidateQueries({ queryKey: ["saldo_contas"] });
+    },
   });
 }
 
@@ -253,7 +257,11 @@ export function useUpdateMovimentacao() {
       const { error } = await supabase.from("movimentacoes_financeiras" as any).update(data as any).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
+      qc.invalidateQueries({ queryKey: ["saldos_por_dia"] });
+      qc.invalidateQueries({ queryKey: ["saldo_contas"] });
+    },
   });
 }
 
@@ -264,7 +272,11 @@ export function useDeleteMovimentacao() {
       const { error } = await supabase.from("movimentacoes_financeiras" as any).delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
+      qc.invalidateQueries({ queryKey: ["saldos_por_dia"] });
+      qc.invalidateQueries({ queryKey: ["saldo_contas"] });
+    },
   });
 }
 

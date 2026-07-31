@@ -699,13 +699,23 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           </>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row sm:items-center gap-2">
+          {stats.pendentesConfirmacao > 0 && (
+            <span className="text-xs text-destructive mr-auto">
+              Confirme os {stats.pendentesConfirmacao} vínculo(s) sugerido(s) antes de conciliar.
+            </span>
+          )}
           <Button variant="outline" onClick={() => handleClose(false)} disabled={saving}>
             Cancelar
           </Button>
           <Button
             onClick={handleConciliar}
-            disabled={rows.length === 0 || saving || rows.some((r) => r.action === "criar" && !r.categoriaId)}
+            disabled={
+              rows.length === 0 ||
+              saving ||
+              stats.pendentesConfirmacao > 0 ||
+              rows.some((r) => r.action === "criar" && !r.categoriaId)
+            }
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             Conciliar tudo

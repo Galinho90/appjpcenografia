@@ -358,92 +358,197 @@ export default function Movimentacoes() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-5">
+      {/* Cabeçalho */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Movimentações</h1>
           <p className="text-sm text-muted-foreground">Entradas, saídas e transferências entre contas</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col gap-0.5">
-              <Label className="text-[10px] text-muted-foreground leading-none">Período de</Label>
-              <Input
-                type="date"
-                className="h-8 text-xs px-2 py-1"
-                value={filters.dataInicio}
-                onChange={(e) => setFilters({ ...filters, dataInicio: e.target.value })}
-              />
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <Label className="text-[10px] text-muted-foreground leading-none">até</Label>
-              <Input
-                type="date"
-                className="h-8 text-xs px-2 py-1"
-                value={filters.dataFim}
-                onChange={(e) => setFilters({ ...filters, dataFim: e.target.value })}
-              />
-            </div>
+        {isAdmin && (
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => openCreate("entrada")} className="gap-2 bg-success hover:bg-success/90 text-success-foreground">
+              <ArrowDownCircle className="h-4 w-4" /> Entrada
+            </Button>
+            <Button onClick={() => openCreate("saida")} variant="destructive" className="gap-2">
+              <ArrowUpCircle className="h-4 w-4" /> Saída
+            </Button>
+            <Button onClick={() => openCreate("transferencia")} variant="outline" className="gap-2">
+              <ArrowLeftRight className="h-4 w-4" /> Transferir
+            </Button>
+            <Button onClick={() => setOfxOpen(true)} variant="outline" className="gap-2">
+              <Upload className="h-4 w-4" /> Importar OFX
+            </Button>
           </div>
-          {isAdmin && (
-            <div className="flex gap-2 flex-wrap">
-              <Button onClick={() => openCreate("entrada")} className="gap-2 bg-success hover:bg-success/90 text-success-foreground h-8 text-xs">
-                <ArrowDownCircle className="h-3.5 w-3.5" /> Entrada
-              </Button>
-              <Button onClick={() => openCreate("saida")} variant="destructive" className="gap-2 h-8 text-xs">
-                <ArrowUpCircle className="h-3.5 w-3.5" /> Saída
-              </Button>
-              <Button onClick={() => openCreate("transferencia")} variant="outline" className="gap-2 h-8 text-xs">
-                <ArrowLeftRight className="h-3.5 w-3.5" /> Transferência
-              </Button>
-              <Button onClick={() => setOfxOpen(true)} variant="outline" className="gap-2 h-8 text-xs">
-                <Upload className="h-3.5 w-3.5" /> Importar OFX
-              </Button>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
+      {/* Resumo do resultado filtrado */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <Card className="shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5 text-success" /> Entradas
+            </div>
+            <div className="mt-1 text-lg font-bold text-success">{fmtBRL(resumo.entradas)}</div>
+          </CardContent>
+        </Card>
+        <Card className="shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <TrendingDown className="h-3.5 w-3.5 text-destructive" /> Saídas
+            </div>
+            <div className="mt-1 text-lg font-bold text-destructive">{fmtBRL(resumo.saidas)}</div>
+          </CardContent>
+        </Card>
+        <Card className="shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Wallet className="h-3.5 w-3.5 text-primary" /> Resultado
+            </div>
+            <div className={`mt-1 text-lg font-bold ${resumo.saldo >= 0 ? "text-success" : "text-destructive"}`}>
+              {fmtBRL(resumo.saldo)}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 text-warning" /> A pagar/receber
+            </div>
+            <div className="mt-1 text-lg font-bold">{fmtBRL(resumo.pendentes)}</div>
+            <div className="text-[11px] text-muted-foreground">{resumo.qtdPendentes} pendente(s)</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Barra de busca + período + filtros */}
       <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Filter className="h-4 w-4 text-primary" /> Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Select value={filters.tipo} onValueChange={(v: any) => setFilters({ ...filters, tipo: v })}>
-            <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os tipos</SelectItem>
-              <SelectItem value="entrada">Entrada</SelectItem>
-              <SelectItem value="saida">Saída</SelectItem>
-              <SelectItem value="transferencia">Transferência</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filters.status} onValueChange={(v: any) => setFilters({ ...filters, status: v })}>
-            <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os status</SelectItem>
-              <SelectItem value="pendente">Pendente</SelectItem>
-              <SelectItem value="pago">Pago</SelectItem>
-              <SelectItem value="atrasado">Atrasado</SelectItem>
-              <SelectItem value="cancelado">Cancelado</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filters.contaId} onValueChange={(v) => setFilters({ ...filters, contaId: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as contas</SelectItem>
-              {contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.apelido}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={filters.categoriaId} onValueChange={(v) => setFilters({ ...filters, categoriaId: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as categorias</SelectItem>
-              {categorias.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
-            </SelectContent>
-          </Select>
+        <CardContent className="p-3 space-y-3">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-2">
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar por descrição, cliente, fornecedor, categoria ou conta…"
+                className="pl-9 pr-8 h-9"
+                aria-label="Buscar movimentações"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  aria-label="Limpar busca"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {([
+                ["hoje", "Hoje"], ["7d", "7 dias"], ["quinzena", "Quinzena"], ["mes", "Mês"], ["tudo", "Tudo"],
+              ] as const).map(([key, label]) => (
+                <Button
+                  key={key}
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs"
+                  onClick={() => setPeriodoPreset(key)}
+                >
+                  {label}
+                </Button>
+              ))}
+              <Button
+                size="sm"
+                variant={filtersOpen ? "secondary" : "outline"}
+                className="h-8 text-xs gap-1.5"
+                onClick={() => setFiltersOpen((v) => !v)}
+                aria-expanded={filtersOpen}
+              >
+                <Filter className="h-3.5 w-3.5" /> Filtros
+                {activeFiltersCount > 0 && (
+                  <Badge className="ml-0.5 h-4 px-1.5 text-[10px] border-transparent">{activeFiltersCount}</Badge>
+                )}
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${filtersOpen ? "rotate-180" : ""}`} />
+              </Button>
+            </div>
+          </div>
+
+          {filtersOpen && (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 border-t pt-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Período de</Label>
+                <Input
+                  type="date" className="h-9"
+                  value={filters.dataInicio}
+                  onChange={(e) => setFilters({ ...filters, dataInicio: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">até</Label>
+                <Input
+                  type="date" className="h-9"
+                  value={filters.dataFim}
+                  onChange={(e) => setFilters({ ...filters, dataFim: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Tipo</Label>
+                <Select value={filters.tipo} onValueChange={(v: any) => setFilters({ ...filters, tipo: v })}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os tipos</SelectItem>
+                    <SelectItem value="entrada">Entrada</SelectItem>
+                    <SelectItem value="saida">Saída</SelectItem>
+                    <SelectItem value="transferencia">Transferência</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Status</Label>
+                <Select value={filters.status} onValueChange={(v: any) => setFilters({ ...filters, status: v })}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os status</SelectItem>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="pago">Pago</SelectItem>
+                    <SelectItem value="atrasado">Atrasado</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Conta</Label>
+                <Select value={filters.contaId} onValueChange={(v) => setFilters({ ...filters, contaId: v })}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as contas</SelectItem>
+                    {contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.apelido}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Categoria</Label>
+                <Select value={filters.categoriaId} onValueChange={(v) => setFilters({ ...filters, categoriaId: v })}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as categorias</SelectItem>
+                    {categorias.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="sm:col-span-2 lg:col-span-3 flex justify-end">
+                <Button
+                  variant="ghost" size="sm" className="h-8 text-xs gap-1.5"
+                  onClick={() => setFilters({ tipo: "all", status: "all", categoriaId: "all", contaId: "all", dataInicio: "", dataFim: "" })}
+                >
+                  <X className="h-3.5 w-3.5" /> Limpar filtros
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -453,81 +558,105 @@ export default function Movimentacoes() {
             <div className="p-4 space-y-2">
               {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
             </div>
-          ) : movs.length === 0 ? (
-            <div className="text-center text-muted-foreground py-12">Nenhuma movimentação encontrada</div>
+          ) : filteredMovs.length === 0 ? (
+            <div className="text-center py-14 px-4">
+              <p className="font-medium">Nenhuma movimentação encontrada</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {search || activeFiltersCount > 0
+                  ? "Tente ajustar a busca ou limpar os filtros."
+                  : "Comece lançando uma entrada ou saída."}
+              </p>
+              {(search || activeFiltersCount > 0) && (
+                <Button
+                  variant="outline" size="sm" className="mt-4"
+                  onClick={() => {
+                    setSearch("");
+                    setFilters({ tipo: "all", status: "all", categoriaId: "all", contaId: "all", dataInicio: "", dataFim: "" });
+                  }}
+                >
+                  Limpar busca e filtros
+                </Button>
+              )}
+            </div>
           ) : (
             <>
-              {/* Mobile: cards */}
-              <div className="md:hidden divide-y">
-                {pagedMovs.map((m) => (
-                  <div key={m.id} className="p-3 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-2 min-w-0">
-                        <div className="mt-0.5">{tipoIcon(m.tipo)}</div>
-                        <div className="min-w-0">
-                          <div className="font-medium text-sm break-words">{m.descricao}</div>
-                          {m.fornecedor && (
-                            <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
-                          )}
-                          {m.cliente && (
-                            <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
-                          )}
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {m.categoria && (
-                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                                <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
-                                {m.categoria.nome}
-                              </span>
+              {/* Mobile: cards agrupados por data */}
+              <div className="md:hidden">
+                {grupos.map((g) => (
+                  <div key={g.data || "sem-data"}>
+                    <div className="flex items-center justify-between px-3 py-2 bg-muted/60 sticky top-0 z-10">
+                      <span className="text-xs font-semibold">{g.data ? fmtDate(g.data) : "Sem data"}</span>
+                      <span className={`text-xs font-semibold ${g.total >= 0 ? "text-success" : "text-destructive"}`}>
+                        {fmtBRL(g.total)}
+                      </span>
+                    </div>
+                    <div className="divide-y">
+                      {g.itens.map((m) => (
+                        <div key={m.id} className="p-3 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2 min-w-0">
+                              <div className="mt-0.5">{tipoIcon(m.tipo)}</div>
+                              <div className="min-w-0">
+                                <div className="font-medium text-sm break-words">{m.descricao}</div>
+                                {m.fornecedor && (
+                                  <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
+                                )}
+                                {m.cliente && (
+                                  <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
+                                )}
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {m.categoria && (
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                      <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
+                                      {m.categoria.nome}
+                                    </span>
+                                  )}
+                                  {origemBadge(m.origem)}
+                                </div>
+                              </div>
+                            </div>
+                            <div className={`text-right font-semibold text-sm whitespace-nowrap ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
+                              {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span>{m.conta?.apelido ?? "—"}</span>
+                              <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent`}>
+                                {statusLabel[m.status]}
+                              </Badge>
+                            </div>
+                            {isAdmin && (
+                              <div className="flex items-center gap-1">
+                                {m.status !== "pago" && (
+                                  <Button variant="ghost" size="sm" onClick={() => marcarPago(m)} className="text-success h-8">
+                                    Pagar
+                                  </Button>
+                                )}
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)} aria-label="Editar movimentação">
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteId(m.id)} aria-label="Excluir movimentação">
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
                             )}
-                            {origemBadge(m.origem)}
                           </div>
                         </div>
-                      </div>
-                      <div className={`text-right font-semibold text-sm whitespace-nowrap ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
-                        {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
-                      </div>
+                      ))}
                     </div>
-                    <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span>{m.conta?.apelido ?? "—"}</span>
-                        <span>•</span>
-                        <span>
-                          {m.status === "pago" && m.data_pagamento
-                            ? `Pago em ${fmtDate(m.data_pagamento)}`
-                            : `Venc. ${fmtDate(m.data_vencimento)}`}
-                        </span>
-                        <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent`}>
-                          {statusLabel[m.status]}
-                        </Badge>
-                      </div>
-                    </div>
-                    {isAdmin && (
-                      <div className="flex justify-end gap-1 pt-1">
-                        {m.status !== "pago" && (
-                          <Button variant="ghost" size="sm" onClick={() => marcarPago(m)} className="text-success h-8">
-                            Pagar
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)} aria-label="Editar movimentação">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteId(m.id)} aria-label="Excluir movimentação">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
 
-              {/* Desktop: table */}
+              {/* Desktop: tabela agrupada por data */}
               <div className="hidden md:block overflow-x-auto">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                   <Table>
                     <TableHeader>
                       <TableRow>
                         {isAdmin && <TableHead className="w-8"></TableHead>}
-                        <TableHead>Tipo</TableHead>
+                        <TableHead className="w-10">Tipo</TableHead>
                         <TableHead>Descrição</TableHead>
                         <TableHead>Categoria</TableHead>
                         <TableHead>Conta</TableHead>
@@ -537,31 +666,46 @@ export default function Movimentacoes() {
                         {isAdmin && <TableHead className="text-right">Ações</TableHead>}
                       </TableRow>
                     </TableHeader>
-                    <SortableContext items={pagedMovs.map((m) => m.id)} strategy={verticalListSortingStrategy}>
-                      <TableBody>
-                        {pagedMovs.map((m) => (
-                          <SortableMovRow
-                            key={m.id}
-                            m={m}
-                            isAdmin={isAdmin}
-                            tipoIcon={tipoIcon}
-                            origemBadge={origemBadge}
-                            onEdit={openEdit}
-                            onDelete={setDeleteId}
-                            onPagar={marcarPago}
-                          />
-                        ))}
-                      </TableBody>
-                    </SortableContext>
+                    <TableBody>
+                      {grupos.map((g) => (
+                        <Fragment key={g.data || "sem-data"}>
+                          <TableRow className="bg-muted/60 hover:bg-muted/60">
+                            <TableCell colSpan={isAdmin ? 7 : 6} className="py-2 text-xs font-semibold">
+                              {g.data ? fmtDate(g.data) : "Sem data"}
+                              <span className="ml-2 font-normal text-muted-foreground">
+                                {g.itens.length} lançamento(s)
+                              </span>
+                            </TableCell>
+                            <TableCell className={`py-2 text-right text-xs font-semibold ${g.total >= 0 ? "text-success" : "text-destructive"}`}>
+                              {fmtBRL(g.total)}
+                            </TableCell>
+                            {isAdmin && <TableCell />}
+                          </TableRow>
+                          <SortableContext items={g.itens.map((m) => m.id)} strategy={verticalListSortingStrategy}>
+                            {g.itens.map((m) => (
+                              <SortableMovRow
+                                key={m.id}
+                                m={m}
+                                isAdmin={isAdmin}
+                                tipoIcon={tipoIcon}
+                                origemBadge={origemBadge}
+                                onEdit={openEdit}
+                                onDelete={setDeleteId}
+                                onPagar={marcarPago}
+                              />
+                            ))}
+                          </SortableContext>
+                        </Fragment>
+                      ))}
+                    </TableBody>
                   </Table>
                 </DndContext>
               </div>
 
-
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
                 <div className="text-xs text-muted-foreground">
                   Mostrando {(currentPage - 1) * pageSize + 1}
-                  –{Math.min(currentPage * pageSize, movs.length)} de {movs.length}
+                  –{Math.min(currentPage * pageSize, filteredMovs.length)} de {filteredMovs.length}
                 </div>
                 <div className="flex items-center gap-2">
                   <Label className="text-xs text-muted-foreground">Por página</Label>

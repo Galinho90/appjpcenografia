@@ -136,10 +136,13 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             const diffValor = Math.abs(Number(m.valor) - tx.valor);
             if (diffValor > TOLERANCIA) return false;
             
-            // Vínculo permitido SOMENTE quando a data efetiva do lançamento
-            // é exatamente a mesma data da transação do OFX.
+            // Vínculo permitido quando a data efetiva do lançamento está dentro da tolerância
             const dEfet = m.data_pagamento ?? m.data_vencimento;
-            return dEfet === tx.data;
+            if (!dEfet) return false;
+            
+            const diffMs = Math.abs(new Date(dEfet + "T00:00:00").getTime() - new Date(tx.data + "T00:00:00").getTime());
+            const diffDias = diffMs / (1000 * 60 * 60 * 24);
+            return diffDias <= TOLERANCIA_DIAS;
           })
           .map((m: any) => ({
             id: m.id,

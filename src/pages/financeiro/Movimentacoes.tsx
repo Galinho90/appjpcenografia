@@ -449,7 +449,7 @@ export default function Movimentacoes() {
 
       {/* Barra de busca + período + filtros */}
       <Card className="shadow-premium-sm">
-        <CardContent className="p-4 space-y-3">
+        <CardContent className="p-4 sm:p-6 space-y-4">
           <div className="flex flex-col lg:flex-row lg:items-center gap-2">
             <div className="relative flex-1 min-w-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -502,7 +502,7 @@ export default function Movimentacoes() {
           </div>
 
           {filtersOpen && (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 border-t pt-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 border-t border-border/50 pt-4 mt-1">
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Período de</Label>
                 <Input

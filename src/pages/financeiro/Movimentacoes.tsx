@@ -390,22 +390,22 @@ export default function Movimentacoes() {
   return (
     <div className="space-y-4 md:space-y-6 pt-4 md:pt-6 px-3 sm:px-4 md:px-6">
       {/* Cabeçalho */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" className="px-0" />
         {isAdmin && (
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            <Button onClick={() => setOfxOpen(true)} variant="outline" className="h-10 gap-2 border-primary/20 hover:bg-primary/5">
-              <Upload className="h-4 w-4" /> Importar OFX
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+            <Button onClick={() => setOfxOpen(true)} variant="outline" className="h-10 gap-2 border-primary/20 hover:bg-primary/5 col-span-2 sm:col-auto order-last sm:order-first">
+              <Upload className="h-4 w-4" /> <span className="sm:inline">Importar OFX</span>
             </Button>
-            <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
-            <Button onClick={() => openCreate("entrada")} className="h-10 gap-2 flex-1 sm:flex-initial bg-success hover:bg-success/90 text-success-foreground">
+            <div className="h-8 w-px bg-border/50 mx-1 hidden lg:block" />
+            <Button onClick={() => openCreate("entrada")} className="h-10 gap-2 bg-success hover:bg-success/90 text-success-foreground font-bold text-xs uppercase tracking-wider">
               <ArrowDownCircle className="h-4 w-4" /> Entrada
             </Button>
-            <Button onClick={() => openCreate("saida")} variant="destructive" className="h-10 gap-2 flex-1 sm:flex-initial">
+            <Button onClick={() => openCreate("saida")} variant="destructive" className="h-10 gap-2 font-bold text-xs uppercase tracking-wider">
               <ArrowUpCircle className="h-4 w-4" /> Saída
             </Button>
-            <Button onClick={() => openCreate("transferencia")} variant="outline" className="h-10 gap-2 flex-1 sm:flex-initial">
-              <ArrowLeftRight className="h-4 w-4" /> Transferir
+            <Button onClick={() => openCreate("transferencia")} variant="outline" className="h-10 gap-2 font-bold text-xs uppercase tracking-wider col-span-2 sm:col-auto">
+              <ArrowLeftRight className="h-4 w-4" /> Transferência
             </Button>
           </div>
         )}

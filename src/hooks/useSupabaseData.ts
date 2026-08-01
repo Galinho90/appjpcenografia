@@ -427,6 +427,8 @@ export function useUpdateFechamentoStatus() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["fechamentos"] });
       qc.invalidateQueries({ queryKey: ["lancamentos"] });
+      qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
+      qc.invalidateQueries({ queryKey: ["saldos_por_dia"] });
     },
   });
 }
@@ -438,7 +440,11 @@ export function useDeleteFechamento() {
       const { error } = await supabase.from("fechamentos").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["fechamentos"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["fechamentos"] });
+      qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
+      qc.invalidateQueries({ queryKey: ["saldos_por_dia"] });
+    },
   });
 }
 

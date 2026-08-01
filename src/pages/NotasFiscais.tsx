@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Receipt, ChevronLeft, ChevronRight, Eye, Check, X, Trash2, RefreshCw } from "lucide-react";
+import { Receipt, Eye, Check, X, Trash2, RefreshCw, CheckCircle2, Clock } from "lucide-react";
 import { getStatusBadge } from "@/lib/statusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ import {
   getNotaFiscalSignedUrl, useFechamentos, useColaboradores,
 } from "@/hooks/useSupabaseData";
 import { PageHeader } from "@/components/PageHeader";
+import { QuinzenaSelector } from "@/components/QuinzenaSelector";
+import { StatCard } from "@/components/StatCard";
 
 // Configuração de status agora vem de @/lib/statusBadge (padrão visual unificado).
 
@@ -191,41 +193,38 @@ export default function NotasFiscais() {
         title="Notas Fiscais"
         description="Recebimento de NF dos diaristas por quinzena."
         actions={
-          <>
-            <Button variant="outline" size="sm" onClick={atualizar} disabled={isFetching}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">Atualizar notas</span>
-              <span className="sm:hidden">Atualizar</span>
-            </Button>
-            <Button variant="outline" size="icon" onClick={() => shift(-1)}><ChevronLeft className="h-4 w-4" /></Button>
-            <span className="text-sm font-medium px-2 sm:px-3 whitespace-nowrap">
-              {fmt(selecionada.inicio)} – {fmt(selecionada.fim)}
-            </span>
-            <Button variant="outline" size="icon" onClick={() => shift(1)}><ChevronRight className="h-4 w-4" /></Button>
-          </>
+          <Button variant="outline" size="sm" onClick={atualizar} disabled={isFetching}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">Atualizar notas</span>
+            <span className="sm:hidden">Atualizar</span>
+          </Button>
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm">Recebidas</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold">{notas.length}</div></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm">Aprovadas</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold">{notas.filter(n => n.status === "aprovada").length}</div></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm">Pendentes de envio</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold">{pendentesEnvio.length}</div></CardContent>
-        </Card>
+      <QuinzenaSelector
+        className="sm:max-w-sm"
+        inicio={selecionada.inicio}
+        fim={selecionada.fim}
+        onShift={(dir) => shift(dir)}
+      />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Notas Recebidas" badge="Total" value={notas.length} icon={Receipt} tone="primary" />
+        <StatCard
+          label="Aprovadas"
+          badge="OK"
+          value={notas.filter((n) => n.status === "aprovada").length}
+          icon={CheckCircle2}
+          tone="success"
+        />
+        <StatCard label="Pendentes de Envio" badge="Pendente" value={pendentesEnvio.length} icon={Clock} tone="warning" />
       </div>
 
       <Card>
         <CardHeader><CardTitle>Notas recebidas</CardTitle></CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-10 w-full" />)}</div>
+            <div className="space-y-2">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}</div>
           ) : notas.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma nota fiscal recebida nesta quinzena.</p>
           ) : (

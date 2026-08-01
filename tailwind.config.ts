@@ -83,6 +83,9 @@ export default {
         card: "var(--shadow-card)",
         elevated: "var(--shadow-elevated)",
         focus: "var(--shadow-focus)",
+        /* Aliases do design "premium" (padrão visual de /meu-extrato) */
+        premium: "var(--shadow-elevated)",
+        "premium-sm": "var(--shadow-card)",
       },
       backgroundImage: {
         "gradient-primary": "var(--gradient-primary)",

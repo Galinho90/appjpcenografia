@@ -6,6 +6,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Skeleton } from "@/components/ui/skeleton";
 import { useColaboradores, useDiarias, useFechamentos, useLancamentos } from "@/hooks/useSupabaseData";
 import { PageHeader } from "@/components/PageHeader";
+import { QuinzenaSelector } from "@/components/QuinzenaSelector";
+import { StatCard } from "@/components/StatCard";
 
 // Compute the quinzena (1-15 or 16-end) for a given reference date
 function getQuinzena(ref: Date) {
@@ -75,25 +77,29 @@ export default function Dashboard() {
       title: "Colaboradores Ativos",
       value: colaboradores.filter(c => c.ativo).length,
       icon: Users,
-      gradient: "from-primary to-primary/70",
+      tone: "primary" as const,
+      badge: "Equipe",
     },
     {
       title: "Lançamentos na Quinzena",
       value: lancamentosQ.length,
       icon: CalendarDays,
-      gradient: "from-secondary to-secondary/70",
+      tone: "primary" as const,
+      badge: "Quinzena",
     },
     {
       title: "Total Pendente",
       value: `R$ ${fmtBRL(totalPendente)}`,
       icon: DollarSign,
-      gradient: "from-accent to-accent/70",
+      tone: "warning" as const,
+      badge: "Pendente",
     },
     {
       title: "Pagamentos Realizados",
       value: `R$ ${fmtBRL(totalPagoQ)}`,
       icon: CheckCircle2,
-      gradient: "from-info to-info/70",
+      tone: "success" as const,
+      badge: "Pago",
     },
   ];
 
@@ -117,51 +123,38 @@ export default function Dashboard() {
         <PageHeader title="Dashboard" description="Visão geral da operação" />
 
 
-        <Card className="shadow-md w-full sm:w-auto overflow-hidden">
-          <CardContent className="flex min-h-[76px] items-center justify-center gap-2 px-3 py-4 sm:min-h-[84px] sm:gap-3 sm:px-4">
-            <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, -1))} aria-label="Quinzena anterior">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="px-2 text-center flex-1 min-w-0">
-              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Quinzena</p>
-              <p className="text-xs sm:text-sm font-semibold whitespace-normal sm:whitespace-nowrap leading-tight">
-                {fmt(inicio)} — {fmt(fim)}
-              </p>
-            </div>
-            <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, 1))} aria-label="Próxima quinzena">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            {!isCurrentQuinzena && (
-              <Button variant="outline" size="sm" onClick={() => setRef(new Date())}>Hoje</Button>
-            )}
-          </CardContent>
-        </Card>
+        <QuinzenaSelector
+          className="w-full sm:w-[300px]"
+          inicio={inicio}
+          fim={fim}
+          isCurrent={isCurrentQuinzena}
+          onShift={(dir) => setRef(shiftQuinzena(ref, dir))}
+          onToday={() => setRef(new Date())}
+        />
+
       </div>
 
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
-            <Card key={stat.title} className="overflow-hidden border-none shadow-lg">
-              <div className={`bg-gradient-to-br ${stat.gradient} p-4`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-primary-foreground/80">{stat.title}</p>
-                    <p className="text-2xl font-bold text-primary-foreground">{stat.value}</p>
-                  </div>
-                  <stat.icon className="h-10 w-10 text-primary-foreground/30" />
-                </div>
-              </div>
-            </Card>
+            <StatCard
+              key={stat.title}
+              label={stat.title}
+              value={stat.value}
+              icon={stat.icon}
+              badge={stat.badge}
+              tone={stat.tone}
+            />
           ))}
         </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 shadow-md">
+        <Card className="lg:col-span-2 shadow-premium-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
@@ -192,7 +185,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md">
+        <Card className="shadow-premium-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />

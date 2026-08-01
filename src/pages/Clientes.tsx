@@ -162,7 +162,7 @@ export default function Clientes() {
         }
       />
 
-      <Card className="shadow-md overflow-hidden">
+      <Card className="shadow-premium-sm overflow-hidden">
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-start">
           <CardTitle>Clientes</CardTitle>
           <div className="relative w-full sm:w-64">

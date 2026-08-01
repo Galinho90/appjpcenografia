@@ -23,7 +23,7 @@ export function SaldoHero({ saldo, entradas, saidas, resultado, serie, periodoLa
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      <Card className="relative overflow-hidden border-none shadow-xl lg:col-span-2">
+      <Card className="relative overflow-hidden border-none shadow-premium-sm lg:col-span-2">
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/70" />
         <div className="absolute -right-10 -top-16 h-56 w-56 rounded-full bg-primary-foreground/10 blur-2xl" />
         <CardContent className="relative p-6">

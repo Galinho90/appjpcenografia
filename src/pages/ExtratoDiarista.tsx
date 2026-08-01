@@ -26,6 +26,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useCompanyLogo } from "@/hooks/useCompanyLogo";
 import { PageHeader } from "@/components/PageHeader";
+import { QuinzenaSelector } from "@/components/QuinzenaSelector";
+import { StatCard } from "@/components/StatCard";
 
 async function loadImageAsDataURL(url: string): Promise<{ dataUrl: string; w: number; h: number } | null> {
   try {
@@ -778,7 +780,7 @@ export default function ExtratoDiarista() {
         </DialogContent>
       </Dialog>
 
-      <Card className="shadow-md">
+      <Card className="shadow-premium-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <FileText className="h-4 w-4 text-primary" /> Extrato
@@ -803,77 +805,48 @@ export default function ExtratoDiarista() {
             )}
           </div>
 
-          <div className="rounded-lg border border-border/70 bg-card shadow-card overflow-hidden mb-4 sm:mb-6">
-            <div className="flex min-h-[76px] items-center justify-center gap-2 px-3 py-4 sm:min-h-[84px] sm:gap-3 sm:px-4">
-              <Button variant="ghost" size="icon" className="shrink-0" onClick={() => shiftRef(-1)} aria-label="Quinzena anterior">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="px-2 text-center flex-1 min-w-0">
-                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Quinzena</p>
-                <p className="text-xs sm:text-sm font-semibold whitespace-normal sm:whitespace-nowrap leading-tight">
-                  {fmtDate(selecionada.inicio)} — {fmtDate(selecionada.fim)}
-                </p>
-              </div>
-              <Button variant="ghost" size="icon" className="shrink-0" onClick={() => shiftRef(1)} aria-label="Próxima quinzena">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              {!isQuinzenaAtual && (
-                <Button variant="outline" size="sm" onClick={() => setRefDate(new Date())}>Hoje</Button>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-2 p-3 sm:p-4 pt-0">
+          <QuinzenaSelector
+            className="mb-4 sm:mb-6"
+            inicio={selecionada.inicio}
+            fim={selecionada.fim}
+            isCurrent={isQuinzenaAtual}
+            onShift={(dir) => shiftRef(dir)}
+            onToday={() => setRefDate(new Date())}
+            footer={
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 flex-1"
+                className="w-full gap-2"
                 onClick={() => gerarPDF(selecionada, "Período")}
               >
                 <FileSpreadsheet className="h-4 w-4" />
                 Baixar PDF
               </Button>
-            </div>
-          </div>
+            }
+          />
         </CardContent>
       </Card>
 
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card className="border-none overflow-hidden shadow-lg">
-          <div className={`p-4 sm:p-6 ${aPagar < 0 ? "bg-destructive" : "bg-accent"}`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-xl sm:text-2xl font-bold ${aPagar < 0 ? "text-destructive-foreground" : "text-accent-foreground"}`}>{fmtBRL(aPagar)}</p>
-                <p className={`text-sm ${aPagar < 0 ? "text-destructive-foreground/90" : "text-accent-foreground/90"}`}>A Pagar</p>
-              </div>
-              <DollarSign className={`h-10 w-10 ${aPagar < 0 ? "text-destructive-foreground/30" : "text-accent-foreground/30"}`} />
-            </div>
-          </div>
-        </Card>
-        <Card className="border-none overflow-hidden shadow-lg">
-          <div className="bg-primary p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-primary-foreground">{fmtBRL(totalCreditos)}</p>
-                <p className="text-sm text-primary-foreground/90">Créditos</p>
-              </div>
-              <CalendarDays className="h-10 w-10 text-primary-foreground/30" />
-            </div>
-          </div>
-        </Card>
-        <Card className="border-none overflow-hidden shadow-lg">
-          <div className="bg-destructive p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-destructive-foreground">{fmtBRL(totalPago)}</p>
-                <p className="text-sm text-destructive-foreground/90">Débitos / Pagos</p>
-              </div>
-              <CheckCircle2 className="h-10 w-10 text-destructive-foreground/30" />
-            </div>
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard
+          label="A Pagar"
+          badge="Saldo"
+          value={fmtBRL(aPagar)}
+          icon={DollarSign}
+          tone={aPagar < 0 ? "destructive" : "success"}
+        />
+        <StatCard label="Total Lançado" badge="Créditos" value={fmtBRL(totalCreditos)} icon={CalendarDays} tone="primary" />
+        <StatCard
+          label="Débitos / Pagos"
+          badge="Débitos"
+          value={fmtBRL(totalPago)}
+          icon={CheckCircle2}
+          tone="destructive"
+        />
       </div>
 
-      <Card className="shadow-md">
+
+      <Card className="shadow-premium-sm">
         <CardHeader>
           <CardTitle className="text-base">
             Extrato {colaboradorNome ? `— ${colaboradorNome}` : ""}
@@ -892,7 +865,7 @@ export default function ExtratoDiarista() {
                 const colorValue = isDeb ? "text-destructive" : "text-success";
                 const hasHorarios = !!(l.hora_entrada || l.hora_saida);
                 return (
-                  <Card key={l.id} className={cn("border-l-4 shadow-sm hover:shadow-md transition-shadow", accent)}>
+                  <Card key={l.id} className={cn("border-l-4 shadow-sm hover:shadow-premium transition-shadow", accent)}>
                     <CardContent className="p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1 space-y-1">

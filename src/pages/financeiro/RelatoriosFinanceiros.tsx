@@ -227,7 +227,7 @@ export default function RelatoriosFinanceiros() {
 
       {/* Resumo Visual de Indicadores - Cards Elevados */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="overflow-hidden border border-success/10 shadow-xl bg-gradient-to-br from-card via-card to-success/5 relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-success/10 rounded-3xl">
+        <Card className="overflow-hidden border border-success/10 shadow-premium-sm bg-gradient-to-br from-card via-card to-success/5 relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-success/10 rounded-3xl">
           <div className="absolute top-0 left-0 w-full h-1.5 bg-success/40" />
           <CardContent className="pt-8 pb-7">
             <div className="flex items-center justify-between">
@@ -250,7 +250,7 @@ export default function RelatoriosFinanceiros() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border border-destructive/10 shadow-xl bg-gradient-to-br from-card via-card to-destructive/5 relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-destructive/10 rounded-3xl">
+        <Card className="overflow-hidden border border-destructive/10 shadow-premium-sm bg-gradient-to-br from-card via-card to-destructive/5 relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-destructive/10 rounded-3xl">
           <div className="absolute top-0 left-0 w-full h-1.5 bg-destructive/40" />
           <CardContent className="pt-8 pb-7">
             <div className="flex items-center justify-between">
@@ -274,7 +274,7 @@ export default function RelatoriosFinanceiros() {
         </Card>
 
         <Card className={cn(
-          "overflow-hidden border shadow-xl relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl rounded-3xl bg-gradient-to-br from-card via-card",
+          "overflow-hidden border shadow-premium-sm relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl rounded-3xl bg-gradient-to-br from-card via-card",
           resultado >= 0 
             ? "border-primary/10 to-primary/5 hover:shadow-primary/10" 
             : "border-orange-500/10 to-orange-500/5 hover:shadow-orange-500/10"
@@ -300,7 +300,7 @@ export default function RelatoriosFinanceiros() {
                 }
               </div>
               <div className={cn(
-                "p-4 rounded-2xl border transition-all duration-500 group-hover:scale-110 group-hover:shadow-lg",
+                "p-4 rounded-2xl border transition-all duration-500 group-hover:scale-110 group-hover:shadow-premium",
                 resultado >= 0 
                   ? "bg-primary/10 text-primary border-primary/20 group-hover:bg-primary group-hover:text-white" 
                   : "bg-orange-500/10 text-orange-500 border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white"
@@ -321,7 +321,7 @@ export default function RelatoriosFinanceiros() {
         </TabsList>
 
         <TabsContent value="fluxo" className="space-y-4 pt-4 outline-none">
-          <Card className={cn("shadow-xl border-none rounded-3xl bg-gradient-to-br from-card to-muted/5")}>
+          <Card className={cn("shadow-premium-sm border-none rounded-3xl bg-gradient-to-br from-card to-muted/5")}>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary" />
@@ -414,7 +414,7 @@ export default function RelatoriosFinanceiros() {
             </Button>
           </div>
           <div className="grid gap-6 lg:grid-cols-2">
-            <Card className={cn("shadow-xl border-none rounded-3xl overflow-hidden")}>
+            <Card className={cn("shadow-premium-sm border-none rounded-3xl overflow-hidden")}>
               <div className="h-1.5 w-full bg-destructive/20" />
               <CardHeader className="pb-0"><CardTitle className="text-lg font-black tracking-tight text-destructive">Despesas por Categoria</CardTitle></CardHeader>
               <CardContent className="pt-0">
@@ -453,7 +453,7 @@ export default function RelatoriosFinanceiros() {
               </CardContent>
             </Card>
             
-            <Card className={cn("shadow-xl border-none rounded-3xl overflow-hidden")}>
+            <Card className={cn("shadow-premium-sm border-none rounded-3xl overflow-hidden")}>
               <div className="h-1.5 w-full bg-success/20" />
               <CardHeader className="pb-0"><CardTitle className="text-lg font-black tracking-tight text-success">Receitas por Categoria</CardTitle></CardHeader>
               <CardContent className="pt-0">
@@ -492,7 +492,7 @@ export default function RelatoriosFinanceiros() {
               </CardContent>
             </Card>
           </div>
-          <Card className={cn("shadow-md")}>
+          <Card className={cn("shadow-premium-sm")}>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
@@ -533,7 +533,7 @@ export default function RelatoriosFinanceiros() {
 
         {/* Contas */}
         <TabsContent value="contas" className="space-y-4">
-          <Card className={cn("shadow-md")}>
+          <Card className={cn("shadow-premium-sm")}>
             <CardHeader><CardTitle className="text-base">Movimentação por conta</CardTitle></CardHeader>
             <CardContent>
               {porConta.length === 0 ? (
@@ -553,7 +553,7 @@ export default function RelatoriosFinanceiros() {
               )}
             </CardContent>
           </Card>
-          <Card className={cn("shadow-md")}>
+          <Card className={cn("shadow-premium-sm")}>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
@@ -583,7 +583,7 @@ export default function RelatoriosFinanceiros() {
 
         {/* DRE */}
         <TabsContent value="dre">
-          <Card className={cn("shadow-md")}>
+          <Card className={cn("shadow-premium-sm")}>
             <CardHeader>
               <CardTitle className="text-base">DRE simplificado</CardTitle>
               <p className="text-xs text-muted-foreground">{fmtDate(dataInicio)} — {fmtDate(dataFim)}</p>

@@ -77,7 +77,7 @@ export default function CategoriasFinanceiras() {
         )}
       </div>
 
-      <Card className="shadow-md">
+      <Card className="shadow-premium-sm">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2"><Tags className="h-4 w-4 text-primary" /> Lista</CardTitle>
         </CardHeader>

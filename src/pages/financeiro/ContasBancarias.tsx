@@ -88,7 +88,7 @@ export default function ContasBancarias() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {contas.map((c) => (
-            <Card key={c.id} className="shadow-md">
+            <Card key={c.id} className="shadow-premium-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-base">
                   <span className="flex items-center gap-2 truncate">

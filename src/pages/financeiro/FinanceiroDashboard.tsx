@@ -146,10 +146,6 @@ export default function FinanceiroDashboard() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Financeiro</h1>
           <p className="text-sm text-muted-foreground">Dashboard de fluxo de caixa e contas bancárias</p>
-          <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-yellow-200 bg-yellow-50 px-3 py-1 text-xs font-medium text-yellow-800">
-            <AlertCircle className="h-3 w-3" />
-            <span>Divergência detectada em 31/07: Saldo esperado R$ 17.505,93 vs Sistema R$ 16.539,43 (Dif: R$ 966,50)</span>
-          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <Popover>

@@ -299,7 +299,7 @@ export default function RelatoriosFinanceiros() {
 
         {/* Fluxo */}
         <TabsContent value="fluxo" className="space-y-4">
-          <Card className="shadow-md">
+          <Card className={cn("shadow-md")}>
             <CardHeader><CardTitle className="text-base">Fluxo diário</CardTitle></CardHeader>
             <CardContent>
               {isLoading ? <Skeleton className="h-72 w-full" /> :

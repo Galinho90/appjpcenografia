@@ -780,7 +780,7 @@ export default function ExtratoDiarista() {
         </DialogContent>
       </Dialog>
 
-      <Card className="shadow-md">
+      <Card className="shadow-premium-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <FileText className="h-4 w-4 text-primary" /> Extrato
@@ -846,7 +846,7 @@ export default function ExtratoDiarista() {
       </div>
 
 
-      <Card className="shadow-md">
+      <Card className="shadow-premium-sm">
         <CardHeader>
           <CardTitle className="text-base">
             Extrato {colaboradorNome ? `— ${colaboradorNome}` : ""}
@@ -865,7 +865,7 @@ export default function ExtratoDiarista() {
                 const colorValue = isDeb ? "text-destructive" : "text-success";
                 const hasHorarios = !!(l.hora_entrada || l.hora_saida);
                 return (
-                  <Card key={l.id} className={cn("border-l-4 shadow-sm hover:shadow-md transition-shadow", accent)}>
+                  <Card key={l.id} className={cn("border-l-4 shadow-sm hover:shadow-premium transition-shadow", accent)}>
                     <CardContent className="p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1 space-y-1">

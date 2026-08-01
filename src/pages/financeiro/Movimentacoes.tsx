@@ -461,7 +461,7 @@ export default function Movimentacoes() {
       </div>
 
       {/* Barra de busca + período + filtros */}
-      <Card className="shadow-md">
+      <Card className="shadow-premium-sm">
         <CardContent className="p-4 space-y-3">
           <div className="flex flex-col lg:flex-row lg:items-center gap-2">
             <div className="relative flex-1 min-w-0">
@@ -590,7 +590,7 @@ export default function Movimentacoes() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-md">
+      <Card className="shadow-premium-sm">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-4 space-y-2">

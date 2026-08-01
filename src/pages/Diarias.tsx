@@ -426,7 +426,7 @@ export default function Diarias() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <PageHeader title="Lançamentos" description="Controle de lançamentos por categoria" />
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-          <Card className="shadow-md w-full sm:w-auto">
+          <Card className="shadow-premium-sm w-full sm:w-auto">
             <CardContent className="flex items-center gap-3 p-4">
               <Button variant="ghost" size="icon" onClick={() => setQuinzenaRef(shiftQuinzena(quinzenaRef, -1))} aria-label="Quinzena anterior">
                 <ChevronLeft className="h-4 w-4" />
@@ -679,7 +679,7 @@ export default function Diarias() {
       </Dialog>
 
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card className="border-none shadow-lg overflow-hidden">
+        <Card className="border-none shadow-premium-sm overflow-hidden">
           <div className="bg-gradient-to-br from-primary to-primary/70 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -690,7 +690,7 @@ export default function Diarias() {
             </div>
           </div>
         </Card>
-        <Card className="border-none shadow-lg overflow-hidden">
+        <Card className="border-none shadow-premium-sm overflow-hidden">
           <div className="bg-gradient-to-br from-accent to-accent/70 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -701,7 +701,7 @@ export default function Diarias() {
             </div>
           </div>
         </Card>
-        <Card className="border-none shadow-lg overflow-hidden">
+        <Card className="border-none shadow-premium-sm overflow-hidden">
           <div className="bg-gradient-to-br from-info to-info/70 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -714,7 +714,7 @@ export default function Diarias() {
         </Card>
       </div>
 
-      <Card className="shadow-md overflow-hidden">
+      <Card className="shadow-premium-sm overflow-hidden">
         <CardHeader className="space-y-4">
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 items-end justify-start">
             <div className="space-y-1">

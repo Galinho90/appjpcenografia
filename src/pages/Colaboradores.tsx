@@ -469,7 +469,7 @@ export default function Colaboradores() {
         </Dialog>
       </div>
 
-      <Card className="shadow-md overflow-hidden">
+      <Card className="shadow-premium-sm overflow-hidden">
         <CardHeader>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3">

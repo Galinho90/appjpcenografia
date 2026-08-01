@@ -98,8 +98,8 @@ export default function Login() {
         />
 
         <div className="relative z-10 p-12 text-center">
-          <div className="mb-8 inline-flex items-center justify-center w-24 h-24 bg-[#1e293b]/60 border border-slate-700/50 rounded-3xl shadow-lg overflow-hidden backdrop-blur-sm">
-            <div className="w-16 h-16 bg-[#1e293b] rounded-lg flex items-center justify-center p-1.5 shadow-md">
+          <div className="mb-8 inline-flex items-center justify-center w-24 h-24 bg-[#1e293b]/60 border border-slate-700/50 rounded-3xl shadow-premium-sm overflow-hidden backdrop-blur-sm">
+            <div className="w-16 h-16 bg-[#1e293b] rounded-lg flex items-center justify-center p-1.5 shadow-premium-sm">
               <img src={logoSrc} alt={brandName} className="h-full w-full object-contain" />
             </div>
           </div>
@@ -115,7 +115,7 @@ export default function Login() {
         <div className="max-w-md w-full mx-auto">
           {/* Mobile brand */}
           <div className="lg:hidden flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 bg-[#1e293b] rounded-lg flex items-center justify-center p-1 shadow-md border border-slate-700/50">
+            <div className="w-10 h-10 bg-[#1e293b] rounded-lg flex items-center justify-center p-1 shadow-premium-sm border border-slate-700/50">
               <img src={logoSrc} alt={brandName} className="h-full w-full object-contain" />
             </div>
             <span className="text-slate-100 font-semibold text-xl tracking-tight">{brandName}</span>
@@ -194,7 +194,7 @@ export default function Login() {
             <Button
               type="submit"
               disabled={submitting}
-              className="group w-full h-auto bg-white text-slate-900 font-semibold py-4 rounded-xl hover:bg-slate-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/5"
+              className="group w-full h-auto bg-white text-slate-900 font-semibold py-4 rounded-xl hover:bg-slate-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-premium-sm shadow-white/5"
             >
               {submitting ? "Entrando..." : "Entrar"}
               <ArrowRight className="h-[18px] w-[18px] group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />
@@ -236,7 +236,7 @@ export default function Login() {
               <Button
                 type="submit"
                 disabled={forgotSubmitting}
-                className="w-full bg-white text-slate-900 font-semibold py-3 rounded-xl hover:bg-slate-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/5"
+                className="w-full bg-white text-slate-900 font-semibold py-3 rounded-xl hover:bg-slate-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-premium-sm shadow-white/5"
               >
                 {forgotSubmitting ? (
                   <>

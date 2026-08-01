@@ -199,7 +199,7 @@ export default function Relatorios() {
 
 
 
-          <Card className="shadow-md print:hidden">
+          <Card className="shadow-premium-sm print:hidden">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileBarChart className="h-5 w-5 text-primary" />
@@ -274,7 +274,7 @@ export default function Relatorios() {
           </Card>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-none shadow-lg overflow-hidden">
+            <Card className="border-none shadow-premium-sm overflow-hidden">
               <div className="bg-gradient-to-br from-primary to-primary/70 p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -285,7 +285,7 @@ export default function Relatorios() {
                 </div>
               </div>
             </Card>
-            <Card className="border-none shadow-lg overflow-hidden">
+            <Card className="border-none shadow-premium-sm overflow-hidden">
               <div className="bg-gradient-to-br from-secondary to-secondary/70 p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -296,7 +296,7 @@ export default function Relatorios() {
                 </div>
               </div>
             </Card>
-            <Card className="border-none shadow-lg overflow-hidden">
+            <Card className="border-none shadow-premium-sm overflow-hidden">
               <div className="bg-gradient-to-br from-accent to-accent/70 p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -307,7 +307,7 @@ export default function Relatorios() {
                 </div>
               </div>
             </Card>
-            <Card className="border-none shadow-lg overflow-hidden">
+            <Card className="border-none shadow-premium-sm overflow-hidden">
               <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -320,7 +320,7 @@ export default function Relatorios() {
             </Card>
           </div>
 
-          <Card className="shadow-md">
+          <Card className="shadow-premium-sm">
             <CardHeader>
               <CardTitle>
                 Resumo da Quinzena {fmt(selecionada.inicio)} — {fmt(selecionada.fim)}
@@ -569,7 +569,7 @@ function RelatorioPorCliente() {
 
   return (
     <div className="space-y-6">
-      <Card className="shadow-md print:hidden">
+      <Card className="shadow-premium-sm print:hidden">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5 text-primary" />
@@ -626,7 +626,7 @@ function RelatorioPorCliente() {
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="border-none shadow-lg overflow-hidden">
+        <Card className="border-none shadow-premium-sm overflow-hidden">
           <div className="bg-gradient-to-br from-primary to-primary/70 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -637,7 +637,7 @@ function RelatorioPorCliente() {
             </div>
           </div>
         </Card>
-        <Card className="border-none shadow-lg overflow-hidden">
+        <Card className="border-none shadow-premium-sm overflow-hidden">
           <div className="bg-gradient-to-br from-secondary to-secondary/70 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -648,7 +648,7 @@ function RelatorioPorCliente() {
             </div>
           </div>
         </Card>
-        <Card className="border-none shadow-lg overflow-hidden">
+        <Card className="border-none shadow-premium-sm overflow-hidden">
           <div className="bg-gradient-to-br from-accent to-accent/70 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -661,7 +661,7 @@ function RelatorioPorCliente() {
         </Card>
       </div>
 
-      <Card className="shadow-md">
+      <Card className="shadow-premium-sm">
         <CardHeader>
           <CardTitle>
             {clienteNome}

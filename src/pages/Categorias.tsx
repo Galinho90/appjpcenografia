@@ -109,7 +109,7 @@ export default function Categorias() {
         )}
       </div>
 
-      <Card className="shadow-md overflow-hidden">
+      <Card className="shadow-premium-sm overflow-hidden">
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span className="flex items-center gap-2 text-base font-semibold">

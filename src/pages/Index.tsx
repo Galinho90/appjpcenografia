@@ -136,7 +136,7 @@ export default function Dashboard() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
-            <Card key={stat.title} className="overflow-hidden border-none shadow-lg">
+            <Card key={stat.title} className="overflow-hidden border-none shadow-premium-sm">
               <div className={`bg-gradient-to-br ${stat.gradient} p-4`}>
                 <div className="flex items-center justify-between">
                   <div>
@@ -152,7 +152,7 @@ export default function Dashboard() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 shadow-md">
+        <Card className="lg:col-span-2 shadow-premium-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
@@ -183,7 +183,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md">
+        <Card className="shadow-premium-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />

@@ -207,7 +207,7 @@ export default function Fechamentos() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="border-none shadow-lg overflow-hidden">
+        <Card className="border-none shadow-premium-sm overflow-hidden">
           <div className="bg-gradient-to-br from-accent to-accent/70 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -218,7 +218,7 @@ export default function Fechamentos() {
             </div>
           </div>
         </Card>
-        <Card className="border-none shadow-lg overflow-hidden">
+        <Card className="border-none shadow-premium-sm overflow-hidden">
           <div className="bg-gradient-to-br from-secondary to-secondary/70 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -231,7 +231,7 @@ export default function Fechamentos() {
         </Card>
       </div>
 
-      <Card className="shadow-md">
+      <Card className="shadow-premium-sm">
         <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Fechamentos da Quinzena</CardTitle>
           <div className="flex items-center gap-1">

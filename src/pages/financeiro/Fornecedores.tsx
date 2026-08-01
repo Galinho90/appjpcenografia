@@ -190,7 +190,7 @@ export default function Fornecedores() {
         }
       />
 
-      <Card className="shadow-md">
+      <Card className="shadow-premium-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Search className="h-4 w-4 text-primary" /> Buscar
@@ -205,7 +205,7 @@ export default function Fornecedores() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-md">
+      <Card className="shadow-premium-sm">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-4 space-y-2">

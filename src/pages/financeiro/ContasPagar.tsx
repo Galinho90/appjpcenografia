@@ -38,7 +38,7 @@ export default function ContasPagar() {
   };
 
   const Grupo = ({ titulo, icon: Icon, color, items }: any) => (
-    <Card className="shadow-md">
+    <Card className="shadow-premium-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Icon className={`h-4 w-4 ${color}`} />

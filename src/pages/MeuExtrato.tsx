@@ -182,7 +182,7 @@ export default function MeuExtrato() {
           <Card className="overflow-hidden border-none shadow-premium-sm surface-glass group transition-all hover:shadow-premium">
             <div className="relative h-28 sm:h-32 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
               <div className="absolute -bottom-10 sm:-bottom-12 left-1/2 -translate-x-1/2 sm:left-6 sm:translate-x-0 z-10">
-                <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-background p-1 shadow-lg ring-1 ring-primary/10">
+                <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-background p-1 shadow-premium-sm ring-1 ring-primary/10">
                   <div className="h-full w-full rounded-xl bg-gradient-to-br from-primary to-primary-foreground/20 flex items-center justify-center overflow-hidden">
                     {meuColaborador?.foto_url ? (
                       <img src={meuColaborador.foto_url} alt={colaboradorNome ?? "Foto"} className="h-full w-full object-cover" />

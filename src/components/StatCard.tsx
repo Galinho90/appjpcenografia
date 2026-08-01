@@ -58,7 +58,7 @@ export interface StatCardProps {
 export function StatCard({ label, value, icon: Icon, badge, tone = "primary", hint, className }: StatCardProps) {
   const t = TONE[tone];
   return (
-    <Card className={cn("overflow-hidden", t.wrap, className)}>
+    <Card className={cn("overflow-hidden min-w-0", t.wrap, className)}>
       <CardContent className="p-5">
         {(Icon || badge) && (
           <div className="mb-4 flex items-center justify-between">

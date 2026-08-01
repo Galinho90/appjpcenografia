@@ -388,7 +388,7 @@ export default function Movimentacoes() {
   };
 
   return (
-    <div className="space-y-6 pt-4">
+    <div className="space-y-6 pt-6 px-4 sm:px-6">
       {/* Cabeçalho */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" />

@@ -279,12 +279,11 @@ export default function Configuracoes() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-4 rounded-xl border bg-gradient-to-br from-card to-muted/40 p-6 shadow-sm">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Settings2 className="h-6 w-6" />
-        </div>
-        <PageHeader title="Configurações" description="Gerencie a empresa, usuários, preferências, envio de e-mails e integrações do sistema." />
-      </div>
+      <PageHeader
+        icon={Settings2}
+        title="Configurações"
+        description="Gerencie a empresa, usuários, preferências, envio de e-mails e integrações do sistema."
+      />
 
       <Tabs defaultValue="empresa" className="w-full">
         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 h-auto gap-1 p-1">

@@ -674,7 +674,7 @@ export default function Movimentacoes() {
                               </Badge>
                             </div>
                             {isAdmin && (
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-2 mt-2 sm:mt-0 justify-end w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0">
                                 {m.status !== "pago" && (
                                   <Button variant="ghost" size="sm" onClick={() => marcarPago(m)} className="text-success h-8">
                                     Pagar

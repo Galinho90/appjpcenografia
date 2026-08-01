@@ -122,7 +122,7 @@ export default function Dashboard() {
             <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, -1))} aria-label="Quinzena anterior">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <div className="px-2 text-center flex-1 sm:min-w-[180px]">
+            <div className="px-4 text-center flex-1 sm:min-w-[180px]">
               <p className="text-xs text-muted-foreground">Quinzena</p>
               <p className="text-sm font-semibold whitespace-nowrap">{fmt(inicio)} — {fmt(fim)}</p>
             </div>

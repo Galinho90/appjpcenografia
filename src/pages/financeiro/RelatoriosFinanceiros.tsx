@@ -331,7 +331,7 @@ export default function RelatoriosFinanceiros() {
             </Button>
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="shadow-md">
+            <Card className={cn("shadow-md")}>
               <CardHeader><CardTitle className="text-base text-destructive">Despesas por categoria</CardTitle></CardHeader>
               <CardContent>
                 {despesasCategoria.length === 0 ? (

@@ -190,14 +190,16 @@ export default function Fechamentos() {
           className="flex-1"
         />
 
-        <QuinzenaSelector
-          className="w-full sm:w-[300px]"
-          inicio={selecionada.inicio}
-          fim={selecionada.fim}
-          isCurrent={isAtual}
-          onShift={(dir) => shift(dir)}
-          onToday={() => setRefDate(new Date())}
-        />
+        <div className="flex justify-end w-full sm:w-auto">
+          <QuinzenaSelector
+            className="w-full sm:w-[300px]"
+            inicio={selecionada.inicio}
+            fim={selecionada.fim}
+            isCurrent={isAtual}
+            onShift={(dir) => shift(dir)}
+            onToday={() => setRefDate(new Date())}
+          />
+        </div>
       </div>
 
       {canEdit && (

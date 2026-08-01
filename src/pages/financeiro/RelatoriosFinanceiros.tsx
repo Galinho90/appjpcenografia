@@ -329,27 +329,88 @@ export default function RelatoriosFinanceiros() {
           <TabsTrigger value="dre" className="rounded-xl px-6 data-[state=active]:bg-card data-[state=active]:shadow-sm">DRE</TabsTrigger>
         </TabsList>
 
-        {/* Fluxo */}
-        <TabsContent value="fluxo" className="space-y-4">
-          <Card className={cn("shadow-md")}>
-            <CardHeader><CardTitle className="text-base">Fluxo diário</CardTitle></CardHeader>
+        <TabsContent value="fluxo" className="space-y-4 pt-4 outline-none">
+          <Card className={cn("shadow-xl border-none rounded-3xl bg-gradient-to-br from-card to-muted/5")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary" />
+                Fluxo Diário de Caixa
+              </CardTitle>
+            </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-72 w-full" /> :
+              {isLoading ? <Skeleton className="h-72 w-full rounded-2xl" /> :
                 fluxoDiario.length === 0 ? (
-                  <p className="text-sm text-center text-muted-foreground py-12">Sem dados no período</p>
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+                    <FileBarChart className="h-10 w-10 opacity-20" />
+                    <p className="text-sm font-medium">Sem movimentações registradas neste período</p>
+                  </div>
                 ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={fluxoDiario}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="data" tickFormatter={(v) => fmtDate(v)?.slice(0, 5)} fontSize={11} />
-                    <YAxis tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} fontSize={11} />
-                    <Tooltip formatter={(v: any) => fmtBRL(v)} labelFormatter={(v) => fmtDate(v)} />
-                    <Legend />
-                    <Line type="monotone" dataKey="entradas" stroke="hsl(var(--success))" strokeWidth={2} name="Entradas" />
-                    <Line type="monotone" dataKey="saidas" stroke="hsl(var(--destructive))" strokeWidth={2} name="Saídas" />
-                    <Line type="monotone" dataKey="saldo" stroke="hsl(var(--primary))" strokeWidth={2} name="Resultado" />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="h-[350px] w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={fluxoDiario}>
+                      <defs>
+                        <linearGradient id="colorEntradas" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.1}/>
+                          <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted/50" />
+                      <XAxis 
+                        dataKey="data" 
+                        tickFormatter={(v) => fmtDate(v)?.slice(0, 5)} 
+                        fontSize={11} 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <YAxis 
+                        tickFormatter={(v) => v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v}`} 
+                        fontSize={11} 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '16px',
+                          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                        }}
+                        formatter={(v: any) => [fmtBRL(v), ""]} 
+                        labelFormatter={(v) => fmtDate(v)} 
+                      />
+                      <Legend verticalAlign="top" height={36} iconType="circle" />
+                      <Line 
+                        type="monotone" 
+                        dataKey="entradas" 
+                        stroke="hsl(var(--success))" 
+                        strokeWidth={4} 
+                        dot={false}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                        name="Entradas" 
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="saidas" 
+                        stroke="hsl(var(--destructive))" 
+                        strokeWidth={4} 
+                        dot={false}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                        name="Saídas" 
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="saldo" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={4} 
+                        dot={false}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                        name="Resultado" 
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               )}
             </CardContent>
           </Card>

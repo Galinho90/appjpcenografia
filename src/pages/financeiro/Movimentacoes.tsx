@@ -703,8 +703,8 @@ export default function Movimentacoes() {
                     <Table className="[&_th]:px-4 [&_td]:px-4 border-separate border-spacing-0">
                       <TableHeader>
                         <TableRow className="hover:bg-transparent border-b bg-muted/20 [&_th]:h-16 [&_th]:py-5 [&_th]:align-middle [&_th]:border-b">
-                          {isAdmin && <TableHead className="w-10 text-center"></TableHead>}
-                          <TableHead className="w-14 text-center">Tipo</TableHead>
+                          {isAdmin && <TableHead className="w-10 text-center p-0"></TableHead>}
+                          <TableHead className="w-14 text-center p-0">Tipo</TableHead>
                           <TableHead className="min-w-[220px]">Descrição / Origem</TableHead>
                           <TableHead>Categoria</TableHead>
                           <TableHead>Conta</TableHead>

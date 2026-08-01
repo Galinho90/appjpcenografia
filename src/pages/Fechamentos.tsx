@@ -186,7 +186,7 @@ export default function Fechamentos() {
         <PageHeader title="Fechamentos" description="Fechamento quinzenal de pagamentos" />
 
         <Card className="shadow-md w-full sm:w-auto overflow-hidden">
-          <CardContent className="flex items-center gap-3 p-0 h-16 sm:h-20">
+          <CardContent className="flex min-h-[76px] items-center justify-center gap-2 px-3 py-4 sm:min-h-[84px] sm:gap-3 sm:px-4">
             <Button variant="ghost" size="icon" onClick={() => shift(-1)} aria-label="Quinzena anterior">
               <ChevronLeft className="h-4 w-4" />
             </Button>

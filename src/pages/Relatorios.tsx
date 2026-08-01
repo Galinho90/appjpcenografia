@@ -187,8 +187,8 @@ export default function Relatorios() {
         </TabsList>
 
         <TabsContent value="quinzenal" className="space-y-6">
-          <Card className="shadow-md print:hidden">
-            <CardContent className="flex items-center gap-3 p-4">
+          <Card className="shadow-md print:hidden overflow-hidden">
+            <CardContent className="flex items-center gap-3 p-0 h-16 sm:h-20">
               <Button variant="ghost" size="icon" onClick={() => shift(-1)} aria-label="Quinzena anterior">
                 <ChevronLeft className="h-4 w-4" />
               </Button>

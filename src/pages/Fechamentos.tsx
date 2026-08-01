@@ -183,8 +183,12 @@ export default function Fechamentos() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-start">
-        <PageHeader title="Fechamentos" description="Fechamento quinzenal de pagamentos" />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <PageHeader
+          title="Fechamentos"
+          description="Fechamento quinzenal de pagamentos"
+          className="flex-1"
+        />
 
         <QuinzenaSelector
           className="w-full sm:w-[300px]"
@@ -194,7 +198,6 @@ export default function Fechamentos() {
           onShift={(dir) => shift(dir)}
           onToday={() => setRefDate(new Date())}
         />
-
       </div>
 
       {canEdit && (

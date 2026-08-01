@@ -349,7 +349,7 @@ export default function RelatoriosFinanceiros() {
                 )}
               </CardContent>
             </Card>
-            <Card className="shadow-md">
+            <Card className={cn("shadow-md")}>
               <CardHeader><CardTitle className="text-base text-success">Receitas por categoria</CardTitle></CardHeader>
               <CardContent>
                 {receitasCategoria.length === 0 ? (

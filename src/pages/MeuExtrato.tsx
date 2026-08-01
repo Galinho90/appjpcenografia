@@ -199,15 +199,8 @@ export default function MeuExtrato() {
       </Card>
 
 
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <FileText className="h-4 w-4 text-primary" /> Período
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border-2 border-border bg-card p-3 sm:p-4">
-            <div className="flex items-center gap-3">
+      <Card className="shadow-md overflow-hidden">
+        <CardContent className="flex items-center gap-3 p-0 h-16 sm:h-20">
               <Button variant="ghost" size="icon" className="shrink-0" onClick={() => shiftRef(-1)} aria-label="Quinzena anterior">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -223,8 +216,6 @@ export default function MeuExtrato() {
               {!isQuinzenaAtual && (
                 <Button variant="outline" size="sm" onClick={() => setRefDate(new Date())}>Hoje</Button>
               )}
-            </div>
-          </div>
         </CardContent>
       </Card>
 

@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown, Wallet, Scale } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { fmtBRL, fmtDate } from "@/lib/financeiro";
 import { cn } from "@/lib/utils";
@@ -55,11 +55,13 @@ export function SaldoHero({ saldo, entradas, saidas, resultado, serie, periodoLa
                       <stop offset="100%" stopColor="hsl(var(--primary-foreground))" stopOpacity={0} />
                     </linearGradient>
                   </defs>
+                  <XAxis dataKey="dia" hide />
                   <Tooltip
                     formatter={(v: number) => [fmtBRL(v), "Saldo"]}
-                    labelFormatter={(l: string) => fmtDate(l)}
+                    labelFormatter={(l) => (typeof l === "string" ? fmtDate(l) : "")}
                     contentStyle={{ borderRadius: 8, fontSize: 12, border: "none" }}
                   />
+
                   <Area
                     type="monotone"
                     dataKey="saldo"

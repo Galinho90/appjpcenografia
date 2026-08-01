@@ -351,8 +351,8 @@ export default function Movimentacoes() {
         if (dA !== dB) return dB.localeCompare(dA);
         const oA = a.ordem_manual, oB = b.ordem_manual;
         if (oA != null && oB != null && oA !== oB) return oA - oB;
-        if (oA != null && oB == null) return -1;
-        if (oA == null && oB != null) return 1;
+        if (oA == null && oB != null) return -1;
+        if (oA != null && oB == null) return 1;
         return (b.created_at ?? "").localeCompare(a.created_at ?? "");
       });
     });

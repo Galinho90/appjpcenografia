@@ -155,31 +155,47 @@ export default function RelatoriosFinanceiros() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2 text-foreground">
             <FileBarChart className="h-7 w-7 text-primary" /> Relatórios Financeiros
           </h1>
           <p className="text-sm text-muted-foreground">Analise entradas, saídas e resultado consolidado</p>
         </div>
-        <Button onClick={exportarMovimentacoes} variant="outline" className="gap-2">
-          <Download className="h-4 w-4" /> Exportar CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={exportarMovimentacoes} variant="outline" size="sm" className="gap-2 border-primary/20 hover:border-primary/50 transition-colors">
+            <Download className="h-4 w-4" /> Exportar Movimentações
+          </Button>
+        </div>
       </div>
 
-      {/* Filtros */}
-      <Card className="shadow-md">
-        <CardContent className="grid gap-3 sm:grid-cols-4 pt-6">
+      {/* Filtros Estilizados */}
+      <div className="flex flex-col gap-4 p-4 rounded-2xl border bg-card/60 backdrop-blur-sm shadow-sm lg:flex-row lg:items-end">
+        <div className="grid grid-cols-2 gap-3 flex-1 lg:grid-cols-4">
           <div className="space-y-1.5">
-            <Label className="text-xs">De</Label>
-            <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Data Início</Label>
+            <div className="relative">
+              <Input 
+                type="date" 
+                value={dataInicio} 
+                onChange={(e) => setDataInicio(e.target.value)}
+                className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9" 
+              />
+            </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Até</Label>
-            <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Data Fim</Label>
+            <Input 
+              type="date" 
+              value={dataFim} 
+              onChange={(e) => setDataFim(e.target.value)}
+              className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9" 
+            />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Conta</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Conta Bancária</Label>
             <Select value={contaId} onValueChange={setContaId}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas as contas</SelectItem>
                 {contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.apelido}</SelectItem>)}
@@ -187,55 +203,86 @@ export default function RelatoriosFinanceiros() {
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Status</Label>
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Status</Label>
             <Select value={statusFiltro} onValueChange={(v: any) => setStatusFiltro(v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pago">Apenas pagas</SelectItem>
-                <SelectItem value="all">Todas (inclusive pendentes)</SelectItem>
+                <SelectItem value="pago">Somente Realizado</SelectItem>
+                <SelectItem value="all">Todo o Fluxo</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* KPIs */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Card className="shadow-md border-l-4 border-l-success">
+      {/* Resumo Visual de Indicadores */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-success/5 relative group transition-all hover:shadow-lg">
+          <div className="absolute top-0 left-0 w-1 h-full bg-success opacity-70" />
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Entradas</p>
-                {isLoading ? <Skeleton className="h-7 w-32 mt-1" /> :
-                  <p className="text-2xl font-bold text-success">{fmtBRL(entradas)}</p>}
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Entradas Totais</p>
+                {isLoading ? <Skeleton className="h-8 w-32" /> :
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-black text-success tracking-tight">{fmtBRL(entradas)}</span>
+                  </div>
+                }
               </div>
-              <TrendingUp className="h-8 w-8 text-success/40" />
+              <div className="p-3 rounded-xl bg-success/10 text-success group-hover:scale-110 transition-transform">
+                <TrendingUp className="h-6 w-6" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="shadow-md border-l-4 border-l-destructive">
+
+        <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-destructive/5 relative group transition-all hover:shadow-lg">
+          <div className="absolute top-0 left-0 w-1 h-full bg-destructive opacity-70" />
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Saídas</p>
-                {isLoading ? <Skeleton className="h-7 w-32 mt-1" /> :
-                  <p className="text-2xl font-bold text-destructive">{fmtBRL(saidas)}</p>}
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Saídas Totais</p>
+                {isLoading ? <Skeleton className="h-8 w-32" /> :
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-black text-destructive tracking-tight">{fmtBRL(saidas)}</span>
+                  </div>
+                }
               </div>
-              <TrendingDown className="h-8 w-8 text-destructive/40" />
+              <div className="p-3 rounded-xl bg-destructive/10 text-destructive group-hover:scale-110 transition-transform">
+                <TrendingDown className="h-6 w-6" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card className={`shadow-md border-l-4 ${resultado >= 0 ? "border-l-primary" : "border-l-warning"}`}>
+
+        <Card className={cn(
+          "overflow-hidden border-none shadow-md relative group transition-all hover:shadow-lg bg-gradient-to-br",
+          resultado >= 0 ? "from-card to-primary/5" : "from-card to-orange-500/5"
+        )}>
+          <div className={cn("absolute top-0 left-0 w-1 h-full opacity-70", resultado >= 0 ? "bg-primary" : "bg-orange-500")} />
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Resultado</p>
-                {isLoading ? <Skeleton className="h-7 w-32 mt-1" /> :
-                  <p className={`text-2xl font-bold ${resultado >= 0 ? "text-primary" : "text-destructive"}`}>
-                    {fmtBRL(resultado)}
-                  </p>}
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Saldo do Período</p>
+                {isLoading ? <Skeleton className="h-8 w-32" /> :
+                  <div className="flex items-baseline gap-1">
+                    <span className={cn(
+                      "text-2xl font-black tracking-tight",
+                      resultado >= 0 ? "text-primary" : "text-orange-500"
+                    )}>
+                      {fmtBRL(resultado)}
+                    </span>
+                  </div>
+                }
               </div>
-              <Scale className="h-8 w-8 text-muted-foreground/40" />
+              <div className={cn(
+                "p-3 rounded-xl group-hover:scale-110 transition-transform",
+                resultado >= 0 ? "bg-primary/10 text-primary" : "bg-orange-500/10 text-orange-500"
+              )}>
+                <Scale className="h-6 w-6" />
+              </div>
             </div>
           </CardContent>
         </Card>

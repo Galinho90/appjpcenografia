@@ -110,16 +110,21 @@ export default function FinanceiroDashboard() {
   }, [pagos, dataInicio, dataFim]);
 
   const gastosPorCategoria = useMemo(() => {
+    // "Vales Diaristas" é consolidado dentro de "Pagamento Diaristas"
+    const normalizar = (nome: string) =>
+      /vale/i.test(nome) && /diarista/i.test(nome) ? "Pagamento Diaristas" : nome;
+
     const map = new Map<string, { nome: string; valor: number; cor: string }>();
     for (const m of pagos) {
       if (m.tipo !== "saida" || !m.categoria) continue;
-      const c = m.categoria;
-      const cur = map.get(c.id) ?? { nome: c.nome, valor: 0, cor: c.cor };
+      const nome = normalizar(m.categoria.nome);
+      const cur = map.get(nome) ?? { nome, valor: 0, cor: m.categoria.cor };
       cur.valor += m.valor;
-      map.set(c.id, cur);
+      map.set(nome, cur);
     }
     return [...map.values()].sort((a, b) => b.valor - a.valor);
   }, [pagos]);
+
 
   const em7Dias = toISO(addDays(hoje, 7));
   const proximos = todasMovs

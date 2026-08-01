@@ -699,10 +699,11 @@ export default function Movimentacoes() {
               {/* Desktop: tabela agrupada por data */}
               <div className="hidden md:block">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <div className="overflow-x-auto">
-                    <Table>
+                  <div className="overflow-x-auto py-1">
+                    <Table className="[&_th:first-child]:pl-6 [&_th:last-child]:pr-6 [&_td:first-child]:pl-6 [&_td:last-child]:pr-6">
                       <TableHeader>
-                        <TableRow className="hover:bg-transparent border-b bg-muted/20">
+                        <TableRow className="hover:bg-transparent border-b bg-muted/20 [&_th]:h-14 [&_th]:py-4 [&_th]:align-middle">
+
                           {isAdmin && <TableHead className="w-10"></TableHead>}
                           <TableHead className="w-12 text-center">Tipo</TableHead>
                           <TableHead className="min-w-[200px]">Descrição / Origem</TableHead>

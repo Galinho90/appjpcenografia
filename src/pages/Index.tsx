@@ -117,25 +117,15 @@ export default function Dashboard() {
         <PageHeader title="Dashboard" description="Visão geral da operação" />
 
 
-        <Card className="shadow-md w-full sm:w-auto overflow-hidden">
-          <CardContent className="flex min-h-[76px] items-center justify-center gap-2 px-3 py-4 sm:min-h-[84px] sm:gap-3 sm:px-4">
-            <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, -1))} aria-label="Quinzena anterior">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="px-2 text-center flex-1 min-w-0">
-              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Quinzena</p>
-              <p className="text-xs sm:text-sm font-semibold whitespace-normal sm:whitespace-nowrap leading-tight">
-                {fmt(inicio)} — {fmt(fim)}
-              </p>
-            </div>
-            <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, 1))} aria-label="Próxima quinzena">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            {!isCurrentQuinzena && (
-              <Button variant="outline" size="sm" onClick={() => setRef(new Date())}>Hoje</Button>
-            )}
-          </CardContent>
-        </Card>
+        <QuinzenaSelector
+          className="w-full sm:w-[300px]"
+          inicio={inicio}
+          fim={fim}
+          isCurrent={isCurrentQuinzena}
+          onShift={(dir) => setRef(shiftQuinzena(ref, dir))}
+          onToday={() => setRef(new Date())}
+        />
+
       </div>
 
       {isLoading ? (

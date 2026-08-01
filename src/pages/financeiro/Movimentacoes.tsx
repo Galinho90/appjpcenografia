@@ -28,6 +28,8 @@ import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/finan
 import { useClientes } from "@/hooks/useSupabaseData";
 import { useRegistrarMotivoAjuste } from "@/hooks/useAuditoria";
 import { PageHeader } from "@/components/PageHeader";
+import { StatCard } from "@/components/StatCard";
+import { cn } from "@/lib/utils";
 
 const emptyForm = {
   tipo: "saida" as TipoMovimentacao,
@@ -386,78 +388,63 @@ export default function Movimentacoes() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Cabeçalho */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" />
         {isAdmin && (
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={() => openCreate("entrada")} className="gap-2 bg-success hover:bg-success/90 text-success-foreground">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={() => setOfxOpen(true)} variant="outline" className="h-10 gap-2 border-primary/20 hover:bg-primary/5">
+              <Upload className="h-4 w-4" /> Importar OFX
+            </Button>
+            <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
+            <Button onClick={() => openCreate("entrada")} className="h-10 gap-2 bg-success hover:bg-success/90 text-success-foreground">
               <ArrowDownCircle className="h-4 w-4" /> Entrada
             </Button>
-            <Button onClick={() => openCreate("saida")} variant="destructive" className="gap-2">
+            <Button onClick={() => openCreate("saida")} variant="destructive" className="h-10 gap-2">
               <ArrowUpCircle className="h-4 w-4" /> Saída
             </Button>
-            <Button onClick={() => openCreate("transferencia")} variant="outline" className="gap-2">
+            <Button onClick={() => openCreate("transferencia")} variant="outline" className="h-10 gap-2">
               <ArrowLeftRight className="h-4 w-4" /> Transferir
-            </Button>
-            <Button onClick={() => setOfxOpen(true)} variant="outline" className="gap-2">
-              <Upload className="h-4 w-4" /> Importar OFX
             </Button>
           </div>
         )}
       </div>
 
       {/* Resumo do resultado filtrado */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
-        <Card className="shadow-sm border-primary/30 bg-primary/5">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Wallet className="h-3.5 w-3.5 text-primary" /> Saldo da conta
-            </div>
-            <div className={`mt-1 text-lg font-bold ${(saldoConta ?? 0) >= 0 ? "text-foreground" : "text-destructive"}`}>
-              {saldoConta != null ? fmtBRL(saldoConta) : "—"}
-            </div>
-            <div className="text-[11px] text-muted-foreground truncate">
-              {contaLabel} · {saldoContaRef.split("-").reverse().join("/")}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5 text-success" /> Entradas
-            </div>
-            <div className="mt-1 text-lg font-bold text-success">{fmtBRL(resumo.entradas)}</div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <TrendingDown className="h-3.5 w-3.5 text-destructive" /> Saídas
-            </div>
-            <div className="mt-1 text-lg font-bold text-destructive">{fmtBRL(resumo.saidas)}</div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Wallet className="h-3.5 w-3.5 text-primary" /> Resultado
-            </div>
-            <div className={`mt-1 text-lg font-bold ${resumo.saldo >= 0 ? "text-success" : "text-destructive"}`}>
-              {fmtBRL(resumo.saldo)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Clock className="h-3.5 w-3.5 text-warning" /> A pagar/receber
-            </div>
-            <div className="mt-1 text-lg font-bold">{fmtBRL(resumo.pendentes)}</div>
-            <div className="text-[11px] text-muted-foreground">{resumo.qtdPendentes} pendente(s)</div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <StatCard
+          label="Saldo da Conta"
+          value={saldoConta != null ? fmtBRL(saldoConta) : "—"}
+          icon={Wallet}
+          tone={(saldoConta ?? 0) >= 0 ? "primary" : "destructive"}
+          hint={`${contaLabel} • ${saldoContaRef.split("-").reverse().join("/")}`}
+        />
+        <StatCard
+          label="Entradas"
+          value={fmtBRL(resumo.entradas)}
+          icon={TrendingUp}
+          tone="success"
+        />
+        <StatCard
+          label="Saídas"
+          value={fmtBRL(resumo.saidas)}
+          icon={TrendingDown}
+          tone="destructive"
+        />
+        <StatCard
+          label="Resultado"
+          value={fmtBRL(resumo.saldo)}
+          icon={ArrowLeftRight}
+          tone={resumo.saldo >= 0 ? "success" : "destructive"}
+        />
+        <StatCard
+          label="A pagar/receber"
+          value={fmtBRL(resumo.pendentes)}
+          icon={Clock}
+          tone="warning"
+          hint={`${resumo.qtdPendentes} pendente(s)`}
+        />
       </div>
 
       {/* Barra de busca + período + filtros */}
@@ -691,63 +678,70 @@ export default function Movimentacoes() {
               </div>
 
               {/* Desktop: tabela agrupada por data */}
-              <div className="hidden md:block overflow-x-auto">
+              <div className="hidden md:block">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        {isAdmin && <TableHead className="w-8"></TableHead>}
-                        <TableHead className="w-10">Tipo</TableHead>
-                        <TableHead>Descrição</TableHead>
-                        <TableHead>Categoria</TableHead>
-                        <TableHead>Conta</TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Valor</TableHead>
-                        {isAdmin && <TableHead className="text-right">Ações</TableHead>}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {grupos.map((g) => (
-                        <Fragment key={g.data || "sem-data"}>
-                          <TableRow className="bg-muted/60 hover:bg-muted/60">
-                            <TableCell colSpan={isAdmin ? 7 : 6} className="py-2 text-xs font-semibold">
-                              {g.data ? fmtDate(g.data) : "Sem data"}
-                              <span className="ml-2 font-normal text-muted-foreground">
-                                {g.itens.length} lançamento(s) · movimento do dia{" "}
-                                <span className={g.total >= 0 ? "text-success" : "text-destructive"}>
-                                  {fmtBRL(g.total)}
-                                </span>
-                              </span>
-                            </TableCell>
-                            <TableCell className="py-2 text-right text-xs">
-                              <div className="text-[10px] font-normal text-muted-foreground leading-none">
-                                Saldo do dia
-                              </div>
-                              <div className={`font-semibold ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
-                                {saldoDoDia(g.data) == null ? "—" : fmtBRL(saldoDoDia(g.data) as number)}
-                              </div>
-                            </TableCell>
-                            {isAdmin && <TableCell />}
-                          </TableRow>
-                          <SortableContext items={g.itens.map((m) => m.id)} strategy={verticalListSortingStrategy}>
-                            {g.itens.map((m) => (
-                              <SortableMovRow
-                                key={m.id}
-                                m={m}
-                                isAdmin={isAdmin}
-                                tipoIcon={tipoIcon}
-                                origemBadge={origemBadge}
-                                onEdit={openEdit}
-                                onDelete={setDeleteId}
-                                onPagar={marcarPago}
-                              />
-                            ))}
-                          </SortableContext>
-                        </Fragment>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent border-b">
+                          {isAdmin && <TableHead className="w-10"></TableHead>}
+                          <TableHead className="w-12 text-center">Tipo</TableHead>
+                          <TableHead className="min-w-[200px]">Descrição / Origem</TableHead>
+                          <TableHead>Categoria</TableHead>
+                          <TableHead>Conta</TableHead>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Valor</TableHead>
+                          {isAdmin && <TableHead className="text-right w-32">Ações</TableHead>}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {grupos.map((g) => (
+                          <Fragment key={g.data || "sem-data"}>
+                            <TableRow className="bg-muted/30 hover:bg-muted/40 border-y transition-colors">
+                              <TableCell colSpan={isAdmin ? 8 : 7} className="py-3 px-4">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-sm font-bold text-foreground">
+                                    {g.data ? fmtDate(g.data) : "Sem data"}
+                                  </span>
+                                  <div className="h-4 w-px bg-border/60" />
+                                  <span className="text-xs text-muted-foreground font-medium">
+                                    {g.itens.length} lançamento(s)
+                                  </span>
+                                  <div className="h-4 w-px bg-border/60" />
+                                  <span className="text-xs font-medium">
+                                    Movimento: <span className={g.total >= 0 ? "text-success" : "text-destructive"}>{fmtBRL(g.total)}</span>
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="py-3 px-4 text-right">
+                                <div className="flex flex-col items-end">
+                                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider leading-none mb-1">Saldo do Dia</span>
+                                  <span className={`text-sm font-bold ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
+                                    {saldoDoDia(g.data) == null ? "—" : fmtBRL(saldoDoDia(g.data) as number)}
+                                  </span>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                            <SortableContext items={g.itens.map((m) => m.id)} strategy={verticalListSortingStrategy}>
+                              {g.itens.map((m) => (
+                                <SortableMovRow
+                                  key={m.id}
+                                  m={m}
+                                  isAdmin={isAdmin}
+                                  tipoIcon={tipoIcon}
+                                  origemBadge={origemBadge}
+                                  onEdit={openEdit}
+                                  onDelete={setDeleteId}
+                                  onPagar={marcarPago}
+                                />
+                              ))}
+                            </SortableContext>
+                          </Fragment>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </DndContext>
               </div>
 
@@ -1016,54 +1010,77 @@ function SortableMovRow({
           </button>
         </TableCell>
       )}
-      <TableCell>{tipoIcon(m.tipo)}</TableCell>
-      <TableCell>
-        <div className="font-medium">{m.descricao}</div>
-        {m.fornecedor && (
-          <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
-        )}
-        {m.cliente && (
-          <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
-        )}
-        <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
+      <TableCell className="text-center">{tipoIcon(m.tipo)}</TableCell>
+      <TableCell className="py-4">
+        <div className="flex flex-col gap-1">
+          <span className="font-semibold text-sm text-foreground leading-snug">{m.descricao}</span>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {m.fornecedor && (
+              <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                <ArrowUpCircle className="h-2.5 w-2.5 rotate-45" /> {m.fornecedor.nome}
+              </span>
+            )}
+            {m.cliente && (
+              <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                <ArrowDownCircle className="h-2.5 w-2.5 -rotate-45" /> {m.cliente.razao_social}
+              </span>
+            )}
+            {m.origem && origemBadge(m.origem)}
+          </div>
+        </div>
       </TableCell>
       <TableCell>
         {m.categoria ? (
-          <span className="inline-flex items-center gap-1.5 text-xs">
-            <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
+          <Badge variant="outline" className="h-6 border-muted bg-muted/20 gap-1.5 px-2 text-[11px] font-medium">
+            <CircleDot className="h-2.5 w-2.5" style={{ color: m.categoria.cor }} />
             {m.categoria.nome}
-          </span>
-        ) : "—"}
-      </TableCell>
-      <TableCell className="text-xs">{m.conta?.apelido ?? "—"}</TableCell>
-      <TableCell className="text-xs">
-        {m.status === "pago" && m.data_pagamento ? (
-          <span title="Pago em">{fmtDate(m.data_pagamento)}</span>
+          </Badge>
         ) : (
-          <span title="Vencimento">{fmtDate(m.data_vencimento)}</span>
+          <span className="text-xs text-muted-foreground">—</span>
         )}
       </TableCell>
       <TableCell>
-        <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent hover:opacity-90`}>
+        <div className="flex flex-col">
+          <span className="text-xs font-medium text-foreground">{m.conta?.apelido ?? "—"}</span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col">
+          <span className="text-xs font-semibold text-foreground">
+            {m.status === "pago" && m.data_pagamento ? fmtDate(m.data_pagamento) : fmtDate(m.data_vencimento)}
+          </span>
+          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">
+            {m.status === "pago" ? "Efetivado" : "Previsto"}
+          </span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <Badge className={cn("text-[10px] px-2 py-0.5 border-none font-bold uppercase tracking-wider shadow-sm", statusColor[m.status])}>
           {statusLabel[m.status]}
         </Badge>
       </TableCell>
-      <TableCell className={`text-right font-semibold ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
-        {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
+      <TableCell className={cn("text-right font-bold text-base", m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : "text-info")}>
+        <span className="text-xs font-medium mr-0.5 opacity-70">R$</span>
+        {Number(m.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </TableCell>
       {isAdmin && (
-        <TableCell className="text-right">
-          <div className="flex justify-end gap-1">
+        <TableCell className="text-right py-4">
+          <div className="flex justify-end items-center gap-1">
             {m.status !== "pago" && (
-              <Button variant="ghost" size="sm" onClick={() => onPagar(m)} className="text-success">
-                Pagar
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onPagar(m)} 
+                className="h-8 text-success hover:text-success hover:bg-success/10 font-bold text-xs px-2"
+              >
+                PAGAR
               </Button>
             )}
-            <Button variant="ghost" size="icon" onClick={() => onEdit(m)} aria-label="Editar movimentação">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEdit(m)} aria-label="Editar">
               <Pencil className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(m.id)} aria-label="Excluir movimentação">
-              <Trash2 className="h-4 w-4 text-destructive" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(m.id)} aria-label="Excluir">
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </TableCell>

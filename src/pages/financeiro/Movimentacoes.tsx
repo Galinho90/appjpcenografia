@@ -412,7 +412,7 @@ export default function Movimentacoes() {
       </div>
 
       {/* Resumo do resultado filtrado */}
-      <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         <StatCard
           label="Saldo da Conta"
           value={saldoConta != null ? fmtBRL(saldoConta) : "—"}

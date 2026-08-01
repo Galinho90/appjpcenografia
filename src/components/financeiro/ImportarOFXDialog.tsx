@@ -129,12 +129,16 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       // Vínculo só é permitido na MESMA data da transação bancária.
       const TOLERANCIA_DIAS = 0;
 
+      // Um mesmo lançamento do sistema não pode ser sugerido para duas transações do OFX.
+      const usados = new Set<string>();
+
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);
         
         const candidates: MovCandidate[] = ((movs ?? []) as any[])
           .filter((m: any) => {
             if (m.fitid) return false;
+            if (usados.has(m.id)) return false;
             if (m.tipo !== tx.tipo) return false;
             
             // Tolerância de centavos/tarifa: diferenças de até R$ 1,00 ainda são
@@ -183,6 +187,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           const txDesc = (tx.descricao || "").toUpperCase();
           const candidateByName = ((movs ?? []) as any[]).find(m => {
             if (m.fitid) return false;
+            if (usados.has(m.id)) return false;
             if (m.tipo !== tx.tipo) return false;
             // Mesma data da transação bancária (obrigatório)
             const dEfet = m.data_pagamento ?? m.data_vencimento;
@@ -204,6 +209,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             sugestao = "nome";
           }
         }
+
+        // Reserva o lançamento sugerido para que não apareça nas outras transações
+        if (movId) usados.add(movId);
+
 
         return {
           tx,
@@ -310,6 +319,22 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const confirmarTodos = () => {
     setRows((prev) => prev.map((r) => (r.action === "vincular" ? { ...r, confirmado: true } : r)));
   };
+
+  /**
+   * IDs de movimentações já reservadas por alguma linha com ação "vincular".
+   * Um lançamento vinculado deve desaparecer das opções das demais transações.
+   */
+  const movIdsUsados = useMemo(() => {
+    const s = new Set<string>();
+    for (const r of rows) {
+      if (r.action === "vincular" && r.movId) s.add(r.movId);
+    }
+    return s;
+  }, [rows]);
+
+  const candidatosDisponiveis = (r: Row): MovCandidate[] =>
+    r.candidates.filter((c) => c.id === r.movId || !movIdsUsados.has(c.id));
+
 
   // Reconciliação de saldo: LEDGERBAL do OFX vs saldo esperado no sistema após conciliação
   const reconciliacao = useMemo(() => {
@@ -602,7 +627,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((r, i) => (
+                  {rows.map((r, i) => {
+                    const disponiveis = candidatosDisponiveis(r);
+                    return (
                     <TableRow key={r.tx.fitid + i}>
                       <TableCell className="text-xs">{fmtDate(r.tx.data)}</TableCell>
                       <TableCell className="text-xs">
@@ -617,9 +644,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                       <TableCell>
                         {r.alreadyImported ? (
                           <Badge variant="outline" className="text-[10px]">—</Badge>
-                        ) : r.candidates.length === 0 ? (
-                          <span title="Sem lançamento na mesma data"><AlertCircle className="h-4 w-4 text-destructive" /></span>
-                        ) : r.candidates.length === 1 ? (
+                        ) : disponiveis.length === 0 ? (
+                          <span title="Sem lançamento disponível na mesma data"><AlertCircle className="h-4 w-4 text-destructive" /></span>
+                        ) : disponiveis.length === 1 ? (
                           <span title="Match único"><CheckCircle2 className="h-4 w-4 text-success" /></span>
                         ) : (
                           <span title="Múltiplos matches"><HelpCircle className="h-4 w-4 text-warning" /></span>
@@ -631,7 +658,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                             value={r.action}
                             onValueChange={(v: any) => updateRow(i, {
                               action: v,
-                              movId: v === "vincular" ? (r.movId ?? r.candidates[0]?.id) : undefined,
+                              movId: v === "vincular" ? (r.movId ?? disponiveis[0]?.id) : undefined,
                               // Troca manual de ação também exige confirmação do vínculo
                               confirmado: v !== "vincular",
                             })}
@@ -639,21 +666,21 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                             <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="criar">Criar nova</SelectItem>
-                              <SelectItem value="vincular" disabled={r.candidates.length === 0}>
+                              <SelectItem value="vincular" disabled={disponiveis.length === 0}>
                                 Vincular a existente
                               </SelectItem>
                               <SelectItem value="ignorar">Ignorar</SelectItem>
                             </SelectContent>
                           </Select>
-                          {r.action === "vincular" && r.candidates.length > 0 && (
+                          {r.action === "vincular" && disponiveis.length > 0 && (
                             <>
                               <Select
-                                value={r.movId ?? r.candidates[0].id}
+                                value={r.movId ?? disponiveis[0].id}
                                 onValueChange={(v) => updateRow(i, { movId: v, confirmado: false })}
                               >
                                 <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                  {r.candidates.map((c) => (
+                                  {disponiveis.map((c) => (
                                     <SelectItem key={c.id} value={c.id}>
                                       {fmtDate(c.data_pagamento ?? c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
                                       {Math.abs(c.valor - r.tx.valor) > 0.001
@@ -663,6 +690,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                                   ))}
                                 </SelectContent>
                               </Select>
+
                               <label className="flex items-center gap-2 text-[11px] cursor-pointer">
                                 <Checkbox
                                   checked={r.confirmado}
@@ -697,7 +725,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  );})}
                 </TableBody>
               </Table>
             </div>

@@ -179,7 +179,7 @@ export default function MeuExtrato() {
         <div className="lg:col-span-4 space-y-6">
           <Card className="overflow-hidden border-none shadow-premium-sm surface-glass group transition-all hover:shadow-premium">
             <div className="relative h-24 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
-              <div className="absolute -bottom-10 left-6">
+              <div className="absolute -bottom-10 left-6 z-10">
                 <div className="h-20 w-20 rounded-2xl bg-background p-1 shadow-lg ring-1 ring-primary/10">
                   <div className="h-full w-full rounded-xl bg-gradient-to-br from-primary to-primary-foreground/20 flex items-center justify-center overflow-hidden">
                     {meuColaborador?.foto_url ? (
@@ -191,9 +191,9 @@ export default function MeuExtrato() {
                 </div>
               </div>
             </div>
-            <CardContent className="pt-12 pb-6 px-6">
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-foreground leading-none mb-1">{colaboradorNome}</h3>
+            <CardContent className="pt-14 pb-6 px-6">
+              <div className="mb-6 relative">
+                <h3 className="text-xl font-bold text-foreground leading-none mb-2">{colaboradorNome}</h3>
                 <p className="text-sm text-muted-foreground flex items-center gap-1.5">
                   <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 hover:bg-primary/10 transition-colors">
                     {meuColaborador?.funcao || "Colaborador"}

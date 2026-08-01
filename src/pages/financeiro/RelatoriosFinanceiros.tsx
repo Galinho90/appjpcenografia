@@ -234,71 +234,87 @@ export default function RelatoriosFinanceiros() {
         </div>
       </div>
 
-      {/* Resumo Visual de Indicadores */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-success/5 relative group transition-all hover:shadow-lg">
-          <div className="absolute top-0 left-0 w-1 h-full bg-success opacity-70" />
-          <CardContent className="pt-6">
+      {/* Resumo Visual de Indicadores - Cards Elevados */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="overflow-hidden border border-success/10 shadow-xl bg-gradient-to-br from-card via-card to-success/5 relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-success/10 rounded-3xl">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-success/40" />
+          <CardContent className="pt-8 pb-7">
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Entradas Totais</p>
-                {isLoading ? <Skeleton className="h-8 w-32" /> :
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-black text-success tracking-tight">{fmtBRL(entradas)}</span>
+              <div className="space-y-2">
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-success/70 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                  Entradas Totais
+                </p>
+                {isLoading ? <Skeleton className="h-10 w-40" /> :
+                  <div className="flex flex-col">
+                    <span className="text-3xl font-black text-foreground tracking-tighter">{fmtBRL(entradas)}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium mt-1">Acumulado no período</span>
                   </div>
                 }
               </div>
-              <div className="p-3 rounded-xl bg-success/10 text-success group-hover:scale-110 transition-transform">
-                <TrendingUp className="h-6 w-6" />
+              <div className="p-4 rounded-2xl bg-success/10 text-success border border-success/20 group-hover:bg-success group-hover:text-white transition-all duration-500 group-hover:rotate-12 group-hover:scale-110">
+                <TrendingUp className="h-7 w-7" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-destructive/5 relative group transition-all hover:shadow-lg">
-          <div className="absolute top-0 left-0 w-1 h-full bg-destructive opacity-70" />
-          <CardContent className="pt-6">
+        <Card className="overflow-hidden border border-destructive/10 shadow-xl bg-gradient-to-br from-card via-card to-destructive/5 relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-destructive/10 rounded-3xl">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-destructive/40" />
+          <CardContent className="pt-8 pb-7">
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Saídas Totais</p>
-                {isLoading ? <Skeleton className="h-8 w-32" /> :
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-black text-destructive tracking-tight">{fmtBRL(saidas)}</span>
+              <div className="space-y-2">
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-destructive/70 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                  Saídas Totais
+                </p>
+                {isLoading ? <Skeleton className="h-10 w-40" /> :
+                  <div className="flex flex-col">
+                    <span className="text-3xl font-black text-foreground tracking-tighter">{fmtBRL(saidas)}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium mt-1">Custos e despesas</span>
                   </div>
                 }
               </div>
-              <div className="p-3 rounded-xl bg-destructive/10 text-destructive group-hover:scale-110 transition-transform">
-                <TrendingDown className="h-6 w-6" />
+              <div className="p-4 rounded-2xl bg-destructive/10 text-destructive border border-destructive/20 group-hover:bg-destructive group-hover:text-white transition-all duration-500 group-hover:-rotate-12 group-hover:scale-110">
+                <TrendingDown className="h-7 w-7" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className={cn(
-          "overflow-hidden border-none shadow-md relative group transition-all hover:shadow-lg bg-gradient-to-br",
-          resultado >= 0 ? "from-card to-primary/5" : "from-card to-orange-500/5"
+          "overflow-hidden border shadow-xl relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl rounded-3xl bg-gradient-to-br from-card via-card",
+          resultado >= 0 
+            ? "border-primary/10 to-primary/5 hover:shadow-primary/10" 
+            : "border-orange-500/10 to-orange-500/5 hover:shadow-orange-500/10"
         )}>
-          <div className={cn("absolute top-0 left-0 w-1 h-full opacity-70", resultado >= 0 ? "bg-primary" : "bg-orange-500")} />
-          <CardContent className="pt-6">
+          <div className={cn("absolute top-0 left-0 w-full h-1.5", resultado >= 0 ? "bg-primary/40" : "bg-orange-500/40")} />
+          <CardContent className="pt-8 pb-7">
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Saldo do Período</p>
-                {isLoading ? <Skeleton className="h-8 w-32" /> :
-                  <div className="flex items-baseline gap-1">
+              <div className="space-y-2">
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-muted-foreground">
+                  <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", resultado >= 0 ? "bg-primary" : "bg-orange-500")} />
+                  Saldo do Período
+                </p>
+                {isLoading ? <Skeleton className="h-10 w-40" /> :
+                  <div className="flex flex-col">
                     <span className={cn(
-                      "text-2xl font-black tracking-tight",
+                      "text-3xl font-black tracking-tighter",
                       resultado >= 0 ? "text-primary" : "text-orange-500"
                     )}>
                       {fmtBRL(resultado)}
                     </span>
+                    <span className="text-[10px] text-muted-foreground font-medium mt-1">Resultado operacional</span>
                   </div>
                 }
               </div>
               <div className={cn(
-                "p-3 rounded-xl group-hover:scale-110 transition-transform",
-                resultado >= 0 ? "bg-primary/10 text-primary" : "bg-orange-500/10 text-orange-500"
+                "p-4 rounded-2xl border transition-all duration-500 group-hover:scale-110 group-hover:shadow-lg",
+                resultado >= 0 
+                  ? "bg-primary/10 text-primary border-primary/20 group-hover:bg-primary group-hover:text-white" 
+                  : "bg-orange-500/10 text-orange-500 border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white"
               )}>
-                <Scale className="h-6 w-6" />
+                <Scale className="h-7 w-7" />
               </div>
             </div>
           </CardContent>
@@ -306,11 +322,11 @@ export default function RelatoriosFinanceiros() {
       </div>
 
       <Tabs defaultValue="fluxo" className="w-full">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full sm:w-auto">
-          <TabsTrigger value="fluxo">Fluxo</TabsTrigger>
-          <TabsTrigger value="categorias">Categorias</TabsTrigger>
-          <TabsTrigger value="contas">Contas</TabsTrigger>
-          <TabsTrigger value="dre">DRE</TabsTrigger>
+        <TabsList className="p-1 h-12 bg-muted/50 rounded-2xl border border-white/5 backdrop-blur-sm">
+          <TabsTrigger value="fluxo" className="rounded-xl px-6 data-[state=active]:bg-card data-[state=active]:shadow-sm">Fluxo</TabsTrigger>
+          <TabsTrigger value="categorias" className="rounded-xl px-6 data-[state=active]:bg-card data-[state=active]:shadow-sm">Categorias</TabsTrigger>
+          <TabsTrigger value="contas" className="rounded-xl px-6 data-[state=active]:bg-card data-[state=active]:shadow-sm">Contas</TabsTrigger>
+          <TabsTrigger value="dre" className="rounded-xl px-6 data-[state=active]:bg-card data-[state=active]:shadow-sm">DRE</TabsTrigger>
         </TabsList>
 
         {/* Fluxo */}

@@ -1,53 +1,57 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import {
-  TrendingUp, TrendingDown, Wallet, AlertCircle, ArrowRight, CalendarIcon,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
 import {
-  Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend,
-} from "recharts";
-import {
-  useContasBancarias, useMovimentacoes, useSaldoContas,
+  useContasBancarias, useMovimentacoes, useSaldoContas, useSaldosPorDia,
 } from "@/hooks/useFinanceiro";
-import { fmtBRL, fmtDate } from "@/lib/financeiro";
+import { fmtBRL } from "@/lib/financeiro";
+import { PeriodoToolbar, type PeriodoPreset } from "@/components/financeiro/dashboard/PeriodoToolbar";
+import { SaldoHero, type SaldoPoint } from "@/components/financeiro/dashboard/SaldoHero";
+import { FluxoPeriodoChart, type FluxoBucket } from "@/components/financeiro/dashboard/FluxoPeriodoChart";
+import { CategoriaBreakdown } from "@/components/financeiro/dashboard/CategoriaBreakdown";
+import { AgendaCard } from "@/components/financeiro/dashboard/AgendaCard";
+
+/** ISO local (evita o shift de fuso do toISOString) */
+const toISO = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+
+function rangeFromPreset(preset: PeriodoPreset, hoje: Date): { inicio: Date; fim: Date } | null {
+  const y = hoje.getFullYear();
+  const m = hoje.getMonth();
+  switch (preset) {
+    case "mes": return { inicio: new Date(y, m, 1), fim: new Date(y, m + 1, 0) };
+    case "mes_anterior": return { inicio: new Date(y, m - 1, 1), fim: new Date(y, m, 0) };
+    case "30d": return { inicio: addDays(hoje, -29), fim: hoje };
+    case "ano": return { inicio: new Date(y, 0, 1), fim: new Date(y, 11, 31) };
+    default: return null;
+  }
+}
 
 export default function FinanceiroDashboard() {
+  const hoje = new Date();
   const { data: contas = [], isLoading: loadingContas } = useContasBancarias();
   const [contaId, setContaId] = useState<string>("all");
-
-  const hoje = new Date();
+  const [preset, setPreset] = useState<PeriodoPreset>("mes");
   const [dataInicio, setDataInicio] = useState<Date>(new Date(hoje.getFullYear(), hoje.getMonth(), 1));
   const [dataFim, setDataFim] = useState<Date>(new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0));
 
-  // Datas em ISO usando componentes locais (evita o shift de fuso do toISOString)
-  const toISO = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const handlePreset = (p: PeriodoPreset) => {
+    setPreset(p);
+    const r = rangeFromPreset(p, hoje);
+    if (r) { setDataInicio(r.inicio); setDataFim(r.fim); }
+  };
 
   const inicioStr = toISO(dataInicio);
   const fimStr = toISO(dataFim);
+  const hojeStr = toISO(hoje);
 
-  // Saldo do caixa: soma TODAS as contas quando o filtro é "Todas as contas"
+  // Saldo de caixa: nunca projetado para trás de hoje
   const contasSelecionadas = contaId === "all" ? contas.map((c) => c.id) : [contaId];
-  const hojeStrLocal = toISO(hoje);
-  // Referência do saldo: nunca antes de hoje, para o card refletir o caixa real
-  const saldoRef = fimStr > hojeStrLocal ? fimStr : hojeStrLocal;
+  const saldoRef = fimStr > hojeStr ? fimStr : hojeStr;
   const { data: saldo = 0 } = useSaldoContas(contasSelecionadas, saldoRef);
+  const { data: saldosPorDia } = useSaldosPorDia(contaId);
 
-  // Buscamos sem filtro de data e filtramos no cliente usando a data efetiva
-  // (data_pagamento para pagos, data_vencimento para os demais)
   const { data: todasMovs = [], isLoading } = useMovimentacoes({
     contaId: contaId === "all" ? undefined : contaId,
   });
@@ -63,279 +67,115 @@ export default function FinanceiroDashboard() {
     [todasMovs, inicioStr, fimStr],
   );
 
-  const entradasPeriodo = movs.filter((m) => m.tipo === "entrada" && m.status === "pago").reduce((s, m) => s + m.valor, 0);
-  const saidasPeriodo = movs.filter((m) => m.tipo === "saida" && m.status === "pago").reduce((s, m) => s + m.valor, 0);
-  const resultadoPeriodo = entradasPeriodo - saidasPeriodo;
+  const pagos = useMemo(() => movs.filter((m) => m.status === "pago"), [movs]);
+  const entradas = pagos.filter((m) => m.tipo === "entrada").reduce((s, m) => s + m.valor, 0);
+  const saidas = pagos.filter((m) => m.tipo === "saida").reduce((s, m) => s + m.valor, 0);
+  const resultado = entradas - saidas;
 
-  // Próximos vencimentos (7 dias) — usamos a lista completa, não restrita ao período
-  const hojeStr = hojeStrLocal;
-  const em7Dias = toISO(new Date(hoje.getTime() + 7 * 24 * 3600 * 1000));
-  const proximosVencimentos = todasMovs
-    .filter((m) => m.status === "pendente" && m.data_vencimento && m.data_vencimento >= hojeStr && m.data_vencimento <= em7Dias)
-    .sort((a, b) => (a.data_vencimento ?? "").localeCompare(b.data_vencimento ?? ""))
-    .slice(0, 5);
+  /** Série de saldo diário dentro do período (carrega o último saldo conhecido) */
+  const serieSaldo = useMemo<SaldoPoint[]>(() => {
+    if (!saldosPorDia || saldosPorDia.size === 0) return [];
+    const dias = [...saldosPorDia.keys()].sort();
+    let ultimo = 0;
+    for (const d of dias) { if (d < inicioStr) ultimo = saldosPorDia.get(d)!; else break; }
+    const pontos: SaldoPoint[] = [];
+    const limite = fimStr > hojeStr ? hojeStr : fimStr;
+    for (let d = new Date(dataInicio); toISO(d) <= limite; d = addDays(d, 1)) {
+      const iso = toISO(d);
+      if (saldosPorDia.has(iso)) ultimo = saldosPorDia.get(iso)!;
+      pontos.push({ dia: iso, saldo: ultimo });
+    }
+    return pontos;
+  }, [saldosPorDia, inicioStr, fimStr, hojeStr, dataInicio]);
 
-  const atrasadas = todasMovs.filter(
-    (m) => m.status === "pendente" && m.data_vencimento && m.data_vencimento < hojeStr
-  );
+  /** Agrupamento adaptativo: por dia em períodos curtos, por mês em longos */
+  const fluxo = useMemo<FluxoBucket[]>(() => {
+    const dias = Math.round((dataFim.getTime() - dataInicio.getTime()) / 86_400_000) + 1;
+    const porMes = dias > 45;
+    const map = new Map<string, FluxoBucket>();
+    for (const m of pagos) {
+      const iso = dataEfetiva(m);
+      if (!iso) continue;
+      const [yy, mm, dd] = iso.split("-");
+      const key = porMes ? `${yy}-${mm}` : iso;
+      const label = porMes
+        ? new Date(Number(yy), Number(mm) - 1, 1).toLocaleDateString("pt-BR", { month: "short" }).replace(".", "")
+        : `${dd}/${mm}`;
+      const cur = map.get(key) ?? { label, entradas: 0, saidas: 0 };
+      if (m.tipo === "entrada") cur.entradas += m.valor;
+      else if (m.tipo === "saida") cur.saidas += m.valor;
+      map.set(key, cur);
+    }
+    return [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => v);
+  }, [pagos, dataInicio, dataFim]);
 
-  // Fluxo de caixa mensal no período filtrado
-  const fluxoMensal = useMemo(() => {
-    const map = new Map<string, { mes: string; entradas: number; saidas: number; resultado: number }>();
-    movs
-      .filter((m) => m.status === "pago")
-      .forEach((m) => {
-        const d = new Date(m.data_pagamento ?? m.data_vencimento ?? "");
-        if (isNaN(d.getTime())) return;
-        const key = d.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" }).replace(".", "");
-        if (!map.has(key)) {
-          map.set(key, { mes: key, entradas: 0, saidas: 0, resultado: 0 });
-        }
-        const cur = map.get(key)!;
-        if (m.tipo === "entrada") cur.entradas += m.valor;
-        else if (m.tipo === "saida") cur.saidas += m.valor;
-        cur.resultado = cur.entradas - cur.saidas;
-      });
-    return Array.from(map.values()).sort((a, b) => a.mes.localeCompare(b.mes));
-  }, [movs]);
-
-  // Gastos por categoria (período filtrado)
   const gastosPorCategoria = useMemo(() => {
     const map = new Map<string, { nome: string; valor: number; cor: string }>();
-    movs
-      .filter((m) => m.tipo === "saida" && m.status === "pago" && m.categoria)
-      .forEach((m) => {
-        const c = m.categoria!;
-        const cur = map.get(c.id) || { nome: c.nome, valor: 0, cor: c.cor };
-        cur.valor += m.valor;
-        map.set(c.id, cur);
-      });
-    return Array.from(map.values()).sort((a, b) => b.valor - a.valor);
-  }, [movs]);
+    for (const m of pagos) {
+      if (m.tipo !== "saida" || !m.categoria) continue;
+      const c = m.categoria;
+      const cur = map.get(c.id) ?? { nome: c.nome, valor: 0, cor: c.cor };
+      cur.valor += m.valor;
+      map.set(c.id, cur);
+    }
+    return [...map.values()].sort((a, b) => b.valor - a.valor);
+  }, [pagos]);
 
-  const cards = [
-    {
-      title: "Saldo Atual",
-      value: fmtBRL(saldo),
-      icon: Wallet,
-      gradient: "from-primary to-primary/70",
-    },
-    {
-      title: "Entradas (período)",
-      value: fmtBRL(entradasPeriodo),
-      icon: TrendingUp,
-      gradient: "from-success to-success/70",
-    },
-    {
-      title: "Saídas (período)",
-      value: fmtBRL(saidasPeriodo),
-      icon: TrendingDown,
-      gradient: "from-destructive to-destructive/70",
-    },
-    {
-      title: "Resultado (período)",
-      value: fmtBRL(resultadoPeriodo),
-      icon: TrendingUp,
-      gradient: resultadoPeriodo >= 0 ? "from-secondary to-secondary/70" : "from-destructive to-destructive/70",
-    },
-  ];
+  const em7Dias = toISO(addDays(hoje, 7));
+  const proximos = todasMovs
+    .filter((m) => m.status === "pendente" && m.data_vencimento && m.data_vencimento >= hojeStr && m.data_vencimento <= em7Dias)
+    .sort((a, b) => (a.data_vencimento ?? "").localeCompare(b.data_vencimento ?? ""))
+    .slice(0, 6);
+
+  const atrasadas = todasMovs.filter(
+    (m) => m.status === "pendente" && m.data_vencimento && m.data_vencimento < hojeStr,
+  );
+
+  const periodoLabel = `${dataInicio.toLocaleDateString("pt-BR")} — ${dataFim.toLocaleDateString("pt-BR")} · ${pagos.length} lançamento(s) · ${fmtBRL(entradas)} entradas`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Financeiro</h1>
-          <p className="text-sm text-muted-foreground">Dashboard de fluxo de caixa e contas bancárias</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className={cn("w-[140px] justify-start text-left font-normal", !dataInicio && "text-muted-foreground")}>
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dataInicio ? format(dataInicio, "dd/MM/yyyy") : "Início"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={dataInicio} onSelect={(d) => d && setDataInicio(d)} initialFocus className={cn("p-3 pointer-events-auto")} />
-            </PopoverContent>
-          </Popover>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className={cn("w-[140px] justify-start text-left font-normal", !dataFim && "text-muted-foreground")}>
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dataFim ? format(dataFim, "dd/MM/yyyy") : "Fim"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar mode="single" selected={dataFim} onSelect={(d) => d && setDataFim(d)} initialFocus className={cn("p-3 pointer-events-auto")} />
-            </PopoverContent>
-          </Popover>
-
-          <Select value={contaId} onValueChange={setContaId}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Todas as contas" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as contas</SelectItem>
-              {contas.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.apelido}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button asChild variant="outline">
-            <Link to="/financeiro/movimentacoes">Ver movimentações <ArrowRight className="ml-1 h-4 w-4" /></Link>
-          </Button>
-        </div>
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Financeiro</h1>
+        <p className="text-sm text-muted-foreground">Visão de caixa, resultado e agenda de vencimentos</p>
       </div>
 
-      {atrasadas.length > 0 && (
-        <Card className="border-destructive/50 bg-destructive/5">
-          <CardContent className="flex items-center gap-3 p-4">
-            <AlertCircle className="h-5 w-5 text-destructive" />
-            <div className="flex-1">
-              <p className="font-semibold text-destructive">
-                {atrasadas.length} lançamento(s) em atraso
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Total: {fmtBRL(atrasadas.reduce((s, m) => s + m.valor, 0))}
-              </p>
-            </div>
-            <Button size="sm" variant="destructive" asChild>
-              <Link to="/financeiro/contas-pagar">Ver detalhes</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      <PeriodoToolbar
+        preset={preset}
+        onPresetChange={handlePreset}
+        dataInicio={dataInicio}
+        dataFim={dataFim}
+        onDataInicio={setDataInicio}
+        onDataFim={setDataFim}
+        contas={contas}
+        contaId={contaId}
+        onContaChange={setContaId}
+      />
 
       {isLoading || loadingContas ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Skeleton className="h-56 rounded-xl lg:col-span-2" />
+          <div className="grid gap-4">
+            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
+          </div>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {cards.map((c) => (
-            <Card key={c.title} className="overflow-hidden border-none shadow-lg">
-              <div className={`bg-gradient-to-br ${c.gradient} p-4`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-primary-foreground/80">{c.title}</p>
-                    <p className="text-xl sm:text-2xl font-bold text-primary-foreground">{c.value}</p>
-                  </div>
-                  <c.icon className="h-10 w-10 text-primary-foreground/30" />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <SaldoHero
+          saldo={saldo}
+          entradas={entradas}
+          saidas={saidas}
+          resultado={resultado}
+          serie={serieSaldo}
+          periodoLabel={periodoLabel}
+        />
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 shadow-md">
-          <CardHeader>
-            <CardTitle>Fluxo de Caixa — período</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {fluxoMensal.length === 0 ? (
-              <p className="text-center text-muted-foreground py-10">Sem dados no período</p>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={fluxoMensal}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="mes" fontSize={12} />
-                  <YAxis fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ borderRadius: 8 }} />
-                  <Legend />
-                  <Line type="monotone" dataKey="entradas" name="Entradas" stroke="hsl(var(--success))" strokeWidth={2} />
-                  <Line type="monotone" dataKey="saidas" name="Saídas" stroke="hsl(var(--destructive))" strokeWidth={2} />
-                  <Line type="monotone" dataKey="resultado" name="Resultado" stroke="hsl(var(--primary))" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-md">
-          <CardHeader>
-            <CardTitle>Gastos por Categoria (período)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {gastosPorCategoria.length === 0 ? (
-              <p className="text-center text-muted-foreground py-10">Sem saídas no período</p>
-            ) : (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={gastosPorCategoria}
-                    cx="50%" cy="50%"
-                    outerRadius={80}
-                    dataKey="valor"
-                    nameKey="nome"
-                    label={(entry: any) => entry.nome}
-                  >
-                    {gastosPorCategoria.map((g, i) => (
-                      <Cell key={i} fill={g.cor} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v: number) => fmtBRL(v)} />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid gap-5 lg:grid-cols-3">
+        <FluxoPeriodoChart data={fluxo} />
+        <CategoriaBreakdown data={gastosPorCategoria} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="shadow-md">
-          <CardHeader>
-            <CardTitle>Comparativo Mensal</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {fluxoMensal.length === 0 ? (
-              <p className="text-center text-muted-foreground py-10">Sem dados no período</p>
-            ) : (
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={fluxoMensal}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="mes" fontSize={12} />
-                  <YAxis fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ borderRadius: 8 }} />
-                  <Legend />
-                  <Bar dataKey="entradas" name="Entradas" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="saidas" name="Saídas" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-md">
-          <CardHeader>
-            <CardTitle>Próximos Vencimentos (7 dias)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {proximosVencimentos.length === 0 ? (
-              <p className="text-center text-muted-foreground py-10">Nenhum vencimento próximo</p>
-            ) : (
-              <ul className="space-y-2">
-                {proximosVencimentos.map((m) => (
-                  <li key={m.id} className="flex items-center justify-between border-b pb-2 last:border-0">
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{m.descricao}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Vence em {fmtDate(m.data_vencimento)} · {m.categoria?.nome ?? "—"}
-                      </p>
-                    </div>
-                    <Badge variant={m.tipo === "entrada" ? "default" : "destructive"}>
-                      {m.tipo === "entrada" ? "+" : "-"} {fmtBRL(m.valor)}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <AgendaCard proximos={proximos} atrasadas={atrasadas} />
     </div>
   );
 }

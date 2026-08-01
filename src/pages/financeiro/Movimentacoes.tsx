@@ -702,7 +702,7 @@ export default function Movimentacoes() {
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow className="hover:bg-transparent border-b">
+                        <TableRow className="hover:bg-transparent border-b bg-muted/20">
                           {isAdmin && <TableHead className="w-10"></TableHead>}
                           <TableHead className="w-12 text-center">Tipo</TableHead>
                           <TableHead className="min-w-[200px]">Descrição / Origem</TableHead>

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
+import { PageHeader } from "@/components/PageHeader";
   useNotasFiscais, useUpdateStatusNotaFiscal, useDeleteNotaFiscal,
   getNotaFiscalSignedUrl, useFechamentos, useColaboradores,
 } from "@/hooks/useSupabaseData";

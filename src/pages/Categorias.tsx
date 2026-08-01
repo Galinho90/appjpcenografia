@@ -18,6 +18,7 @@ import {
   type Categoria,
 } from "@/hooks/useSupabaseData";
 import { usePermissions } from "@/hooks/usePermissions";
+import { PageHeader } from "@/components/PageHeader";
 
 const emptyForm = { descricao: "", tipo: "C" as "C" | "D", ativo: true };
 

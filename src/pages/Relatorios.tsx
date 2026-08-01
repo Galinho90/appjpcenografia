@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useColaboradores, useFechamentos, useLancamentos, useClientes } from "@/hooks/useSupabaseData";
 import { getStatusBadge } from "@/lib/statusBadge";
+import { PageHeader } from "@/components/PageHeader";
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();

@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { Upload, Trash2 } from "lucide-react";
 import MinhaContaDiarista from "./MinhaContaDiarista";
+import { PageHeader } from "@/components/PageHeader";
 
 export default function MinhaConta() {
   const { role } = useAuth();

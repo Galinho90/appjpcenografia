@@ -9,6 +9,7 @@ import { SaldoHero, type SaldoPoint } from "@/components/financeiro/dashboard/Sa
 import { FluxoPeriodoChart, type FluxoBucket } from "@/components/financeiro/dashboard/FluxoPeriodoChart";
 import { CategoriaBreakdown } from "@/components/financeiro/dashboard/CategoriaBreakdown";
 import { AgendaCard } from "@/components/financeiro/dashboard/AgendaCard";
+import { PageHeader } from "@/components/PageHeader";
 
 /** ISO local (evita o shift de fuso do toISOString) */
 const toISO = (d: Date) =>

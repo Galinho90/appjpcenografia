@@ -10,6 +10,7 @@ import {
   useMovimentacoes, useUpdateMovimentacao, type MovimentacaoFinanceira,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate, todayISO } from "@/lib/financeiro";
+import { PageHeader } from "@/components/PageHeader";
 
 export default function ContasPagar() {
   const { toast } = useToast();

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLancamentos } from "@/hooks/useSupabaseData";
 import { useQuery } from "@tanstack/react-query";
+import { PageHeader } from "@/components/PageHeader";
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();

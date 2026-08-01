@@ -20,6 +20,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth, type AppRole } from "@/hooks/useAuth";
 import { maskPhoneBR, isValidPhoneBR } from "@/lib/phone";
+import { PageHeader } from "@/components/PageHeader";
 
 
 type Empresa = {

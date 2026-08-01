@@ -17,6 +17,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import type { Cliente } from "@/types";
 import { usePermissions } from "@/hooks/usePermissions";
+import { PageHeader } from "@/components/PageHeader";
 
 const emptyForm = {
   cnpj: "", razao_social: "", nome_fantasia: "", email: "", telefone: "",

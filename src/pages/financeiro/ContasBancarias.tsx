@@ -17,6 +17,7 @@ import {
   useSaldoConta, type ContaBancaria,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL } from "@/lib/financeiro";
+import { PageHeader } from "@/components/PageHeader";
 
 const empty = { apelido: "", banco: "", agencia: "", conta: "", tipo: "corrente", saldo_inicial: 0, ativo: true, observacoes: "" };
 

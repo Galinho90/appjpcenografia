@@ -27,6 +27,7 @@ import {
 import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/financeiro";
 import { useClientes } from "@/hooks/useSupabaseData";
 import { useRegistrarMotivoAjuste } from "@/hooks/useAuditoria";
+import { PageHeader } from "@/components/PageHeader";
 
 const emptyForm = {
   tipo: "saida" as TipoMovimentacao,

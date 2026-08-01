@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { useContasBancarias, useMovimentacoes } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate } from "@/lib/financeiro";
+import { PageHeader } from "@/components/PageHeader";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const firstDayOfMonth = () => {

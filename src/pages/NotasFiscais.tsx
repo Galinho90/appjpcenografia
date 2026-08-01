@@ -208,15 +208,15 @@ export default function NotasFiscais() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Recebidas</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-sm">Recebidas</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{notas.length}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Aprovadas</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-sm">Aprovadas</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{notas.filter(n => n.status === "aprovada").length}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Pendentes de envio</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="text-sm">Pendentes de envio</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{pendentesEnvio.length}</div></CardContent>
         </Card>
       </div>

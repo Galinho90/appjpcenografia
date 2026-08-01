@@ -427,7 +427,7 @@ export default function Diarias() {
         <PageHeader title="Lançamentos" description="Controle de lançamentos por categoria" />
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
           <Card className="shadow-md w-full sm:w-auto">
-            <CardContent className="flex items-center gap-2 p-2">
+            <CardContent className="flex items-center gap-3 p-4">
               <Button variant="ghost" size="icon" onClick={() => setQuinzenaRef(shiftQuinzena(quinzenaRef, -1))} aria-label="Quinzena anterior">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -755,7 +755,7 @@ export default function Diarias() {
             {filtered.length} {filtered.length === 1 ? "lançamento encontrado" : "lançamentos encontrados"}
           </p>
         </CardHeader>
-        <CardContent className="px-2 sm:px-6">
+        <CardContent className="px-4 sm:px-6">
           {isLoading ? (
             <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : (

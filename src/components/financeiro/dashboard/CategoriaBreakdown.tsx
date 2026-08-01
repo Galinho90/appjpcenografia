@@ -17,7 +17,7 @@ export function CategoriaBreakdown({ data }: CategoriaBreakdownProps) {
 
   return (
     <Card className="shadow-sm">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-3">
         <CardTitle className="text-base">Para onde o dinheiro foi</CardTitle>
         <p className="text-xs text-muted-foreground">
           {total > 0 ? `${fmtBRL(total)} em saídas · ${data.length} categoria(s)` : "Sem saídas no período"}

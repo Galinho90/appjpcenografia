@@ -17,7 +17,7 @@ export interface FluxoPeriodoChartProps {
 export function FluxoPeriodoChart({ data }: FluxoPeriodoChartProps) {
   return (
     <Card className="shadow-sm lg:col-span-2">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-3">
         <CardTitle className="text-base">Entradas x Saídas</CardTitle>
         <p className="text-xs text-muted-foreground">Valores realizados no período selecionado</p>
       </CardHeader>

@@ -139,7 +139,7 @@ export default function Categorias() {
               <div className="space-y-2 md:hidden">
                 {filtered.map((c) => (
                   <Card key={c.id} className="border shadow-sm">
-                    <CardContent className="p-2.5 space-y-2">
+                    <CardContent className="p-4 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1 flex items-center gap-1.5">
                           <Badge

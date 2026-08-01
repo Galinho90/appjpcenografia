@@ -282,7 +282,7 @@ export default function MeuExtrato() {
                 const hasHorarios = !!(l.hora_entrada || l.hora_saida);
                 return (
                   <Card key={l.id} className={cn("border-l-4 shadow-sm hover:shadow-md transition-shadow", accent)}>
-                    <CardContent className="p-3 sm:p-4">
+                    <CardContent className="p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1 space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">

@@ -117,8 +117,8 @@ export default function Dashboard() {
         <PageHeader title="Dashboard" description="Visão geral da operação" />
 
 
-        <Card className="shadow-md w-full sm:w-auto">
-          <CardContent className="flex items-center gap-3 p-4">
+        <Card className="shadow-md w-full sm:w-auto overflow-hidden">
+          <CardContent className="flex items-center gap-3 p-0 h-16 sm:h-20">
             <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, -1))} aria-label="Quinzena anterior">
               <ChevronLeft className="h-4 w-4" />
             </Button>

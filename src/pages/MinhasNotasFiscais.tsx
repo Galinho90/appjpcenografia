@@ -131,12 +131,7 @@ export default function MinhasNotasFiscais() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Receipt className="h-7 w-7" /> Minhas Notas Fiscais
-        </h1>
-        <p className="text-muted-foreground">Envie a NF de cada quinzena fechada.</p>
-      </div>
+      <PageHeader icon={Receipt} title="Minhas Notas Fiscais" description="Envie a NF de cada quinzena fechada." />
 
       <Card>
         <CardHeader><CardTitle>Quinzenas fechadas</CardTitle></CardHeader>

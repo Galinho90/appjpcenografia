@@ -27,6 +27,7 @@ import {
 import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/financeiro";
 import { useClientes } from "@/hooks/useSupabaseData";
 import { useRegistrarMotivoAjuste } from "@/hooks/useAuditoria";
+import { PageHeader } from "@/components/PageHeader";
 
 const emptyForm = {
   tipo: "saida" as TipoMovimentacao,
@@ -388,10 +389,7 @@ export default function Movimentacoes() {
     <div className="space-y-5">
       {/* Cabeçalho */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Movimentações</h1>
-          <p className="text-sm text-muted-foreground">Entradas, saídas e transferências entre contas</p>
-        </div>
+        <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" />
         {isAdmin && (
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => openCreate("entrada")} className="gap-2 bg-success hover:bg-success/90 text-success-foreground">

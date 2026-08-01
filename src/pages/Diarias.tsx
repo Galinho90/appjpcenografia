@@ -28,6 +28,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { cn, formatDateBR } from "@/lib/utils";
 import { usePermissions } from "@/hooks/usePermissions";
+import { PageHeader } from "@/components/PageHeader";
 
 const emptyForm = {
   colaborador_id: "",
@@ -423,10 +424,7 @@ export default function Diarias() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Lançamentos</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Controle de lançamentos por categoria</p>
-        </div>
+        <PageHeader title="Lançamentos" description="Controle de lançamentos por categoria" />
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
           <Card className="shadow-md w-full sm:w-auto">
             <CardContent className="flex items-center gap-2 p-2">

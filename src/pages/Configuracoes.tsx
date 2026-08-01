@@ -20,6 +20,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth, type AppRole } from "@/hooks/useAuth";
 import { maskPhoneBR, isValidPhoneBR } from "@/lib/phone";
+import { PageHeader } from "@/components/PageHeader";
 
 
 type Empresa = {
@@ -278,17 +279,11 @@ export default function Configuracoes() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-4 rounded-xl border bg-gradient-to-br from-card to-muted/40 p-6 shadow-sm">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Settings2 className="h-6 w-6" />
-        </div>
-        <div className="flex-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Configurações</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Gerencie a empresa, usuários, preferências, envio de e-mails e integrações do sistema.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        icon={Settings2}
+        title="Configurações"
+        description="Gerencie a empresa, usuários, preferências, envio de e-mails e integrações do sistema."
+      />
 
       <Tabs defaultValue="empresa" className="w-full">
         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 h-auto gap-1 p-1">

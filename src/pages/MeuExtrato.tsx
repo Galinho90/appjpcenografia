@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useLancamentos } from "@/hooks/useSupabaseData";
 import { useQuery } from "@tanstack/react-query";
+import { PageHeader } from "@/components/PageHeader";
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();
@@ -148,10 +149,7 @@ export default function MeuExtrato() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Meu Extrato</h1>
-        <p className="text-sm text-muted-foreground">Visualize seus lançamentos por quinzena.</p>
-      </div>
+      <PageHeader title="Meu Extrato" description="Visualize seus lançamentos por quinzena." />
 
       <Card className="shadow-md overflow-hidden">
         <div className="bg-gradient-to-r from-primary to-primary/80 p-4 sm:p-6">

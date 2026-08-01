@@ -20,6 +20,7 @@ import {
   useFechamentos, useMinhasNotasFiscais, useUploadNotaFiscal, getNotaFiscalSignedUrl,
   type NotaFiscal,
 } from "@/hooks/useSupabaseData";
+import { PageHeader } from "@/components/PageHeader";
 
 // Configuração de status agora vem de @/lib/statusBadge (padrão visual unificado).
 
@@ -124,21 +125,13 @@ export default function MinhasNotasFiscais() {
 
   if (!colaboradorId && !loadingFech) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Minhas Notas Fiscais</h1>
-        <p className="text-muted-foreground">Seu usuário não está vinculado a um cadastro de diarista.</p>
-      </div>
+      <PageHeader title="Minhas Notas Fiscais" description="Seu usuário não está vinculado a um cadastro de diarista." />
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Receipt className="h-7 w-7" /> Minhas Notas Fiscais
-        </h1>
-        <p className="text-muted-foreground">Envie a NF de cada quinzena fechada.</p>
-      </div>
+      <PageHeader icon={Receipt} title="Minhas Notas Fiscais" description="Envie a NF de cada quinzena fechada." />
 
       <Card>
         <CardHeader><CardTitle>Quinzenas fechadas</CardTitle></CardHeader>

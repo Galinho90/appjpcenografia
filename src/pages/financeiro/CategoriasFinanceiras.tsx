@@ -16,6 +16,7 @@ import {
   useCategoriasFinanceiras, useCreateCategoriaFinanceira, useUpdateCategoriaFinanceira, useDeleteCategoriaFinanceira,
   type CategoriaFinanceira,
 } from "@/hooks/useFinanceiro";
+import { PageHeader } from "@/components/PageHeader";
 
 const cores = ["#7C3AED", "#10B981", "#F59E0B", "#EF4444", "#6366F1", "#EC4899", "#0EA5E9", "#F97316", "#14B8A6", "#8B5CF6", "#64748B"];
 const empty = { nome: "", tipo: "despesa" as "receita" | "despesa", cor: "#7C3AED", icone: "tag", ativo: true };
@@ -70,10 +71,7 @@ export default function CategoriasFinanceiras() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Categorias Financeiras</h1>
-          <p className="text-sm text-muted-foreground">Plano de contas usado nas movimentações</p>
-        </div>
+        <PageHeader title="Categorias Financeiras" description="Plano de contas usado nas movimentações" />
         {isAdmin && (
           <Button onClick={openCreate} className="gap-2 w-full sm:w-auto"><Plus className="h-4 w-4" /> Nova Categoria</Button>
         )}

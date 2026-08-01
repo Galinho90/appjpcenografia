@@ -10,6 +10,7 @@ import {
   useMovimentacoes, useUpdateMovimentacao, type MovimentacaoFinanceira,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL, fmtDate, todayISO } from "@/lib/financeiro";
+import { PageHeader } from "@/components/PageHeader";
 
 export default function ContasPagar() {
   const { toast } = useToast();
@@ -76,10 +77,7 @@ export default function ContasPagar() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Contas a Pagar / Receber</h1>
-        <p className="text-sm text-muted-foreground">Lançamentos pendentes agrupados por urgência</p>
-      </div>
+      <PageHeader title="Contas a Pagar / Receber" description="Lançamentos pendentes agrupados por urgência" />
 
       {isLoading ? (
         <div className="grid gap-4 lg:grid-cols-3">

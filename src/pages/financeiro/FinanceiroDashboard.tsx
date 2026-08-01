@@ -9,6 +9,7 @@ import { SaldoHero, type SaldoPoint } from "@/components/financeiro/dashboard/Sa
 import { FluxoPeriodoChart, type FluxoBucket } from "@/components/financeiro/dashboard/FluxoPeriodoChart";
 import { CategoriaBreakdown } from "@/components/financeiro/dashboard/CategoriaBreakdown";
 import { AgendaCard } from "@/components/financeiro/dashboard/AgendaCard";
+import { PageHeader } from "@/components/PageHeader";
 
 /** ISO local (evita o shift de fuso do toISOString) */
 const toISO = (d: Date) =>
@@ -140,10 +141,7 @@ export default function FinanceiroDashboard() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Financeiro</h1>
-        <p className="text-sm text-muted-foreground">Visão de caixa, resultado e agenda de vencimentos</p>
-      </div>
+      <PageHeader title="Financeiro" description="Visão de caixa, resultado e agenda de vencimentos" />
 
       <PeriodoToolbar
         preset={preset}

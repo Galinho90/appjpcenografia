@@ -17,6 +17,7 @@ import {
   useSaldoConta, type ContaBancaria,
 } from "@/hooks/useFinanceiro";
 import { fmtBRL } from "@/lib/financeiro";
+import { PageHeader } from "@/components/PageHeader";
 
 const empty = { apelido: "", banco: "", agencia: "", conta: "", tipo: "corrente", saldo_inicial: 0, ativo: true, observacoes: "" };
 
@@ -78,10 +79,7 @@ export default function ContasBancarias() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Contas Bancárias</h1>
-          <p className="text-sm text-muted-foreground">Gerencie suas contas e caixas internos</p>
-        </div>
+        <PageHeader title="Contas Bancárias" description="Gerencie suas contas e caixas internos" />
         {isAdmin && <Button onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> Nova Conta</Button>}
       </div>
 

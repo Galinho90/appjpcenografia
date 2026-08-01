@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useColaboradores, useFechamentos, useLancamentos, useClientes } from "@/hooks/useSupabaseData";
 import { getStatusBadge } from "@/lib/statusBadge";
+import { PageHeader } from "@/components/PageHeader";
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();
@@ -176,12 +177,7 @@ export default function Relatorios() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Relatórios</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Relatório quinzenal por colaborador ou por cliente
-          </p>
-        </div>
+        <PageHeader title="Relatórios" description="Relatório quinzenal por colaborador ou por cliente" />
       </div>
 
       <Tabs defaultValue="quinzenal" className="space-y-6">

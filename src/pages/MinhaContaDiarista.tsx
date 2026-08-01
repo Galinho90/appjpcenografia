@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { PageHeader } from "@/components/PageHeader";
 
 export default function MinhaContaDiarista() {
   const { user } = useAuth();
@@ -66,12 +67,7 @@ export default function MinhaContaDiarista() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Minha conta</h1>
-        <p className="text-sm text-muted-foreground">
-          Seus dados pessoais são gerenciados pelo administrador. Você pode alterar sua chave PIX e senha.
-        </p>
-      </div>
+      <PageHeader title="Minha conta" description="Seus dados pessoais são gerenciados pelo administrador. Você pode alterar sua chave PIX e senha." />
 
       <Card className="overflow-hidden">
         <div className="bg-gradient-to-r from-primary to-primary/80 p-6">

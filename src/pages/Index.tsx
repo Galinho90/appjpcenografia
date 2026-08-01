@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useColaboradores, useDiarias, useFechamentos, useLancamentos } from "@/hooks/useSupabaseData";
+import { PageHeader } from "@/components/PageHeader";
 
 // Compute the quinzena (1-15 or 16-end) for a given reference date
 function getQuinzena(ref: Date) {
@@ -113,10 +114,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Visão geral da operação</p>
-        </div>
+        <PageHeader title="Dashboard" description="Visão geral da operação" />
+
 
         <Card className="shadow-md w-full sm:w-auto">
           <CardContent className="flex items-center gap-2 p-2">

@@ -700,19 +700,18 @@ export default function Movimentacoes() {
               <div className="hidden md:block">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                   <div className="overflow-x-auto py-1">
-                    <Table className="[&_th:first-child]:pl-8 [&_th:last-child]:pr-8 [&_td:first-child]:pl-8 [&_td:last-child]:pr-8 border-separate border-spacing-0">
+                    <Table className="[&_th]:px-4 [&_td]:px-4 border-separate border-spacing-0">
                       <TableHeader>
                         <TableRow className="hover:bg-transparent border-b bg-muted/20 [&_th]:h-16 [&_th]:py-5 [&_th]:align-middle [&_th]:border-b">
-
-                          {isAdmin && <TableHead className="w-12"></TableHead>}
-                          <TableHead className="w-14 text-center">Tipo</TableHead>
+                          {isAdmin && <TableHead className="w-10 text-center p-0"></TableHead>}
+                          <TableHead className="w-14 text-center p-0">Tipo</TableHead>
                           <TableHead className="min-w-[220px]">Descrição / Origem</TableHead>
                           <TableHead>Categoria</TableHead>
                           <TableHead>Conta</TableHead>
                           <TableHead>Data</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="text-right">Valor</TableHead>
-                          {isAdmin && <TableHead className="text-right w-36">Ações</TableHead>}
+                          {isAdmin && <TableHead className="text-right w-32">Ações</TableHead>}
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -720,24 +719,24 @@ export default function Movimentacoes() {
                           <Fragment key={g.data || "sem-data"}>
                             <TableRow className="bg-muted/30 hover:bg-muted/40 border-y transition-colors">
                               <TableCell colSpan={isAdmin ? 8 : 7} className="py-3 px-4">
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-4">
                                   <span className="text-sm font-bold text-foreground">
                                     {g.data ? fmtDate(g.data) : "Sem data"}
                                   </span>
                                   <div className="h-4 w-px bg-border/60" />
-                                  <span className="text-xs text-muted-foreground font-medium">
+                                  <span className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
                                     {g.itens.length} lançamento(s)
                                   </span>
                                   <div className="h-4 w-px bg-border/60" />
-                                  <span className="text-xs font-medium">
-                                    Movimento: <span className={g.total >= 0 ? "text-success" : "text-destructive"}>{fmtBRL(g.total)}</span>
+                                  <span className="text-xs font-semibold">
+                                    Movimento: <span className={g.total >= 0 ? "text-success font-bold" : "text-destructive font-bold"}>{fmtBRL(g.total)}</span>
                                   </span>
                                 </div>
                               </TableCell>
                               <TableCell className="py-3 px-4 text-right">
-                                <div className="flex flex-col items-end">
-                                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider leading-none mb-1">Saldo do Dia</span>
-                                  <span className={`text-sm font-bold ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
+                                <div className="flex flex-col items-end justify-center">
+                                  <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest leading-none mb-1 opacity-70">Saldo do Dia</span>
+                                  <span className={`text-sm font-bold tabular-nums ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
                                     {saldoDoDia(g.data) == null ? "—" : fmtBRL(saldoDoDia(g.data) as number)}
                                   </span>
                                 </div>
@@ -1016,12 +1015,12 @@ function SortableMovRow({
     background: isDragging ? "hsl(var(--muted))" : undefined,
   };
   return (
-    <TableRow ref={setNodeRef} style={style} className="h-20">
+    <TableRow ref={setNodeRef} style={style} className="h-20 group">
       {isAdmin && (
-        <TableCell className="w-8 p-1">
+        <TableCell className="w-10 p-0 text-center">
           <button
             type="button"
-            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1"
+            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-2 inline-flex items-center justify-center transition-colors"
             aria-label="Arrastar para reordenar"
             {...attributes}
             {...listeners}
@@ -1030,7 +1029,7 @@ function SortableMovRow({
           </button>
         </TableCell>
       )}
-      <TableCell className="text-center">{tipoIcon(m.tipo)}</TableCell>
+      <TableCell className="text-center w-14">{tipoIcon(m.tipo)}</TableCell>
       <TableCell className="py-5 align-middle">
         <div className="flex flex-col gap-1.5 justify-center">
           <span className="font-semibold text-sm text-foreground leading-tight">{m.descricao}</span>
@@ -1079,7 +1078,7 @@ function SortableMovRow({
           {statusLabel[m.status]}
         </Badge>
       </TableCell>
-      <TableCell className={cn("text-right font-bold text-base", m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : "text-info")}>
+      <TableCell className={cn("text-right font-bold text-base tabular-nums", m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : "text-info")}>
         <span className="text-xs font-medium mr-0.5 opacity-70">R$</span>
         {Number(m.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </TableCell>

@@ -23,8 +23,8 @@ export function AgendaCard({ proximos, atrasadas }: AgendaCardProps) {
   const totalAtraso = atrasadas.reduce((s, m) => s + m.valor, 0);
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="flex-row items-center justify-between pb-3">
+    <Card className="shadow-premium-sm">
+      <CardHeader className="flex-row items-center justify-between gap-3 pb-4 text-left">
         <div>
           <CardTitle className="flex items-center gap-2 text-base">
             <CalendarClock className="h-4 w-4 text-muted-foreground" /> Agenda financeira

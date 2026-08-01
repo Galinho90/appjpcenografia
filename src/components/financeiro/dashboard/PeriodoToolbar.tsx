@@ -38,14 +38,14 @@ export function PeriodoToolbar({
   contas, contaId, onContaChange,
 }: PeriodoToolbarProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border bg-card/60 p-3 backdrop-blur lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3 rounded-2xl border border-border/50 bg-card/80 p-4 shadow-premium-sm backdrop-blur-md supports-[backdrop-filter]:bg-card/65 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-wrap items-center gap-1.5">
         {PRESETS.map((p) => (
           <Button
             key={p.key}
             size="sm"
             variant={preset === p.key ? "default" : "ghost"}
-            className={cn("rounded-full text-xs", preset !== p.key && "text-muted-foreground")}
+            className={cn("h-9 rounded-full text-xs", preset !== p.key && "text-muted-foreground")}
             onClick={() => onPresetChange(p.key)}
           >
             {p.label}
@@ -54,7 +54,7 @@ export function PeriodoToolbar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1 rounded-lg border bg-background px-1">
+        <div className="flex h-9 items-center gap-1 rounded-lg border bg-background px-1">
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="sm" className="text-xs font-normal">
@@ -103,7 +103,7 @@ export function PeriodoToolbar({
           </SelectContent>
         </Select>
 
-        <Button asChild size="sm" variant="outline">
+        <Button asChild size="sm" variant="outline" className="h-9">
           <Link to="/financeiro/movimentacoes">
             Movimentações <ArrowRight className="ml-1 h-3.5 w-3.5" />
           </Link>

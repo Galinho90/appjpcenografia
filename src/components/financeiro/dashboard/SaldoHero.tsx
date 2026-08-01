@@ -77,7 +77,7 @@ export function SaldoHero({ saldo, entradas, saidas, resultado, serie, periodoLa
         </CardContent>
       </Card>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 lg:grid-rows-3">
         <MiniStat
           label="Entradas no período"
           value={fmtBRL(entradas)}
@@ -116,8 +116,8 @@ const TONES: Record<MiniStatProps["tone"], string> = {
 
 function MiniStat({ label, value, icon: Icon, tone }: MiniStatProps) {
   return (
-    <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-3 p-4">
+    <Card className="h-full shadow-premium-sm">
+      <CardContent className="flex h-full items-center gap-3 p-4 sm:p-4">
         <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", TONES[tone])}>
           <Icon className="h-5 w-5" />
         </div>

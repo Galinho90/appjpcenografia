@@ -25,6 +25,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, role, signOut } = useAuth();
   const { data: profile } = useMyProfile();
   const navigate = useNavigate();
+  const location = useLocation();
   const meta = (user?.user_metadata ?? {}) as { nome?: string; phone?: string };
   const displayName =
     profile?.nome ||

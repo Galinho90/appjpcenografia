@@ -751,7 +751,7 @@ export default function Movimentacoes() {
                 </DndContext>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
+              <div className="flex flex-col sm:flex-row items-center justify-start gap-6 px-4 py-3 border-t">
                 <div className="text-xs text-muted-foreground">
                   Mostrando {(currentPage - 1) * pageSize + 1}
                   –{Math.min(currentPage * pageSize, filteredMovs.length)} de {filteredMovs.length}

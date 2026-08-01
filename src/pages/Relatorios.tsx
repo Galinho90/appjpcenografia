@@ -187,27 +187,28 @@ export default function Relatorios() {
         </TabsList>
 
         <TabsContent value="quinzenal" className="space-y-6">
-          <div className="flex justify-end print:hidden">
-            <Card className="shadow-md w-full sm:w-auto">
-              <CardContent className="flex items-center gap-2 p-2">
-                <Button variant="ghost" size="icon" onClick={() => shift(-1)} aria-label="Quinzena anterior">
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div className="px-2 text-center flex-1 sm:min-w-[180px]">
-                  <p className="text-xs text-muted-foreground">Quinzena</p>
-                  <p className="text-sm font-semibold whitespace-nowrap">
-                    {fmt(selecionada.inicio)} — {fmt(selecionada.fim)}
-                  </p>
-                </div>
-                <Button variant="ghost" size="icon" onClick={() => shift(1)} aria-label="Próxima quinzena">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+          <Card className="shadow-md print:hidden">
+            <CardContent className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Quinzena</p>
+                <p className="truncate text-sm font-semibold sm:text-base">
+                  {fmt(selecionada.inicio)} — {fmt(selecionada.fim)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
                 {!isAtual && (
                   <Button variant="outline" size="sm" onClick={() => setRefDate(new Date())}>Hoje</Button>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+                <Button variant="outline" size="icon" onClick={() => shift(-1)} aria-label="Quinzena anterior">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => shift(1)} aria-label="Próxima quinzena">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
 
           <Card className="shadow-md print:hidden">
             <CardHeader>

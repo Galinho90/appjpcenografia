@@ -175,52 +175,61 @@ export default function RelatoriosFinanceiros() {
         </div>
       </div>
 
-      {/* Filtros Estilizados */}
-      <div className="flex flex-col gap-4 p-4 rounded-2xl border bg-card/60 backdrop-blur-sm shadow-sm lg:flex-row lg:items-end">
-        <div className="grid grid-cols-2 gap-3 flex-1 lg:grid-cols-4">
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Data Início</Label>
-            <div className="relative">
+      {/* Filtros Estilizados - Novo Modelo Glassmorphism */}
+      <div className="relative group">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
+        <div className="relative flex flex-col gap-4 p-5 rounded-2xl border bg-card/40 backdrop-blur-md shadow-sm lg:flex-row lg:items-end border-white/10">
+          <div className="grid grid-cols-2 gap-4 flex-1 lg:grid-cols-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-1.5 pl-1">
+                <div className="w-1 h-1 rounded-full bg-primary/50" /> Data Início
+              </Label>
               <Input 
                 type="date" 
                 value={dataInicio} 
                 onChange={(e) => setDataInicio(e.target.value)}
-                className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9" 
+                className="bg-background/40 border-primary/10 focus:border-primary/40 focus:ring-primary/10 transition-all text-xs h-10 rounded-xl" 
               />
             </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Data Fim</Label>
-            <Input 
-              type="date" 
-              value={dataFim} 
-              onChange={(e) => setDataFim(e.target.value)}
-              className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9" 
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Conta Bancária</Label>
-            <Select value={contaId} onValueChange={setContaId}>
-              <SelectTrigger className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as contas</SelectItem>
-                {contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.apelido}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Status</Label>
-            <Select value={statusFiltro} onValueChange={(v: any) => setStatusFiltro(v)}>
-              <SelectTrigger className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pago">Somente Realizado</SelectItem>
-                <SelectItem value="all">Todo o Fluxo</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-1.5 pl-1">
+                <div className="w-1 h-1 rounded-full bg-secondary/50" /> Data Fim
+              </Label>
+              <Input 
+                type="date" 
+                value={dataFim} 
+                onChange={(e) => setDataFim(e.target.value)}
+                className="bg-background/40 border-primary/10 focus:border-primary/40 focus:ring-primary/10 transition-all text-xs h-10 rounded-xl" 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-1.5 pl-1">
+                <div className="w-1 h-1 rounded-full bg-accent/50" /> Conta Bancária
+              </Label>
+              <Select value={contaId} onValueChange={setContaId}>
+                <SelectTrigger className="bg-background/40 border-primary/10 focus:border-primary/40 focus:ring-primary/10 transition-all text-xs h-10 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-primary/10">
+                  <SelectItem value="all">Todas as contas</SelectItem>
+                  {contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.apelido}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-1.5 pl-1">
+                <div className="w-1 h-1 rounded-full bg-success/50" /> Status
+              </Label>
+              <Select value={statusFiltro} onValueChange={(v: any) => setStatusFiltro(v)}>
+                <SelectTrigger className="bg-background/40 border-primary/10 focus:border-primary/40 focus:ring-primary/10 transition-all text-xs h-10 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-primary/10">
+                  <SelectItem value="pago">Somente Realizado</SelectItem>
+                  <SelectItem value="all">Todo o Fluxo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>

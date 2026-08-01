@@ -165,7 +165,7 @@ export default function MeuExtrato() {
   const pixDisplay = meuColaborador?.pix || meuColaborador?.chave_pix || "—";
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-10">
+    <div className="space-y-4 max-w-7xl mx-auto pb-10">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <PageHeader title="Meu Extrato" description="Acompanhe seus lançamentos e saldo quinzenal" />
         <Button onClick={gerarPDF} variant="outline" className="sm:w-auto w-full gap-2 border-primary/20 hover:border-primary">
@@ -176,7 +176,7 @@ export default function MeuExtrato() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Lado Esquerdo: Perfil e Quinzena */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-4">
           <Card className="overflow-hidden border-none shadow-premium-sm surface-glass group transition-all hover:shadow-premium">
             <div className="relative h-24 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
               <div className="absolute -bottom-10 left-6">
@@ -265,7 +265,7 @@ export default function MeuExtrato() {
         </div>
 
         {/* Lado Direito: Resumo e Lista */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-8 space-y-4">
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
             <Card className="border-none overflow-hidden shadow-premium-sm surface-glass bg-gradient-to-br from-primary/5 to-transparent">
               <CardContent className="p-5">

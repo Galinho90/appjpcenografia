@@ -388,7 +388,7 @@ export default function Movimentacoes() {
   };
 
   return (
-    <div className="space-y-6 pt-4">
+    <div className="space-y-6 pt-6 px-4 sm:px-6">
       {/* Cabeçalho */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" />
@@ -577,7 +577,7 @@ export default function Movimentacoes() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-premium-sm">
+      <Card className="shadow-premium-sm overflow-hidden">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-4 space-y-6">
@@ -702,7 +702,7 @@ export default function Movimentacoes() {
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow className="hover:bg-transparent border-b">
+                        <TableRow className="hover:bg-transparent border-b bg-muted/20">
                           {isAdmin && <TableHead className="w-10"></TableHead>}
                           <TableHead className="w-12 text-center">Tipo</TableHead>
                           <TableHead className="min-w-[200px]">Descrição / Origem</TableHead>

@@ -118,11 +118,11 @@ export default function Dashboard() {
 
 
         <Card className="shadow-md w-full sm:w-auto">
-          <CardContent className="flex items-center gap-2 p-2">
+          <CardContent className="flex items-center justify-center gap-3 p-4">
             <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, -1))} aria-label="Quinzena anterior">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <div className="px-4 py-3 text-center flex-1 sm:min-w-[180px]">
+            <div className="px-4 text-center flex-1 sm:min-w-[180px]">
               <p className="text-xs text-muted-foreground">Quinzena</p>
               <p className="text-sm font-semibold whitespace-nowrap">{fmt(inicio)} — {fmt(fim)}</p>
             </div>

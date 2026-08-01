@@ -725,7 +725,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  );})}
                 </TableBody>
               </Table>
             </div>

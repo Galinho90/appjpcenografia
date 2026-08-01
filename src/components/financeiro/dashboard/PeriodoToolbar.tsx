@@ -38,7 +38,7 @@ export function PeriodoToolbar({
   contas, contaId, onContaChange,
 }: PeriodoToolbarProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border bg-card/60 p-3 backdrop-blur lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3 rounded-2xl border-none bg-card/40 p-3 shadow-lg backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-wrap items-center gap-1.5">
         {PRESETS.map((p) => (
           <Button

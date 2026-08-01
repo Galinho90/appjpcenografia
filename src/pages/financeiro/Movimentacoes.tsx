@@ -393,7 +393,7 @@ export default function Movimentacoes() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" className="px-0" />
         {isAdmin && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <Button onClick={() => setOfxOpen(true)} variant="outline" className="h-10 gap-2 border-primary/20 hover:bg-primary/5">
               <Upload className="h-4 w-4" /> Importar OFX
             </Button>

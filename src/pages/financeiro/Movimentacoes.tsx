@@ -700,19 +700,19 @@ export default function Movimentacoes() {
               <div className="hidden md:block">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                   <div className="overflow-x-auto py-1">
-                    <Table className="[&_th:first-child]:pl-6 [&_th:last-child]:pr-6 [&_td:first-child]:pl-6 [&_td:last-child]:pr-6">
+                    <Table className="[&_th:first-child]:pl-8 [&_th:last-child]:pr-8 [&_td:first-child]:pl-8 [&_td:last-child]:pr-8 border-separate border-spacing-0">
                       <TableHeader>
-                        <TableRow className="hover:bg-transparent border-b bg-muted/20 [&_th]:h-14 [&_th]:py-4 [&_th]:align-middle">
+                        <TableRow className="hover:bg-transparent border-b bg-muted/20 [&_th]:h-16 [&_th]:py-5 [&_th]:align-middle [&_th]:border-b">
 
-                          {isAdmin && <TableHead className="w-10"></TableHead>}
-                          <TableHead className="w-12 text-center">Tipo</TableHead>
-                          <TableHead className="min-w-[200px]">Descrição / Origem</TableHead>
+                          {isAdmin && <TableHead className="w-12"></TableHead>}
+                          <TableHead className="w-14 text-center">Tipo</TableHead>
+                          <TableHead className="min-w-[220px]">Descrição / Origem</TableHead>
                           <TableHead>Categoria</TableHead>
                           <TableHead>Conta</TableHead>
                           <TableHead>Data</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="text-right">Valor</TableHead>
-                          {isAdmin && <TableHead className="text-right w-32">Ações</TableHead>}
+                          {isAdmin && <TableHead className="text-right w-36">Ações</TableHead>}
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1016,7 +1016,7 @@ function SortableMovRow({
     background: isDragging ? "hsl(var(--muted))" : undefined,
   };
   return (
-    <TableRow ref={setNodeRef} style={style} className="h-16">
+    <TableRow ref={setNodeRef} style={style} className="h-20">
       {isAdmin && (
         <TableCell className="w-8 p-1">
           <button
@@ -1031,8 +1031,8 @@ function SortableMovRow({
         </TableCell>
       )}
       <TableCell className="text-center">{tipoIcon(m.tipo)}</TableCell>
-      <TableCell className="py-4 align-middle">
-        <div className="flex flex-col gap-0.5 justify-center">
+      <TableCell className="py-5 align-middle">
+        <div className="flex flex-col gap-1.5 justify-center">
           <span className="font-semibold text-sm text-foreground leading-tight">{m.descricao}</span>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {m.fornecedor && (

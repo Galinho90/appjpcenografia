@@ -1015,7 +1015,7 @@ function SortableMovRow({
     background: isDragging ? "hsl(var(--muted))" : undefined,
   };
   return (
-    <TableRow ref={setNodeRef} style={style}>
+    <TableRow ref={setNodeRef} style={style} className="h-16">
       {isAdmin && (
         <TableCell className="w-8 p-1">
           <button
@@ -1030,9 +1030,9 @@ function SortableMovRow({
         </TableCell>
       )}
       <TableCell className="text-center">{tipoIcon(m.tipo)}</TableCell>
-      <TableCell className="py-4">
-        <div className="flex flex-col gap-1">
-          <span className="font-semibold text-sm text-foreground leading-snug">{m.descricao}</span>
+      <TableCell className="py-4 align-middle">
+        <div className="flex flex-col gap-0.5 justify-center">
+          <span className="font-semibold text-sm text-foreground leading-tight">{m.descricao}</span>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {m.fornecedor && (
               <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">

@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown, Wallet, Scale } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { fmtBRL, fmtDate } from "@/lib/financeiro";
 import { cn } from "@/lib/utils";

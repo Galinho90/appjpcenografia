@@ -155,11 +155,18 @@ export default function RelatoriosFinanceiros() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2 text-foreground">
-            <FileBarChart className="h-7 w-7 text-primary" /> Relatórios Financeiros
-          </h1>
-          <p className="text-sm text-muted-foreground">Analise entradas, saídas e resultado consolidado</p>
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary shadow-sm border border-primary/20">
+              <FileBarChart className="h-6 w-6" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+              Relatórios Financeiros
+            </h1>
+          </div>
+          <p className="text-sm text-muted-foreground font-medium pl-14">
+            Análise detalhada de performance, categorias e fluxo de caixa
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={exportarMovimentacoes} variant="outline" size="sm" className="gap-2 border-primary/20 hover:border-primary/50 transition-colors">
@@ -168,121 +175,146 @@ export default function RelatoriosFinanceiros() {
         </div>
       </div>
 
-      {/* Filtros Estilizados */}
-      <div className="flex flex-col gap-4 p-4 rounded-2xl border bg-card/60 backdrop-blur-sm shadow-sm lg:flex-row lg:items-end">
-        <div className="grid grid-cols-2 gap-3 flex-1 lg:grid-cols-4">
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Data Início</Label>
-            <div className="relative">
+      {/* Filtros Estilizados - Novo Modelo Glassmorphism */}
+      <div className="relative group">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
+        <div className="relative flex flex-col gap-4 p-5 rounded-2xl border bg-card/40 backdrop-blur-md shadow-sm lg:flex-row lg:items-end border-white/10">
+          <div className="grid grid-cols-2 gap-4 flex-1 lg:grid-cols-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-1.5 pl-1">
+                <div className="w-1 h-1 rounded-full bg-primary/50" /> Data Início
+              </Label>
               <Input 
                 type="date" 
                 value={dataInicio} 
                 onChange={(e) => setDataInicio(e.target.value)}
-                className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9" 
+                className="bg-background/40 border-primary/10 focus:border-primary/40 focus:ring-primary/10 transition-all text-xs h-10 rounded-xl" 
               />
             </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Data Fim</Label>
-            <Input 
-              type="date" 
-              value={dataFim} 
-              onChange={(e) => setDataFim(e.target.value)}
-              className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9" 
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Conta Bancária</Label>
-            <Select value={contaId} onValueChange={setContaId}>
-              <SelectTrigger className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as contas</SelectItem>
-                {contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.apelido}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground pl-1">Status</Label>
-            <Select value={statusFiltro} onValueChange={(v: any) => setStatusFiltro(v)}>
-              <SelectTrigger className="bg-background/50 border-muted-foreground/20 focus:border-primary/50 transition-all text-xs h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pago">Somente Realizado</SelectItem>
-                <SelectItem value="all">Todo o Fluxo</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-1.5 pl-1">
+                <div className="w-1 h-1 rounded-full bg-secondary/50" /> Data Fim
+              </Label>
+              <Input 
+                type="date" 
+                value={dataFim} 
+                onChange={(e) => setDataFim(e.target.value)}
+                className="bg-background/40 border-primary/10 focus:border-primary/40 focus:ring-primary/10 transition-all text-xs h-10 rounded-xl" 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-1.5 pl-1">
+                <div className="w-1 h-1 rounded-full bg-accent/50" /> Conta Bancária
+              </Label>
+              <Select value={contaId} onValueChange={setContaId}>
+                <SelectTrigger className="bg-background/40 border-primary/10 focus:border-primary/40 focus:ring-primary/10 transition-all text-xs h-10 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-primary/10">
+                  <SelectItem value="all">Todas as contas</SelectItem>
+                  {contas.map((c) => <SelectItem key={c.id} value={c.id}>{c.apelido}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-1.5 pl-1">
+                <div className="w-1 h-1 rounded-full bg-success/50" /> Status
+              </Label>
+              <Select value={statusFiltro} onValueChange={(v: any) => setStatusFiltro(v)}>
+                <SelectTrigger className="bg-background/40 border-primary/10 focus:border-primary/40 focus:ring-primary/10 transition-all text-xs h-10 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-primary/10">
+                  <SelectItem value="pago">Somente Realizado</SelectItem>
+                  <SelectItem value="all">Todo o Fluxo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Resumo Visual de Indicadores */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-success/5 relative group transition-all hover:shadow-lg">
-          <div className="absolute top-0 left-0 w-1 h-full bg-success opacity-70" />
-          <CardContent className="pt-6">
+      {/* Resumo Visual de Indicadores - Cards Elevados */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="overflow-hidden border border-success/10 shadow-xl bg-gradient-to-br from-card via-card to-success/5 relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-success/10 rounded-3xl">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-success/40" />
+          <CardContent className="pt-8 pb-7">
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Entradas Totais</p>
-                {isLoading ? <Skeleton className="h-8 w-32" /> :
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-black text-success tracking-tight">{fmtBRL(entradas)}</span>
+              <div className="space-y-2">
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-success/70 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                  Entradas Totais
+                </p>
+                {isLoading ? <Skeleton className="h-10 w-40" /> :
+                  <div className="flex flex-col">
+                    <span className="text-3xl font-black text-foreground tracking-tighter">{fmtBRL(entradas)}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium mt-1">Acumulado no período</span>
                   </div>
                 }
               </div>
-              <div className="p-3 rounded-xl bg-success/10 text-success group-hover:scale-110 transition-transform">
-                <TrendingUp className="h-6 w-6" />
+              <div className="p-4 rounded-2xl bg-success/10 text-success border border-success/20 group-hover:bg-success group-hover:text-white transition-all duration-500 group-hover:rotate-12 group-hover:scale-110">
+                <TrendingUp className="h-7 w-7" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-destructive/5 relative group transition-all hover:shadow-lg">
-          <div className="absolute top-0 left-0 w-1 h-full bg-destructive opacity-70" />
-          <CardContent className="pt-6">
+        <Card className="overflow-hidden border border-destructive/10 shadow-xl bg-gradient-to-br from-card via-card to-destructive/5 relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-destructive/10 rounded-3xl">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-destructive/40" />
+          <CardContent className="pt-8 pb-7">
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Saídas Totais</p>
-                {isLoading ? <Skeleton className="h-8 w-32" /> :
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-black text-destructive tracking-tight">{fmtBRL(saidas)}</span>
+              <div className="space-y-2">
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-destructive/70 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                  Saídas Totais
+                </p>
+                {isLoading ? <Skeleton className="h-10 w-40" /> :
+                  <div className="flex flex-col">
+                    <span className="text-3xl font-black text-foreground tracking-tighter">{fmtBRL(saidas)}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium mt-1">Custos e despesas</span>
                   </div>
                 }
               </div>
-              <div className="p-3 rounded-xl bg-destructive/10 text-destructive group-hover:scale-110 transition-transform">
-                <TrendingDown className="h-6 w-6" />
+              <div className="p-4 rounded-2xl bg-destructive/10 text-destructive border border-destructive/20 group-hover:bg-destructive group-hover:text-white transition-all duration-500 group-hover:-rotate-12 group-hover:scale-110">
+                <TrendingDown className="h-7 w-7" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className={cn(
-          "overflow-hidden border-none shadow-md relative group transition-all hover:shadow-lg bg-gradient-to-br",
-          resultado >= 0 ? "from-card to-primary/5" : "from-card to-orange-500/5"
+          "overflow-hidden border shadow-xl relative group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl rounded-3xl bg-gradient-to-br from-card via-card",
+          resultado >= 0 
+            ? "border-primary/10 to-primary/5 hover:shadow-primary/10" 
+            : "border-orange-500/10 to-orange-500/5 hover:shadow-orange-500/10"
         )}>
-          <div className={cn("absolute top-0 left-0 w-1 h-full opacity-70", resultado >= 0 ? "bg-primary" : "bg-orange-500")} />
-          <CardContent className="pt-6">
+          <div className={cn("absolute top-0 left-0 w-full h-1.5", resultado >= 0 ? "bg-primary/40" : "bg-orange-500/40")} />
+          <CardContent className="pt-8 pb-7">
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Saldo do Período</p>
-                {isLoading ? <Skeleton className="h-8 w-32" /> :
-                  <div className="flex items-baseline gap-1">
+              <div className="space-y-2">
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-muted-foreground">
+                  <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", resultado >= 0 ? "bg-primary" : "bg-orange-500")} />
+                  Saldo do Período
+                </p>
+                {isLoading ? <Skeleton className="h-10 w-40" /> :
+                  <div className="flex flex-col">
                     <span className={cn(
-                      "text-2xl font-black tracking-tight",
+                      "text-3xl font-black tracking-tighter",
                       resultado >= 0 ? "text-primary" : "text-orange-500"
                     )}>
                       {fmtBRL(resultado)}
                     </span>
+                    <span className="text-[10px] text-muted-foreground font-medium mt-1">Resultado operacional</span>
                   </div>
                 }
               </div>
               <div className={cn(
-                "p-3 rounded-xl group-hover:scale-110 transition-transform",
-                resultado >= 0 ? "bg-primary/10 text-primary" : "bg-orange-500/10 text-orange-500"
+                "p-4 rounded-2xl border transition-all duration-500 group-hover:scale-110 group-hover:shadow-lg",
+                resultado >= 0 
+                  ? "bg-primary/10 text-primary border-primary/20 group-hover:bg-primary group-hover:text-white" 
+                  : "bg-orange-500/10 text-orange-500 border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white"
               )}>
-                <Scale className="h-6 w-6" />
+                <Scale className="h-7 w-7" />
               </div>
             </div>
           </CardContent>
@@ -290,80 +322,181 @@ export default function RelatoriosFinanceiros() {
       </div>
 
       <Tabs defaultValue="fluxo" className="w-full">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full sm:w-auto">
-          <TabsTrigger value="fluxo">Fluxo</TabsTrigger>
-          <TabsTrigger value="categorias">Categorias</TabsTrigger>
-          <TabsTrigger value="contas">Contas</TabsTrigger>
-          <TabsTrigger value="dre">DRE</TabsTrigger>
+        <TabsList className="p-1 h-12 bg-muted/50 rounded-2xl border border-white/5 backdrop-blur-sm">
+          <TabsTrigger value="fluxo" className="rounded-xl px-6 data-[state=active]:bg-card data-[state=active]:shadow-sm">Fluxo</TabsTrigger>
+          <TabsTrigger value="categorias" className="rounded-xl px-6 data-[state=active]:bg-card data-[state=active]:shadow-sm">Categorias</TabsTrigger>
+          <TabsTrigger value="contas" className="rounded-xl px-6 data-[state=active]:bg-card data-[state=active]:shadow-sm">Contas</TabsTrigger>
+          <TabsTrigger value="dre" className="rounded-xl px-6 data-[state=active]:bg-card data-[state=active]:shadow-sm">DRE</TabsTrigger>
         </TabsList>
 
-        {/* Fluxo */}
-        <TabsContent value="fluxo" className="space-y-4">
-          <Card className={cn("shadow-md")}>
-            <CardHeader><CardTitle className="text-base">Fluxo diário</CardTitle></CardHeader>
+        <TabsContent value="fluxo" className="space-y-4 pt-4 outline-none">
+          <Card className={cn("shadow-xl border-none rounded-3xl bg-gradient-to-br from-card to-muted/5")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary" />
+                Fluxo Diário de Caixa
+              </CardTitle>
+            </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-72 w-full" /> :
+              {isLoading ? <Skeleton className="h-72 w-full rounded-2xl" /> :
                 fluxoDiario.length === 0 ? (
-                  <p className="text-sm text-center text-muted-foreground py-12">Sem dados no período</p>
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+                    <FileBarChart className="h-10 w-10 opacity-20" />
+                    <p className="text-sm font-medium">Sem movimentações registradas neste período</p>
+                  </div>
                 ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={fluxoDiario}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="data" tickFormatter={(v) => fmtDate(v)?.slice(0, 5)} fontSize={11} />
-                    <YAxis tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} fontSize={11} />
-                    <Tooltip formatter={(v: any) => fmtBRL(v)} labelFormatter={(v) => fmtDate(v)} />
-                    <Legend />
-                    <Line type="monotone" dataKey="entradas" stroke="hsl(var(--success))" strokeWidth={2} name="Entradas" />
-                    <Line type="monotone" dataKey="saidas" stroke="hsl(var(--destructive))" strokeWidth={2} name="Saídas" />
-                    <Line type="monotone" dataKey="saldo" stroke="hsl(var(--primary))" strokeWidth={2} name="Resultado" />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="h-[350px] w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={fluxoDiario}>
+                      <defs>
+                        <linearGradient id="colorEntradas" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.1}/>
+                          <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted/50" />
+                      <XAxis 
+                        dataKey="data" 
+                        tickFormatter={(v) => fmtDate(v)?.slice(0, 5)} 
+                        fontSize={11} 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <YAxis 
+                        tickFormatter={(v) => v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v}`} 
+                        fontSize={11} 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '16px',
+                          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                        }}
+                        formatter={(v: any) => [fmtBRL(v), ""]} 
+                        labelFormatter={(v) => fmtDate(v)} 
+                      />
+                      <Legend verticalAlign="top" height={36} iconType="circle" />
+                      <Line 
+                        type="monotone" 
+                        dataKey="entradas" 
+                        stroke="hsl(var(--success))" 
+                        strokeWidth={4} 
+                        dot={false}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                        name="Entradas" 
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="saidas" 
+                        stroke="hsl(var(--destructive))" 
+                        strokeWidth={4} 
+                        dot={false}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                        name="Saídas" 
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="saldo" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={4} 
+                        dot={false}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                        name="Resultado" 
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Categorias */}
-        <TabsContent value="categorias" className="space-y-4">
+        <TabsContent value="categorias" className="space-y-6 pt-4 outline-none">
           <div className="flex justify-end">
-            <Button onClick={exportarPorCategoria} variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" /> Exportar
+            <Button onClick={exportarPorCategoria} variant="outline" size="sm" className="gap-2 rounded-xl border-primary/20 hover:bg-primary/5 transition-colors">
+              <Download className="h-4 w-4" /> Exportar Dados de Categorias
             </Button>
           </div>
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card className={cn("shadow-md")}>
-              <CardHeader><CardTitle className="text-base text-destructive">Despesas por categoria</CardTitle></CardHeader>
-              <CardContent>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className={cn("shadow-xl border-none rounded-3xl overflow-hidden")}>
+              <div className="h-1.5 w-full bg-destructive/20" />
+              <CardHeader className="pb-0"><CardTitle className="text-lg font-black tracking-tight text-destructive">Despesas por Categoria</CardTitle></CardHeader>
+              <CardContent className="pt-0">
                 {despesasCategoria.length === 0 ? (
-                  <p className="text-sm text-center text-muted-foreground py-12">Sem despesas no período</p>
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+                    <TrendingDown className="h-10 w-10 opacity-20" />
+                    <p className="text-sm font-medium">Sem despesas registradas</p>
+                  </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={260}>
-                    <PieChart>
-                      <Pie data={despesasCategoria} dataKey="total" nameKey="nome" outerRadius={90}
-                        label={(e: any) => `${e.nome}: ${((e.percent ?? 0) * 100).toFixed(0)}%`}>
-                        {despesasCategoria.map((c, i) => <Cell key={i} fill={c.cor} />)}
-                      </Pie>
-                      <Tooltip formatter={(v: any) => fmtBRL(v)} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie 
+                          data={despesasCategoria} 
+                          dataKey="total" 
+                          nameKey="nome" 
+                          outerRadius={100}
+                          innerRadius={60}
+                          paddingAngle={5}
+                          label={(e: any) => `${e.nome}`}
+                        >
+                          {despesasCategoria.map((c, i) => <Cell key={i} fill={c.cor} className="stroke-background stroke-2" />)}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '16px'
+                          }}
+                          formatter={(v: any) => fmtBRL(v)} 
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 )}
               </CardContent>
             </Card>
-            <Card className={cn("shadow-md")}>
-              <CardHeader><CardTitle className="text-base text-success">Receitas por categoria</CardTitle></CardHeader>
-              <CardContent>
+            
+            <Card className={cn("shadow-xl border-none rounded-3xl overflow-hidden")}>
+              <div className="h-1.5 w-full bg-success/20" />
+              <CardHeader className="pb-0"><CardTitle className="text-lg font-black tracking-tight text-success">Receitas por Categoria</CardTitle></CardHeader>
+              <CardContent className="pt-0">
                 {receitasCategoria.length === 0 ? (
-                  <p className="text-sm text-center text-muted-foreground py-12">Sem receitas no período</p>
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+                    <TrendingUp className="h-10 w-10 opacity-20" />
+                    <p className="text-sm font-medium">Sem receitas registradas</p>
+                  </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={260}>
-                    <PieChart>
-                      <Pie data={receitasCategoria} dataKey="total" nameKey="nome" outerRadius={90}
-                        label={(e: any) => `${e.nome}: ${((e.percent ?? 0) * 100).toFixed(0)}%`}>
-                        {receitasCategoria.map((c, i) => <Cell key={i} fill={c.cor} />)}
-                      </Pie>
-                      <Tooltip formatter={(v: any) => fmtBRL(v)} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie 
+                          data={receitasCategoria} 
+                          dataKey="total" 
+                          nameKey="nome" 
+                          outerRadius={100}
+                          innerRadius={60}
+                          paddingAngle={5}
+                          label={(e: any) => `${e.nome}`}
+                        >
+                          {receitasCategoria.map((c, i) => <Cell key={i} fill={c.cor} className="stroke-background stroke-2" />)}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '16px'
+                          }}
+                          formatter={(v: any) => fmtBRL(v)} 
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 )}
               </CardContent>
             </Card>

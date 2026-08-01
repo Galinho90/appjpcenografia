@@ -1031,8 +1031,8 @@ function SortableMovRow({
       )}
       <TableCell className="text-center">{tipoIcon(m.tipo)}</TableCell>
       <TableCell className="py-4 align-middle">
-        <div className="flex flex-col gap-1">
-          <span className="font-semibold text-sm text-foreground leading-snug">{m.descricao}</span>
+        <div className="flex flex-col gap-0.5 justify-center">
+          <span className="font-semibold text-sm text-foreground leading-tight">{m.descricao}</span>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {m.fornecedor && (
               <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">

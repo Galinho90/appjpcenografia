@@ -416,47 +416,87 @@ export default function RelatoriosFinanceiros() {
           </Card>
         </TabsContent>
 
-        {/* Categorias */}
-        <TabsContent value="categorias" className="space-y-4">
+        <TabsContent value="categorias" className="space-y-6 pt-4 outline-none">
           <div className="flex justify-end">
-            <Button onClick={exportarPorCategoria} variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" /> Exportar
+            <Button onClick={exportarPorCategoria} variant="outline" size="sm" className="gap-2 rounded-xl border-primary/20 hover:bg-primary/5 transition-colors">
+              <Download className="h-4 w-4" /> Exportar Dados de Categorias
             </Button>
           </div>
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card className={cn("shadow-md")}>
-              <CardHeader><CardTitle className="text-base text-destructive">Despesas por categoria</CardTitle></CardHeader>
-              <CardContent>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className={cn("shadow-xl border-none rounded-3xl overflow-hidden")}>
+              <div className="h-1.5 w-full bg-destructive/20" />
+              <CardHeader className="pb-0"><CardTitle className="text-lg font-black tracking-tight text-destructive">Despesas por Categoria</CardTitle></CardHeader>
+              <CardContent className="pt-0">
                 {despesasCategoria.length === 0 ? (
-                  <p className="text-sm text-center text-muted-foreground py-12">Sem despesas no período</p>
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+                    <TrendingDown className="h-10 w-10 opacity-20" />
+                    <p className="text-sm font-medium">Sem despesas registradas</p>
+                  </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={260}>
-                    <PieChart>
-                      <Pie data={despesasCategoria} dataKey="total" nameKey="nome" outerRadius={90}
-                        label={(e: any) => `${e.nome}: ${((e.percent ?? 0) * 100).toFixed(0)}%`}>
-                        {despesasCategoria.map((c, i) => <Cell key={i} fill={c.cor} />)}
-                      </Pie>
-                      <Tooltip formatter={(v: any) => fmtBRL(v)} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie 
+                          data={despesasCategoria} 
+                          dataKey="total" 
+                          nameKey="nome" 
+                          outerRadius={100}
+                          innerRadius={60}
+                          paddingAngle={5}
+                          label={(e: any) => `${e.nome}`}
+                        >
+                          {despesasCategoria.map((c, i) => <Cell key={i} fill={c.cor} className="stroke-background stroke-2" />)}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '16px'
+                          }}
+                          formatter={(v: any) => fmtBRL(v)} 
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 )}
               </CardContent>
             </Card>
-            <Card className={cn("shadow-md")}>
-              <CardHeader><CardTitle className="text-base text-success">Receitas por categoria</CardTitle></CardHeader>
-              <CardContent>
+            
+            <Card className={cn("shadow-xl border-none rounded-3xl overflow-hidden")}>
+              <div className="h-1.5 w-full bg-success/20" />
+              <CardHeader className="pb-0"><CardTitle className="text-lg font-black tracking-tight text-success">Receitas por Categoria</CardTitle></CardHeader>
+              <CardContent className="pt-0">
                 {receitasCategoria.length === 0 ? (
-                  <p className="text-sm text-center text-muted-foreground py-12">Sem receitas no período</p>
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+                    <TrendingUp className="h-10 w-10 opacity-20" />
+                    <p className="text-sm font-medium">Sem receitas registradas</p>
+                  </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height={260}>
-                    <PieChart>
-                      <Pie data={receitasCategoria} dataKey="total" nameKey="nome" outerRadius={90}
-                        label={(e: any) => `${e.nome}: ${((e.percent ?? 0) * 100).toFixed(0)}%`}>
-                        {receitasCategoria.map((c, i) => <Cell key={i} fill={c.cor} />)}
-                      </Pie>
-                      <Tooltip formatter={(v: any) => fmtBRL(v)} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie 
+                          data={receitasCategoria} 
+                          dataKey="total" 
+                          nameKey="nome" 
+                          outerRadius={100}
+                          innerRadius={60}
+                          paddingAngle={5}
+                          label={(e: any) => `${e.nome}`}
+                        >
+                          {receitasCategoria.map((c, i) => <Cell key={i} fill={c.cor} className="stroke-background stroke-2" />)}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '16px'
+                          }}
+                          formatter={(v: any) => fmtBRL(v)} 
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 )}
               </CardContent>
             </Card>

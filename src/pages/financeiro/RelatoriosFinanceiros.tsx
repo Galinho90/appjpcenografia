@@ -429,7 +429,7 @@ export default function RelatoriosFinanceiros() {
               )}
             </CardContent>
           </Card>
-          <Card className="shadow-md">
+          <Card className={cn("shadow-md")}>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>

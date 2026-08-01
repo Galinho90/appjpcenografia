@@ -169,7 +169,7 @@ export default function RelatoriosFinanceiros() {
       {/* Filtros Estilizados - Novo Modelo Glassmorphism */}
       <div className="relative group">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
-        <div className="relative flex flex-col gap-4 p-5 rounded-2xl border bg-card/40 backdrop-blur-md shadow-sm lg:flex-row lg:items-end border-white/10">
+        <div className="relative flex flex-col gap-4 p-5 rounded-2xl border bg-card/40 backdrop-blur-md shadow-sm lg:flex-row lg:items-end lg:justify-start border-white/10">
           <div className="grid grid-cols-2 gap-4 flex-1 lg:grid-cols-4">
             <div className="space-y-2">
               <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-1.5 pl-1">

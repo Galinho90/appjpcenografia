@@ -719,24 +719,24 @@ export default function Movimentacoes() {
                           <Fragment key={g.data || "sem-data"}>
                             <TableRow className="bg-muted/30 hover:bg-muted/40 border-y transition-colors">
                               <TableCell colSpan={isAdmin ? 8 : 7} className="py-3 px-4">
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-4">
                                   <span className="text-sm font-bold text-foreground">
                                     {g.data ? fmtDate(g.data) : "Sem data"}
                                   </span>
                                   <div className="h-4 w-px bg-border/60" />
-                                  <span className="text-xs text-muted-foreground font-medium">
+                                  <span className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
                                     {g.itens.length} lançamento(s)
                                   </span>
                                   <div className="h-4 w-px bg-border/60" />
-                                  <span className="text-xs font-medium">
-                                    Movimento: <span className={g.total >= 0 ? "text-success" : "text-destructive"}>{fmtBRL(g.total)}</span>
+                                  <span className="text-xs font-semibold">
+                                    Movimento: <span className={g.total >= 0 ? "text-success font-bold" : "text-destructive font-bold"}>{fmtBRL(g.total)}</span>
                                   </span>
                                 </div>
                               </TableCell>
                               <TableCell className="py-3 px-4 text-right">
-                                <div className="flex flex-col items-end">
-                                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider leading-none mb-1">Saldo do Dia</span>
-                                  <span className={`text-sm font-bold ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
+                                <div className="flex flex-col items-end justify-center">
+                                  <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest leading-none mb-1 opacity-70">Saldo do Dia</span>
+                                  <span className={`text-sm font-bold tabular-nums ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
                                     {saldoDoDia(g.data) == null ? "—" : fmtBRL(saldoDoDia(g.data) as number)}
                                   </span>
                                 </div>

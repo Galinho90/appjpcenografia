@@ -188,25 +188,30 @@ export default function NotasFiscais() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        icon={Receipt}
-        title="Notas Fiscais"
-        description="Recebimento de NF dos diaristas por quinzena."
-        actions={
-          <Button variant="outline" size="sm" onClick={atualizar} disabled={isFetching}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">Atualizar notas</span>
-            <span className="sm:hidden">Atualizar</span>
-          </Button>
-        }
-      />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <PageHeader
+          icon={Receipt}
+          title="Notas Fiscais"
+          description="Recebimento de NF dos diaristas por quinzena."
+          actions={
+            <Button variant="outline" size="sm" onClick={atualizar} disabled={isFetching}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">Atualizar notas</span>
+              <span className="sm:hidden">Atualizar</span>
+            </Button>
+          }
+          className="flex-1"
+        />
 
-      <QuinzenaSelector
-        className="sm:max-w-sm"
-        inicio={selecionada.inicio}
-        fim={selecionada.fim}
-        onShift={(dir) => shift(dir)}
-      />
+        <div className="flex justify-end w-full sm:w-auto">
+          <QuinzenaSelector
+            className="w-full sm:w-[300px]"
+            inicio={selecionada.inicio}
+            fim={selecionada.fim}
+            onShift={(dir) => shift(dir)}
+          />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard label="Notas Recebidas" badge="Total" value={notas.length} icon={Receipt} tone="primary" />

@@ -188,7 +188,7 @@ export default function Relatorios() {
 
         <TabsContent value="quinzenal" className="space-y-6">
           <Card className="shadow-md print:hidden">
-            <CardContent className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4">
+            <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Quinzena</p>
                 <p className="truncate text-sm font-semibold sm:text-base">

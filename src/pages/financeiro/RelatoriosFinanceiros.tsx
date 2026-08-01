@@ -322,7 +322,7 @@ export default function RelatoriosFinanceiros() {
 
         <TabsContent value="fluxo" className="space-y-4 pt-4 outline-none">
           <Card className={cn("shadow-xl border-none rounded-3xl bg-gradient-to-br from-card to-muted/5")}>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-3">
               <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary" />
                 Fluxo Diário de Caixa

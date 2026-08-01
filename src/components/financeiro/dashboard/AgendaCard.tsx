@@ -24,7 +24,7 @@ export function AgendaCard({ proximos, atrasadas }: AgendaCardProps) {
 
   return (
     <Card className="shadow-sm">
-      <CardHeader className="flex-row items-center justify-between pb-2">
+      <CardHeader className="flex-row items-center justify-between pb-3">
         <div>
           <CardTitle className="flex items-center gap-2 text-base">
             <CalendarClock className="h-4 w-4 text-muted-foreground" /> Agenda financeira

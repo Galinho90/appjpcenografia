@@ -566,13 +566,17 @@ export default function ExtratoDiarista() {
 
   return (
     <div className="space-y-6">
-      {canEdit && (
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
-          <Button className="gap-2 w-full sm:w-auto" onClick={abrirModal}>
-            <FileText className="h-4 w-4" /> Novo Lançamento
-          </Button>
-        </div>
-      )}
+      <PageHeader
+        title="Extrato do Diarista"
+        description="Lançamentos, créditos e débitos por quinzena"
+        actions={
+          canEdit && (
+            <Button className="gap-2 w-full sm:w-auto" onClick={abrirModal}>
+              <FileText className="h-4 w-4" /> Novo Lançamento
+            </Button>
+          )
+        }
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">

@@ -92,7 +92,7 @@ export function SaldoHero({ saldo, entradas, saidas, resultado, serie, periodoLa
         <MiniStat
           label="Margem do período"
           value={entradas > 0 ? `${((resultado / entradas) * 100).toFixed(1)}%` : "—"}
-          icon={Percent}
+          icon={Scale}
           tone={positivo ? "secondary" : "destructive"}
         />
       </div>

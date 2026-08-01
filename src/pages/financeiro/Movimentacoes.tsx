@@ -388,23 +388,23 @@ export default function Movimentacoes() {
   };
 
   return (
-    <div className="space-y-6 pt-6 px-4 sm:px-6">
+    <div className="space-y-4 md:space-y-6 pt-4 md:pt-6 px-3 sm:px-4 md:px-6">
       {/* Cabeçalho */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" className="px-0" />
         {isAdmin && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <Button onClick={() => setOfxOpen(true)} variant="outline" className="h-10 gap-2 border-primary/20 hover:bg-primary/5">
               <Upload className="h-4 w-4" /> Importar OFX
             </Button>
             <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
-            <Button onClick={() => openCreate("entrada")} className="h-10 gap-2 bg-success hover:bg-success/90 text-success-foreground">
+            <Button onClick={() => openCreate("entrada")} className="h-10 gap-2 flex-1 sm:flex-initial bg-success hover:bg-success/90 text-success-foreground">
               <ArrowDownCircle className="h-4 w-4" /> Entrada
             </Button>
-            <Button onClick={() => openCreate("saida")} variant="destructive" className="h-10 gap-2">
+            <Button onClick={() => openCreate("saida")} variant="destructive" className="h-10 gap-2 flex-1 sm:flex-initial">
               <ArrowUpCircle className="h-4 w-4" /> Saída
             </Button>
-            <Button onClick={() => openCreate("transferencia")} variant="outline" className="h-10 gap-2">
+            <Button onClick={() => openCreate("transferencia")} variant="outline" className="h-10 gap-2 flex-1 sm:flex-initial">
               <ArrowLeftRight className="h-4 w-4" /> Transferir
             </Button>
           </div>
@@ -412,7 +412,7 @@ export default function Movimentacoes() {
       </div>
 
       {/* Resumo do resultado filtrado */}
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+      <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         <StatCard
           label="Saldo da Conta"
           value={saldoConta != null ? fmtBRL(saldoConta) : "—"}
@@ -639,8 +639,8 @@ export default function Movimentacoes() {
                     </div>
                     <div className="divide-y">
                       {g.itens.map((m) => (
-                        <div key={m.id} className="p-3 space-y-2">
-                          <div className="flex items-start justify-between gap-2">
+                        <div key={m.id} className="p-4 space-y-3 hover:bg-muted/30 transition-colors">
+                          <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-2 min-w-0">
                               <div className="mt-0.5">{tipoIcon(m.tipo)}</div>
                               <div className="min-w-0">
@@ -666,15 +666,15 @@ export default function Movimentacoes() {
                               {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
                             </div>
                           </div>
-                          <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                            <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[11px] text-muted-foreground pt-1">
+                            <div className="flex items-center gap-3 flex-wrap">
                               <span>{m.conta?.apelido ?? "—"}</span>
                               <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent`}>
                                 {statusLabel[m.status]}
                               </Badge>
                             </div>
                             {isAdmin && (
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-2 mt-2 sm:mt-0 justify-end w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0">
                                 {m.status !== "pago" && (
                                   <Button variant="ghost" size="sm" onClick={() => marcarPago(m)} className="text-success h-8">
                                     Pagar

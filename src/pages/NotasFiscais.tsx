@@ -18,10 +18,10 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
-import { PageHeader } from "@/components/PageHeader";
   useNotasFiscais, useUpdateStatusNotaFiscal, useDeleteNotaFiscal,
   getNotaFiscalSignedUrl, useFechamentos, useColaboradores,
 } from "@/hooks/useSupabaseData";
+import { PageHeader } from "@/components/PageHeader";
 
 // Configuração de status agora vem de @/lib/statusBadge (padrão visual unificado).
 

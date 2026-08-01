@@ -13,10 +13,10 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import {
-import { PageHeader } from "@/components/PageHeader";
   useCategoriasFinanceiras, useCreateCategoriaFinanceira, useUpdateCategoriaFinanceira, useDeleteCategoriaFinanceira,
   type CategoriaFinanceira,
 } from "@/hooks/useFinanceiro";
+import { PageHeader } from "@/components/PageHeader";
 
 const cores = ["#7C3AED", "#10B981", "#F59E0B", "#EF4444", "#6366F1", "#EC4899", "#0EA5E9", "#F97316", "#14B8A6", "#8B5CF6", "#64748B"];
 const empty = { nome: "", tipo: "despesa" as "receita" | "despesa", cor: "#7C3AED", icone: "tag", ativo: true };

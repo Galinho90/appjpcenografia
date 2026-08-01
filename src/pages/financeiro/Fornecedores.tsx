@@ -15,10 +15,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import {
-import { PageHeader } from "@/components/PageHeader";
   useFornecedores, useCreateFornecedor, useUpdateFornecedor, useDeleteFornecedor,
   useCategoriasFinanceiras, type Fornecedor,
 } from "@/hooks/useFinanceiro";
+import { PageHeader } from "@/components/PageHeader";
 
 const emptyForm = {
   nome: "",

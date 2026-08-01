@@ -1016,7 +1016,7 @@ function SortableMovRow({
     background: isDragging ? "hsl(var(--muted))" : undefined,
   };
   return (
-    <TableRow ref={setNodeRef} style={style} className="h-16">
+    <TableRow ref={setNodeRef} style={style} className="h-20">
       {isAdmin && (
         <TableCell className="w-8 p-1">
           <button

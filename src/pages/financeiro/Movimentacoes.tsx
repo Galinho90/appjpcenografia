@@ -700,19 +700,19 @@ export default function Movimentacoes() {
               <div className="hidden md:block">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                   <div className="overflow-x-auto py-1">
-                    <Table className="[&_th:first-child]:pl-6 [&_th:last-child]:pr-6 [&_td:first-child]:pl-6 [&_td:last-child]:pr-6">
+                    <Table className="[&_th:first-child]:pl-8 [&_th:last-child]:pr-8 [&_td:first-child]:pl-8 [&_td:last-child]:pr-8 border-separate border-spacing-0">
                       <TableHeader>
-                        <TableRow className="hover:bg-transparent border-b bg-muted/20 [&_th]:h-14 [&_th]:py-4 [&_th]:align-middle">
+                        <TableRow className="hover:bg-transparent border-b bg-muted/20 [&_th]:h-16 [&_th]:py-5 [&_th]:align-middle [&_th]:border-b">
 
-                          {isAdmin && <TableHead className="w-10"></TableHead>}
-                          <TableHead className="w-12 text-center">Tipo</TableHead>
-                          <TableHead className="min-w-[200px]">Descrição / Origem</TableHead>
+                          {isAdmin && <TableHead className="w-12"></TableHead>}
+                          <TableHead className="w-14 text-center">Tipo</TableHead>
+                          <TableHead className="min-w-[220px]">Descrição / Origem</TableHead>
                           <TableHead>Categoria</TableHead>
                           <TableHead>Conta</TableHead>
                           <TableHead>Data</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead className="text-right">Valor</TableHead>
-                          {isAdmin && <TableHead className="text-right w-32">Ações</TableHead>}
+                          {isAdmin && <TableHead className="text-right w-36">Ações</TableHead>}
                         </TableRow>
                       </TableHeader>
                       <TableBody>

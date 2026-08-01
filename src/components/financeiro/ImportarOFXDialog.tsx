@@ -129,12 +129,16 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       // Vínculo só é permitido na MESMA data da transação bancária.
       const TOLERANCIA_DIAS = 0;
 
+      // Um mesmo lançamento do sistema não pode ser sugerido para duas transações do OFX.
+      const usados = new Set<string>();
+
       const newRows: Row[] = transactions.map((tx) => {
         const alreadyImported = fitidExistentes.has(tx.fitid);
         
         const candidates: MovCandidate[] = ((movs ?? []) as any[])
           .filter((m: any) => {
             if (m.fitid) return false;
+            if (usados.has(m.id)) return false;
             if (m.tipo !== tx.tipo) return false;
             
             // Tolerância de centavos/tarifa: diferenças de até R$ 1,00 ainda são

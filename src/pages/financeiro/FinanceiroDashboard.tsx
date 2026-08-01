@@ -156,10 +156,10 @@ export default function FinanceiroDashboard() {
       />
 
       {isLoading || loadingContas ? (
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Skeleton className="h-56 rounded-xl lg:col-span-2" />
+        <div className="grid gap-5 lg:grid-cols-3">
+          <Skeleton className="h-56 rounded-2xl lg:col-span-2" />
           <div className="grid gap-4">
-            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
+            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-2xl" />)}
           </div>
         </div>
       ) : (
@@ -173,7 +173,7 @@ export default function FinanceiroDashboard() {
         />
       )}
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid items-stretch gap-5 lg:grid-cols-3">
         <FluxoPeriodoChart data={fluxo} />
         <CategoriaBreakdown data={gastosPorCategoria} />
       </div>

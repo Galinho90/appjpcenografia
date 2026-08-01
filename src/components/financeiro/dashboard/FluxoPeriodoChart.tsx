@@ -16,12 +16,12 @@ export interface FluxoPeriodoChartProps {
 
 export function FluxoPeriodoChart({ data }: FluxoPeriodoChartProps) {
   return (
-    <Card className="shadow-sm lg:col-span-2">
-      <CardHeader className="pb-3">
+    <Card className="flex h-full flex-col shadow-premium-sm lg:col-span-2">
+      <CardHeader className="items-start pb-4 text-left">
         <CardTitle className="text-base">Entradas x Saídas</CardTitle>
         <p className="text-xs text-muted-foreground">Valores realizados no período selecionado</p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         {data.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">Sem movimentações no período</p>
         ) : (

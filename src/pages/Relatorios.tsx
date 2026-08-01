@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useColaboradores, useFechamentos, useLancamentos, useClientes } from "@/hooks/useSupabaseData";
 import { getStatusBadge } from "@/lib/statusBadge";
 import { PageHeader } from "@/components/PageHeader";
+import { QuinzenaSelector } from "@/components/QuinzenaSelector";
 
 function getQuinzena(ref: Date) {
   const y = ref.getFullYear();

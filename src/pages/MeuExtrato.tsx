@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLancamentos } from "@/hooks/useSupabaseData";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/PageHeader";
+import { QuinzenaSelector } from "@/components/QuinzenaSelector";
 import { Badge } from "@/components/ui/badge";
 
 function getQuinzena(ref: Date) {

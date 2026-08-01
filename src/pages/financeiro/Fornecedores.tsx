@@ -177,19 +177,18 @@ export default function Fornecedores() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Truck className="h-7 w-7 text-secondary" /> Fornecedores
-          </h1>
-          <p className="text-sm text-muted-foreground">Cadastro de quem recebe os pagamentos</p>
-        </div>
-        {isAdmin && (
-          <Button onClick={openCreate} className="gap-2">
-            <Plus className="h-4 w-4" /> Novo fornecedor
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        icon={Truck}
+        title="Fornecedores"
+        description="Cadastro de quem recebe os pagamentos"
+        actions={
+          isAdmin && (
+            <Button onClick={openCreate} className="gap-2">
+              <Plus className="h-4 w-4" /> Novo fornecedor
+            </Button>
+          )
+        }
+      />
 
       <Card className="shadow-md">
         <CardHeader>

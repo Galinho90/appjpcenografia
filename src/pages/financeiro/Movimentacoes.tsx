@@ -639,8 +639,8 @@ export default function Movimentacoes() {
                     </div>
                     <div className="divide-y">
                       {g.itens.map((m) => (
-                        <div key={m.id} className="p-3 space-y-2">
-                          <div className="flex items-start justify-between gap-2">
+                        <div key={m.id} className="p-4 space-y-3 hover:bg-muted/30 transition-colors">
+                          <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-2 min-w-0">
                               <div className="mt-0.5">{tipoIcon(m.tipo)}</div>
                               <div className="min-w-0">

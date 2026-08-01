@@ -163,7 +163,7 @@ export default function Clientes() {
       />
 
       <Card className="shadow-md overflow-hidden">
-        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-start">
           <CardTitle>Clientes</CardTitle>
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />

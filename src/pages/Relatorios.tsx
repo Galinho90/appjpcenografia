@@ -622,7 +622,7 @@ function RelatorioPorCliente() {
               <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
             </div>
           </div>
-          <div className="mt-4 flex justify-end gap-2 flex-wrap">
+          <div className="mt-4 flex justify-start gap-2 flex-wrap">
             <Button variant="outline" className="gap-2" onClick={exportCSV} disabled={!porColaborador.length}>
               <Download className="h-4 w-4" /> CSV Resumo
             </Button>

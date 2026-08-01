@@ -122,9 +122,11 @@ export default function Dashboard() {
             <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, -1))} aria-label="Quinzena anterior">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <div className="px-4 text-center flex-1 sm:min-w-[180px]">
-              <p className="text-xs text-muted-foreground">Quinzena</p>
-              <p className="text-sm font-semibold whitespace-nowrap">{fmt(inicio)} — {fmt(fim)}</p>
+            <div className="px-2 text-center flex-1 min-w-0">
+              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Quinzena</p>
+              <p className="text-xs sm:text-sm font-semibold whitespace-normal sm:whitespace-nowrap leading-tight">
+                {fmt(inicio)} — {fmt(fim)}
+              </p>
             </div>
             <Button variant="ghost" size="icon" onClick={() => setRef(shiftQuinzena(ref, 1))} aria-label="Próxima quinzena">
               <ChevronRight className="h-4 w-4" />

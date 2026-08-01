@@ -29,6 +29,7 @@ import { useClientes } from "@/hooks/useSupabaseData";
 import { useRegistrarMotivoAjuste } from "@/hooks/useAuditoria";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
+import { cn } from "@/lib/utils";
 
 const emptyForm = {
   tipo: "saida" as TipoMovimentacao,

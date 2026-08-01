@@ -283,12 +283,7 @@ export default function Configuracoes() {
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <Settings2 className="h-6 w-6" />
         </div>
-        <div className="flex-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Configurações</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Gerencie a empresa, usuários, preferências, envio de e-mails e integrações do sistema.
-          </p>
-        </div>
+        <PageHeader title="Configurações" description="Gerencie a empresa, usuários, preferências, envio de e-mails e integrações do sistema." />
       </div>
 
       <Tabs defaultValue="empresa" className="w-full">

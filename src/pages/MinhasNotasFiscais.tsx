@@ -125,10 +125,7 @@ export default function MinhasNotasFiscais() {
 
   if (!colaboradorId && !loadingFech) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Minhas Notas Fiscais</h1>
-        <p className="text-muted-foreground">Seu usuário não está vinculado a um cadastro de diarista.</p>
-      </div>
+      <PageHeader title="Minhas Notas Fiscais" description="Seu usuário não está vinculado a um cadastro de diarista." />
     );
   }
 

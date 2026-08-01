@@ -71,10 +71,7 @@ export default function CategoriasFinanceiras() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Categorias Financeiras</h1>
-          <p className="text-sm text-muted-foreground">Plano de contas usado nas movimentações</p>
-        </div>
+        <PageHeader title="Categorias Financeiras" description="Plano de contas usado nas movimentações" />
         {isAdmin && (
           <Button onClick={openCreate} className="gap-2 w-full sm:w-auto"><Plus className="h-4 w-4" /> Nova Categoria</Button>
         )}

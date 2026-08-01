@@ -280,10 +280,7 @@ export default function Colaboradores() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Diaristas</h1>
-          <p className="text-sm text-muted-foreground">Gerencie seus diaristas</p>
-        </div>
+        <PageHeader title="Diaristas" description="Gerencie seus diaristas" />
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             {canEdit && (

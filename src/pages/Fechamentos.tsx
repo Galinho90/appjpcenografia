@@ -183,10 +183,7 @@ export default function Fechamentos() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Fechamentos</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Fechamento quinzenal de pagamentos</p>
-        </div>
+        <PageHeader title="Fechamentos" description="Fechamento quinzenal de pagamentos" />
 
         <Card className="shadow-md w-full sm:w-auto">
           <CardContent className="flex items-center gap-2 p-2">

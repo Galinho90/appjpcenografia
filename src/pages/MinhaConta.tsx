@@ -104,10 +104,7 @@ function MinhaContaAdmin() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Minha conta</h1>
-        <p className="text-sm text-muted-foreground">Atualize sua foto, nome e senha de acesso.</p>
-      </div>
+      <PageHeader title="Minha conta" description="Atualize sua foto, nome e senha de acesso." />
 
       <Card>
         <CardHeader>

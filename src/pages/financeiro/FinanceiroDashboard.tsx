@@ -141,10 +141,7 @@ export default function FinanceiroDashboard() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Financeiro</h1>
-        <p className="text-sm text-muted-foreground">Visão de caixa, resultado e agenda de vencimentos</p>
-      </div>
+      <PageHeader title="Financeiro" description="Visão de caixa, resultado e agenda de vencimentos" />
 
       <PeriodoToolbar
         preset={preset}

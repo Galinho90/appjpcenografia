@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useColaboradores, useDiarias, useFechamentos, useLancamentos } from "@/hooks/useSupabaseData";
+import { PageHeader } from "@/components/PageHeader";
 
 // Compute the quinzena (1-15 or 16-end) for a given reference date
 function getQuinzena(ref: Date) {

@@ -1009,54 +1009,77 @@ function SortableMovRow({
           </button>
         </TableCell>
       )}
-      <TableCell>{tipoIcon(m.tipo)}</TableCell>
-      <TableCell>
-        <div className="font-medium">{m.descricao}</div>
-        {m.fornecedor && (
-          <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
-        )}
-        {m.cliente && (
-          <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
-        )}
-        <div className="flex gap-1 mt-0.5">{origemBadge(m.origem)}</div>
+      <TableCell className="text-center">{tipoIcon(m.tipo)}</TableCell>
+      <TableCell className="py-4">
+        <div className="flex flex-col gap-1">
+          <span className="font-semibold text-sm text-foreground leading-snug">{m.descricao}</span>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {m.fornecedor && (
+              <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                <ArrowUpCircle className="h-2.5 w-2.5 rotate-45" /> {m.fornecedor.nome}
+              </span>
+            )}
+            {m.cliente && (
+              <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                <ArrowDownCircle className="h-2.5 w-2.5 -rotate-45" /> {m.cliente.razao_social}
+              </span>
+            )}
+            {m.origem && origemBadge(m.origem)}
+          </div>
+        </div>
       </TableCell>
       <TableCell>
         {m.categoria ? (
-          <span className="inline-flex items-center gap-1.5 text-xs">
-            <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
+          <Badge variant="outline" className="h-6 border-muted bg-muted/20 gap-1.5 px-2 text-[11px] font-medium">
+            <CircleDot className="h-2.5 w-2.5" style={{ color: m.categoria.cor }} />
             {m.categoria.nome}
-          </span>
-        ) : "—"}
-      </TableCell>
-      <TableCell className="text-xs">{m.conta?.apelido ?? "—"}</TableCell>
-      <TableCell className="text-xs">
-        {m.status === "pago" && m.data_pagamento ? (
-          <span title="Pago em">{fmtDate(m.data_pagamento)}</span>
+          </Badge>
         ) : (
-          <span title="Vencimento">{fmtDate(m.data_vencimento)}</span>
+          <span className="text-xs text-muted-foreground">—</span>
         )}
       </TableCell>
       <TableCell>
-        <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent hover:opacity-90`}>
+        <div className="flex flex-col">
+          <span className="text-xs font-medium text-foreground">{m.conta?.apelido ?? "—"}</span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col">
+          <span className="text-xs font-semibold text-foreground">
+            {m.status === "pago" && m.data_pagamento ? fmtDate(m.data_pagamento) : fmtDate(m.data_vencimento)}
+          </span>
+          <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">
+            {m.status === "pago" ? "Efetivado" : "Previsto"}
+          </span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <Badge className={cn("text-[10px] px-2 py-0.5 border-none font-bold uppercase tracking-wider shadow-sm", statusColor[m.status])}>
           {statusLabel[m.status]}
         </Badge>
       </TableCell>
-      <TableCell className={`text-right font-semibold ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
-        {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
+      <TableCell className={cn("text-right font-bold text-base", m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : "text-info")}>
+        <span className="text-xs font-medium mr-0.5 opacity-70">R$</span>
+        {Number(m.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </TableCell>
       {isAdmin && (
-        <TableCell className="text-right">
-          <div className="flex justify-end gap-1">
+        <TableCell className="text-right py-4">
+          <div className="flex justify-end items-center gap-1">
             {m.status !== "pago" && (
-              <Button variant="ghost" size="sm" onClick={() => onPagar(m)} className="text-success">
-                Pagar
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onPagar(m)} 
+                className="h-8 text-success hover:text-success hover:bg-success/10 font-bold text-xs px-2"
+              >
+                PAGAR
               </Button>
             )}
-            <Button variant="ghost" size="icon" onClick={() => onEdit(m)} aria-label="Editar movimentação">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEdit(m)} aria-label="Editar">
               <Pencil className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(m.id)} aria-label="Excluir movimentação">
-              <Trash2 className="h-4 w-4 text-destructive" />
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(m.id)} aria-label="Excluir">
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </TableCell>

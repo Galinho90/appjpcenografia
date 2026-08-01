@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, Fragment } from "react";
-import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot, GripVertical, Upload, Search, X, ChevronDown, Wallet, Clock, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot, GripVertical, Upload, Search, X, ChevronDown, Wallet, Clock, TrendingUp, TrendingDown, FileText } from "lucide-react";
 import ImportarOFXDialog from "@/components/financeiro/ImportarOFXDialog";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
@@ -580,26 +580,45 @@ export default function Movimentacoes() {
       <Card className="shadow-premium-sm">
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-4 space-y-2">
-              {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
+            <div className="p-4 space-y-6">
+              {[1, 2, 3].map((g) => (
+                <div key={g} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <div className="space-y-2">
+                    {[1, 2].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : filteredMovs.length === 0 ? (
-            <div className="text-center py-14 px-4">
-              <p className="font-medium">Nenhuma movimentação encontrada</p>
-              <p className="text-sm text-muted-foreground mt-1">
+            <div className="text-center py-20 px-6">
+              <div className="mx-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+                <FileText className="h-8 w-8 text-muted-foreground/60" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">Nenhuma movimentação encontrada</h3>
+              <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
                 {search || activeFiltersCount > 0
-                  ? "Tente ajustar a busca ou limpar os filtros."
-                  : "Comece lançando uma entrada ou saída."}
+                  ? "Não encontramos resultados para os filtros aplicados. Tente ajustar sua busca ou limpar os filtros."
+                  : "Sua lista de movimentações está vazia. Comece lançando uma nova entrada, saída ou transferência."}
               </p>
-              {(search || activeFiltersCount > 0) && (
+              {(search || activeFiltersCount > 0) ? (
                 <Button
-                  variant="outline" size="sm" className="mt-4"
+                  variant="outline" size="sm" className="mt-6 gap-2"
                   onClick={() => {
                     setSearch("");
                     setFilters({ tipo: "all", status: "all", categoriaId: "all", contaId: "all", dataInicio: "", dataFim: "" });
                   }}
                 >
-                  Limpar busca e filtros
+                  <X className="h-4 w-4" /> Limpar busca e filtros
+                </Button>
+              ) : isAdmin && (
+                <Button onClick={() => openCreate("saida")} className="mt-6 gap-2">
+                  <Plus className="h-4 w-4" /> Novo lançamento
                 </Button>
               )}
             </div>

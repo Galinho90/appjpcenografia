@@ -55,11 +55,13 @@ export function SaldoHero({ saldo, entradas, saidas, resultado, serie, periodoLa
                       <stop offset="100%" stopColor="hsl(var(--primary-foreground))" stopOpacity={0} />
                     </linearGradient>
                   </defs>
+                  <XAxis dataKey="dia" hide />
                   <Tooltip
                     formatter={(v: number) => [fmtBRL(v), "Saldo"]}
-                    labelFormatter={(l: string) => fmtDate(l)}
+                    labelFormatter={(l) => (typeof l === "string" ? fmtDate(l) : "")}
                     contentStyle={{ borderRadius: 8, fontSize: 12, border: "none" }}
                   />
+
                   <Area
                     type="monotone"
                     dataKey="saldo"

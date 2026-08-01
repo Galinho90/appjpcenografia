@@ -803,7 +803,7 @@ export default function ExtratoDiarista() {
             )}
           </div>
 
-          <div className="rounded-lg border-2 border-border bg-card p-3 sm:p-4">
+          <div className="rounded-lg border-2 border-border bg-card p-3 sm:p-4 space-y-4">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="shrink-0" onClick={() => shiftRef(-1)} aria-label="Quinzena anterior">
                 <ChevronLeft className="h-4 w-4" />
@@ -821,16 +821,17 @@ export default function ExtratoDiarista() {
                 <Button variant="outline" size="sm" onClick={() => setRefDate(new Date())}>Hoje</Button>
               )}
             </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 flex-1 sm:flex-none"
-                  onClick={() => gerarPDF(selecionada, "Período")}
-                >
-                  <FileSpreadsheet className="h-4 w-4" />
-                  Baixar PDF
-                </Button>
-              </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 flex-1"
+                onClick={() => gerarPDF(selecionada, "Período")}
+              >
+                <FileSpreadsheet className="h-4 w-4" />
+                Baixar PDF
+              </Button>
             </div>
           </div>
         </CardContent>

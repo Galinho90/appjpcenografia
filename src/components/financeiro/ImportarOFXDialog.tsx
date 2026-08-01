@@ -320,6 +320,22 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     setRows((prev) => prev.map((r) => (r.action === "vincular" ? { ...r, confirmado: true } : r)));
   };
 
+  /**
+   * IDs de movimentações já reservadas por alguma linha com ação "vincular".
+   * Um lançamento vinculado deve desaparecer das opções das demais transações.
+   */
+  const movIdsUsados = useMemo(() => {
+    const s = new Set<string>();
+    for (const r of rows) {
+      if (r.action === "vincular" && r.movId) s.add(r.movId);
+    }
+    return s;
+  }, [rows]);
+
+  const candidatosDisponiveis = (r: Row): MovCandidate[] =>
+    r.candidates.filter((c) => c.id === r.movId || !movIdsUsados.has(c.id));
+
+
   // Reconciliação de saldo: LEDGERBAL do OFX vs saldo esperado no sistema após conciliação
   const reconciliacao = useMemo(() => {
     if (ofxMeta.ledgerBal == null || saldoSistema == null) return null;

@@ -822,7 +822,7 @@ export default function ExtratoDiarista() {
               )}
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 p-3 sm:p-4 pt-0">
               <Button
                 variant="outline"
                 size="sm"

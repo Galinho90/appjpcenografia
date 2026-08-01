@@ -29,6 +29,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn, formatDateBR } from "@/lib/utils";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PageHeader } from "@/components/PageHeader";
+import { QuinzenaSelector } from "@/components/QuinzenaSelector";
+import { StatCard } from "@/components/StatCard";
 
 const emptyForm = {
   colaborador_id: "",
@@ -426,23 +428,14 @@ export default function Diarias() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <PageHeader title="Lançamentos" description="Controle de lançamentos por categoria" />
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-          <Card className="shadow-premium-sm w-full sm:w-auto">
-            <CardContent className="flex items-center gap-3 p-4">
-              <Button variant="ghost" size="icon" onClick={() => setQuinzenaRef(shiftQuinzena(quinzenaRef, -1))} aria-label="Quinzena anterior">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="px-2 text-center flex-1 sm:min-w-[180px]">
-                <p className="text-xs text-muted-foreground">Quinzena</p>
-                <p className="text-sm font-semibold whitespace-nowrap">{fmtDate(qInicio)} — {fmtDate(qFim)}</p>
-              </div>
-              <Button variant="ghost" size="icon" onClick={() => setQuinzenaRef(shiftQuinzena(quinzenaRef, 1))} aria-label="Próxima quinzena">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              {!isCurrentQuinzena && (
-                <Button variant="outline" size="sm" onClick={() => setQuinzenaRef(new Date())}>Hoje</Button>
-              )}
-            </CardContent>
-          </Card>
+          <QuinzenaSelector
+            className="w-full sm:w-auto sm:min-w-[280px]"
+            inicio={qInicio}
+            fim={qFim}
+            isCurrent={isCurrentQuinzena}
+            onShift={(dir) => setQuinzenaRef(shiftQuinzena(quinzenaRef, dir))}
+            onToday={() => setQuinzenaRef(new Date())}
+          />
           {canEdit && (
             <Button className="gap-2 w-full sm:w-auto" onClick={openCreate}><Plus className="h-4 w-4" /> Registrar Lançamento</Button>
           )}
@@ -545,7 +538,7 @@ export default function Diarias() {
               )}
             </div>
             {isVale && !editingId && (
-              <div className="space-y-3 rounded-md border border-warning/30 bg-warning/5 p-3">
+              <div className="space-y-3 rounded-2xl border border-warning/30 bg-warning/5 p-3">
                 <Label className="text-sm font-medium">Lançar nas Movimentações Financeiras?</Label>
                 <p className="text-xs text-muted-foreground">Deseja registrar este vale também como saída no financeiro?</p>
                 <RadioGroup
@@ -629,7 +622,7 @@ export default function Diarias() {
             <div className="space-y-2"><Label>Descrição</Label><Textarea value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="Descrição opcional..." /></div>
 
             {!editingId && queue.length > 0 && (
-              <div className="space-y-2 rounded-md border bg-muted/30 p-3">
+              <div className="space-y-2 rounded-2xl border bg-muted/30 p-3">
                 <p className="text-xs font-medium text-muted-foreground">Lançamentos a salvar ({queue.length})</p>
                 <div className="space-y-1.5">
                   {queue.map((it, idx) => (
@@ -678,40 +671,28 @@ export default function Diarias() {
         </DialogContent>
       </Dialog>
 
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card className="border-none shadow-premium-sm overflow-hidden">
-          <div className="bg-gradient-to-br from-primary to-primary/70 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-primary-foreground/80">Total de Lançamentos</p>
-                <p className="text-2xl font-bold text-primary-foreground">R$ {totalCreditos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              </div>
-              <CalendarDays className="h-10 w-10 text-primary-foreground/30" />
-            </div>
-          </div>
-        </Card>
-        <Card className="border-none shadow-premium-sm overflow-hidden">
-          <div className="bg-gradient-to-br from-accent to-accent/70 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-accent-foreground/80">Saldo a Pagar</p>
-                <p className="text-2xl font-bold text-accent-foreground">R$ {saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              </div>
-              <DollarSign className="h-10 w-10 text-accent-foreground/30" />
-            </div>
-          </div>
-        </Card>
-        <Card className="border-none shadow-premium-sm overflow-hidden">
-          <div className="bg-gradient-to-br from-info to-info/70 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-info-foreground/80">Total Pagos</p>
-                <p className="text-2xl font-bold text-info-foreground">R$ {totalDebitos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              </div>
-              <CheckCircle2 className="h-10 w-10 text-info-foreground/30" />
-            </div>
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard
+          label="Total de Lançamentos"
+          badge="Créditos"
+          value={`R$ ${totalCreditos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          icon={CalendarDays}
+          tone="primary"
+        />
+        <StatCard
+          label="Saldo a Pagar"
+          badge="Saldo"
+          value={`R$ ${saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          icon={DollarSign}
+          tone={saldo < 0 ? "destructive" : "success"}
+        />
+        <StatCard
+          label="Total Pagos"
+          badge="Débitos"
+          value={`R$ ${totalDebitos.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          icon={CheckCircle2}
+          tone="destructive"
+        />
       </div>
 
       <Card className="shadow-premium-sm overflow-hidden">
@@ -757,12 +738,12 @@ export default function Diarias() {
         </CardHeader>
         <CardContent className="px-4 sm:px-6">
           {isLoading ? (
-            <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
+            <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}</div>
           ) : (
             <>
               <div className="space-y-3 md:hidden">
                 {filtered.map((l) => (
-                  <Card key={l.id} className="border shadow-sm">
+                  <Card key={l.id} className="shadow-premium-sm">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">

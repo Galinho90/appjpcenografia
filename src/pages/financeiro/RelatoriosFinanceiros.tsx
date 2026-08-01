@@ -155,26 +155,16 @@ export default function RelatoriosFinanceiros() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary shadow-sm border border-primary/20">
-              <FileBarChart className="h-6 w-6" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-              Relatórios Financeiros
-            </h1>
-          </div>
-          <p className="text-sm text-muted-foreground font-medium pl-14">
-            Análise detalhada de performance, categorias e fluxo de caixa
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={exportarMovimentacoes} variant="outline" size="sm" className="gap-2 border-primary/20 hover:border-primary/50 transition-colors">
+      <PageHeader
+        icon={FileBarChart}
+        title="Relatórios Financeiros"
+        description="Análise detalhada de performance, categorias e fluxo de caixa"
+        actions={
+          <Button onClick={exportarMovimentacoes} variant="outline" size="sm" className="gap-2">
             <Download className="h-4 w-4" /> Exportar Movimentações
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Filtros Estilizados - Novo Modelo Glassmorphism */}
       <div className="relative group">

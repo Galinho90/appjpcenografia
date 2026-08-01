@@ -429,6 +429,8 @@ export function useUpdateFechamentoStatus() {
       qc.invalidateQueries({ queryKey: ["lancamentos"] });
       qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
       qc.invalidateQueries({ queryKey: ["saldos_por_dia"] });
+      qc.invalidateQueries({ queryKey: ["saldo_contas"] });
+      qc.invalidateQueries({ queryKey: ["saldo_conta"] });
     },
   });
 }
@@ -444,6 +446,8 @@ export function useDeleteFechamento() {
       qc.invalidateQueries({ queryKey: ["fechamentos"] });
       qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
       qc.invalidateQueries({ queryKey: ["saldos_por_dia"] });
+      qc.invalidateQueries({ queryKey: ["saldo_contas"] });
+      qc.invalidateQueries({ queryKey: ["saldo_conta"] });
     },
   });
 }

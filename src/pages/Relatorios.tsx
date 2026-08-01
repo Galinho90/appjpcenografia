@@ -188,24 +188,22 @@ export default function Relatorios() {
 
         <TabsContent value="quinzenal" className="space-y-6">
           <Card className="shadow-md print:hidden">
-            <CardContent className="flex flex-wrap items-center justify-start gap-4 p-4 sm:p-5">
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">Quinzena</p>
-                <p className="truncate text-sm font-semibold sm:text-base">
+            <CardContent className="flex items-center gap-3 p-4">
+              <Button variant="ghost" size="icon" onClick={() => shift(-1)} aria-label="Quinzena anterior">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="px-4 text-center flex-1 sm:min-w-[180px]">
+                <p className="text-xs text-muted-foreground">Quinzena</p>
+                <p className="text-sm font-semibold whitespace-nowrap">
                   {fmt(selecionada.inicio)} — {fmt(selecionada.fim)}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                {!isAtual && (
-                  <Button variant="outline" size="sm" onClick={() => setRefDate(new Date())}>Hoje</Button>
-                )}
-                <Button variant="outline" size="icon" onClick={() => shift(-1)} aria-label="Quinzena anterior">
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon" onClick={() => shift(1)} aria-label="Próxima quinzena">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+              <Button variant="ghost" size="icon" onClick={() => shift(1)} aria-label="Próxima quinzena">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              {!isAtual && (
+                <Button variant="outline" size="sm" onClick={() => setRefDate(new Date())}>Hoje</Button>
+              )}
             </CardContent>
           </Card>
 

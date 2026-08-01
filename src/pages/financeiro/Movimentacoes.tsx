@@ -28,6 +28,7 @@ import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/finan
 import { useClientes } from "@/hooks/useSupabaseData";
 import { useRegistrarMotivoAjuste } from "@/hooks/useAuditoria";
 import { PageHeader } from "@/components/PageHeader";
+import { StatCard } from "@/components/StatCard";
 
 const emptyForm = {
   tipo: "saida" as TipoMovimentacao,
@@ -386,78 +387,63 @@ export default function Movimentacoes() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Cabeçalho */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" />
         {isAdmin && (
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={() => openCreate("entrada")} className="gap-2 bg-success hover:bg-success/90 text-success-foreground">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={() => setOfxOpen(true)} variant="outline" className="h-10 gap-2 border-primary/20 hover:bg-primary/5">
+              <Upload className="h-4 w-4" /> Importar OFX
+            </Button>
+            <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
+            <Button onClick={() => openCreate("entrada")} className="h-10 gap-2 bg-success hover:bg-success/90 text-success-foreground">
               <ArrowDownCircle className="h-4 w-4" /> Entrada
             </Button>
-            <Button onClick={() => openCreate("saida")} variant="destructive" className="gap-2">
+            <Button onClick={() => openCreate("saida")} variant="destructive" className="h-10 gap-2">
               <ArrowUpCircle className="h-4 w-4" /> Saída
             </Button>
-            <Button onClick={() => openCreate("transferencia")} variant="outline" className="gap-2">
+            <Button onClick={() => openCreate("transferencia")} variant="outline" className="h-10 gap-2">
               <ArrowLeftRight className="h-4 w-4" /> Transferir
-            </Button>
-            <Button onClick={() => setOfxOpen(true)} variant="outline" className="gap-2">
-              <Upload className="h-4 w-4" /> Importar OFX
             </Button>
           </div>
         )}
       </div>
 
       {/* Resumo do resultado filtrado */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
-        <Card className="shadow-sm border-primary/30 bg-primary/5">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Wallet className="h-3.5 w-3.5 text-primary" /> Saldo da conta
-            </div>
-            <div className={`mt-1 text-lg font-bold ${(saldoConta ?? 0) >= 0 ? "text-foreground" : "text-destructive"}`}>
-              {saldoConta != null ? fmtBRL(saldoConta) : "—"}
-            </div>
-            <div className="text-[11px] text-muted-foreground truncate">
-              {contaLabel} · {saldoContaRef.split("-").reverse().join("/")}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5 text-success" /> Entradas
-            </div>
-            <div className="mt-1 text-lg font-bold text-success">{fmtBRL(resumo.entradas)}</div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <TrendingDown className="h-3.5 w-3.5 text-destructive" /> Saídas
-            </div>
-            <div className="mt-1 text-lg font-bold text-destructive">{fmtBRL(resumo.saidas)}</div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Wallet className="h-3.5 w-3.5 text-primary" /> Resultado
-            </div>
-            <div className={`mt-1 text-lg font-bold ${resumo.saldo >= 0 ? "text-success" : "text-destructive"}`}>
-              {fmtBRL(resumo.saldo)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Clock className="h-3.5 w-3.5 text-warning" /> A pagar/receber
-            </div>
-            <div className="mt-1 text-lg font-bold">{fmtBRL(resumo.pendentes)}</div>
-            <div className="text-[11px] text-muted-foreground">{resumo.qtdPendentes} pendente(s)</div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <StatCard
+          label="Saldo da Conta"
+          value={saldoConta != null ? fmtBRL(saldoConta) : "—"}
+          icon={Wallet}
+          tone={(saldoConta ?? 0) >= 0 ? "primary" : "destructive"}
+          hint={`${contaLabel} • ${saldoContaRef.split("-").reverse().join("/")}`}
+        />
+        <StatCard
+          label="Entradas"
+          value={fmtBRL(resumo.entradas)}
+          icon={TrendingUp}
+          tone="success"
+        />
+        <StatCard
+          label="Saídas"
+          value={fmtBRL(resumo.saidas)}
+          icon={TrendingDown}
+          tone="destructive"
+        />
+        <StatCard
+          label="Resultado"
+          value={fmtBRL(resumo.saldo)}
+          icon={ArrowLeftRight}
+          tone={resumo.saldo >= 0 ? "success" : "destructive"}
+        />
+        <StatCard
+          label="A pagar/receber"
+          value={fmtBRL(resumo.pendentes)}
+          icon={Clock}
+          tone="warning"
+          hint={`${resumo.qtdPendentes} pendente(s)`}
+        />
       </div>
 
       {/* Barra de busca + período + filtros */}

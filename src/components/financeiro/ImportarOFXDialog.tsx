@@ -643,7 +643,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                       </TableCell>
                       <TableCell>
                         {r.alreadyImported ? (
-                          <Badge variant="outline" className="text-[10px]">—</Badge>
+                          <Badge className="text-[10px] bg-success text-success-foreground hover:bg-success gap-1">
+                            <CheckCircle2 className="h-3 w-3" /> Vinculado
+                          </Badge>
                         ) : disponiveis.length === 0 ? (
                           <span title="Sem lançamento disponível na mesma data"><AlertCircle className="h-4 w-4 text-destructive" /></span>
                         ) : disponiveis.length === 1 ? (

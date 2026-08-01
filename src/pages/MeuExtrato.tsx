@@ -200,12 +200,6 @@ export default function MeuExtrato() {
                   </Badge>
                 </p>
               </div>
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 hover:bg-primary/10 transition-colors">
-                    {meuColaborador?.funcao || "Colaborador"}
-                  </Badge>
-                </p>
-              </div>
 
               <div className="space-y-4">
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 group-hover:bg-muted/50 transition-colors">

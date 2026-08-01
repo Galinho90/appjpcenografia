@@ -187,6 +187,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           const txDesc = (tx.descricao || "").toUpperCase();
           const candidateByName = ((movs ?? []) as any[]).find(m => {
             if (m.fitid) return false;
+            if (usados.has(m.id)) return false;
             if (m.tipo !== tx.tipo) return false;
             // Mesma data da transação bancária (obrigatório)
             const dEfet = m.data_pagamento ?? m.data_vencimento;
@@ -208,6 +209,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
             sugestao = "nome";
           }
         }
+
+        // Reserva o lançamento sugerido para que não apareça nas outras transações
+        if (movId) usados.add(movId);
+
 
         return {
           tx,

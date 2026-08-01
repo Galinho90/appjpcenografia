@@ -627,7 +627,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((r, i) => (
+                  {rows.map((r, i) => {
+                    const disponiveis = candidatosDisponiveis(r);
+                    return (
                     <TableRow key={r.tx.fitid + i}>
                       <TableCell className="text-xs">{fmtDate(r.tx.data)}</TableCell>
                       <TableCell className="text-xs">
@@ -642,9 +644,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                       <TableCell>
                         {r.alreadyImported ? (
                           <Badge variant="outline" className="text-[10px]">—</Badge>
-                        ) : r.candidates.length === 0 ? (
-                          <span title="Sem lançamento na mesma data"><AlertCircle className="h-4 w-4 text-destructive" /></span>
-                        ) : r.candidates.length === 1 ? (
+                        ) : disponiveis.length === 0 ? (
+                          <span title="Sem lançamento disponível na mesma data"><AlertCircle className="h-4 w-4 text-destructive" /></span>
+                        ) : disponiveis.length === 1 ? (
                           <span title="Match único"><CheckCircle2 className="h-4 w-4 text-success" /></span>
                         ) : (
                           <span title="Múltiplos matches"><HelpCircle className="h-4 w-4 text-warning" /></span>
@@ -656,7 +658,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                             value={r.action}
                             onValueChange={(v: any) => updateRow(i, {
                               action: v,
-                              movId: v === "vincular" ? (r.movId ?? r.candidates[0]?.id) : undefined,
+                              movId: v === "vincular" ? (r.movId ?? disponiveis[0]?.id) : undefined,
                               // Troca manual de ação também exige confirmação do vínculo
                               confirmado: v !== "vincular",
                             })}
@@ -664,21 +666,21 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                             <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="criar">Criar nova</SelectItem>
-                              <SelectItem value="vincular" disabled={r.candidates.length === 0}>
+                              <SelectItem value="vincular" disabled={disponiveis.length === 0}>
                                 Vincular a existente
                               </SelectItem>
                               <SelectItem value="ignorar">Ignorar</SelectItem>
                             </SelectContent>
                           </Select>
-                          {r.action === "vincular" && r.candidates.length > 0 && (
+                          {r.action === "vincular" && disponiveis.length > 0 && (
                             <>
                               <Select
-                                value={r.movId ?? r.candidates[0].id}
+                                value={r.movId ?? disponiveis[0].id}
                                 onValueChange={(v) => updateRow(i, { movId: v, confirmado: false })}
                               >
                                 <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                  {r.candidates.map((c) => (
+                                  {disponiveis.map((c) => (
                                     <SelectItem key={c.id} value={c.id}>
                                       {fmtDate(c.data_pagamento ?? c.data_vencimento ?? "")} — {c.descricao} ({fmtBRL(c.valor)})
                                       {Math.abs(c.valor - r.tx.valor) > 0.001
@@ -688,6 +690,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                                   ))}
                                 </SelectContent>
                               </Select>
+
                               <label className="flex items-center gap-2 text-[11px] cursor-pointer">
                                 <Checkbox
                                   checked={r.confirmado}

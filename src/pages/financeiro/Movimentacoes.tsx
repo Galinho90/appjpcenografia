@@ -390,22 +390,22 @@ export default function Movimentacoes() {
   return (
     <div className="space-y-4 md:space-y-6 pt-4 md:pt-6 px-3 sm:px-4 md:px-6">
       {/* Cabeçalho */}
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" className="px-0" />
         {isAdmin && (
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
-            <Button onClick={() => setOfxOpen(true)} variant="outline" className="h-10 gap-2 border-primary/20 hover:bg-primary/5 col-span-2 sm:col-auto order-last sm:order-first">
-              <Upload className="h-4 w-4" /> <span className="sm:inline">Importar OFX</span>
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <Button onClick={() => setOfxOpen(true)} variant="outline" className="h-10 gap-2 border-primary/20 hover:bg-primary/5">
+              <Upload className="h-4 w-4" /> Importar OFX
             </Button>
-            <div className="h-8 w-px bg-border/50 mx-1 hidden lg:block" />
-            <Button onClick={() => openCreate("entrada")} className="h-10 gap-2 bg-success hover:bg-success/90 text-success-foreground font-bold text-xs uppercase tracking-wider">
+            <div className="h-8 w-px bg-border/50 mx-1 hidden sm:block" />
+            <Button onClick={() => openCreate("entrada")} className="h-10 gap-2 flex-1 sm:flex-initial bg-success hover:bg-success/90 text-success-foreground">
               <ArrowDownCircle className="h-4 w-4" /> Entrada
             </Button>
-            <Button onClick={() => openCreate("saida")} variant="destructive" className="h-10 gap-2 font-bold text-xs uppercase tracking-wider">
+            <Button onClick={() => openCreate("saida")} variant="destructive" className="h-10 gap-2 flex-1 sm:flex-initial">
               <ArrowUpCircle className="h-4 w-4" /> Saída
             </Button>
-            <Button onClick={() => openCreate("transferencia")} variant="outline" className="h-10 gap-2 font-bold text-xs uppercase tracking-wider col-span-2 sm:col-auto">
-              <ArrowLeftRight className="h-4 w-4" /> Transferência
+            <Button onClick={() => openCreate("transferencia")} variant="outline" className="h-10 gap-2 flex-1 sm:flex-initial">
+              <ArrowLeftRight className="h-4 w-4" /> Transferir
             </Button>
           </div>
         )}
@@ -639,71 +639,56 @@ export default function Movimentacoes() {
                     </div>
                     <div className="divide-y">
                       {g.itens.map((m) => (
-                        <div key={m.id} className="p-4 space-y-4 hover:bg-muted/30 transition-colors">
+                        <div key={m.id} className="p-4 space-y-3 hover:bg-muted/30 transition-colors">
                           <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-start gap-3 min-w-0">
-                              <div className="mt-1 flex-shrink-0">{tipoIcon(m.tipo)}</div>
-                              <div className="min-w-0 space-y-1">
-                                <div className="font-bold text-sm text-foreground leading-snug break-words">
-                                  {m.descricao}
-                                </div>
-                                
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-1.5">
-                                  {m.fornecedor && (
-                                    <div className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded flex items-center gap-1">
-                                      <ArrowUpCircle className="h-2.5 w-2.5 rotate-45" />
-                                      {m.fornecedor.nome}
-                                    </div>
-                                  )}
-                                  {m.cliente && (
-                                    <div className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded flex items-center gap-1">
-                                      <ArrowDownCircle className="h-2.5 w-2.5 -rotate-45" />
-                                      {m.cliente.razao_social}
-                                    </div>
-                                  )}
-                                  <div className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
-                                    <Wallet className="h-3 w-3 opacity-70" />
-                                    {m.conta?.apelido ?? "—"}
-                                  </div>
-                                </div>
-
-                                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                            <div className="flex items-start gap-2 min-w-0">
+                              <div className="mt-0.5">{tipoIcon(m.tipo)}</div>
+                              <div className="min-w-0">
+                                <div className="font-medium text-sm break-words">{m.descricao}</div>
+                                {m.fornecedor && (
+                                  <div className="text-[11px] text-muted-foreground">→ {m.fornecedor.nome}</div>
+                                )}
+                                {m.cliente && (
+                                  <div className="text-[11px] text-muted-foreground">← {m.cliente.razao_social}</div>
+                                )}
+                                <div className="flex flex-wrap gap-1 mt-1">
                                   {m.categoria && (
-                                    <Badge variant="outline" className="h-5 border-muted bg-muted/20 gap-1 px-1.5 text-[9px] font-bold uppercase tracking-wider">
-                                      <CircleDot className="h-2 w-2" style={{ color: m.categoria.cor }} />
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                      <CircleDot className="h-3 w-3" style={{ color: m.categoria.cor }} />
                                       {m.categoria.nome}
-                                    </Badge>
+                                    </span>
                                   )}
-                                  <Badge className={cn("text-[9px] px-1.5 py-0 h-5 border-none font-black uppercase tracking-widest", statusColor[m.status])}>
-                                    {statusLabel[m.status]}
-                                  </Badge>
                                   {origemBadge(m.origem)}
                                 </div>
                               </div>
                             </div>
-                            <div className={cn("text-right font-black text-sm tabular-nums whitespace-nowrap mt-0.5", m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : "text-info")}>
+                            <div className={`text-right font-semibold text-sm whitespace-nowrap ${m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : ""}`}>
                               {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
                             </div>
                           </div>
-                          
-                          {isAdmin && (
-                            <div className="flex items-center justify-between gap-2 pt-3 border-t border-border/40">
-                              <div className="flex gap-1.5">
-                                <Button variant="secondary" size="sm" className="h-8 w-8 p-0" onClick={() => openEdit(m)} aria-label="Editar">
-                                  <Pencil className="h-3.5 w-3.5" />
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[11px] text-muted-foreground pt-1">
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <span>{m.conta?.apelido ?? "—"}</span>
+                              <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent`}>
+                                {statusLabel[m.status]}
+                              </Badge>
+                            </div>
+                            {isAdmin && (
+                              <div className="flex items-center gap-2 mt-2 sm:mt-0 justify-end w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0">
+                                {m.status !== "pago" && (
+                                  <Button variant="ghost" size="sm" onClick={() => marcarPago(m)} className="text-success h-8">
+                                    Pagar
+                                  </Button>
+                                )}
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)} aria-label="Editar movimentação">
+                                  <Pencil className="h-4 w-4" />
                                 </Button>
-                                <Button variant="secondary" size="sm" className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(m.id)} aria-label="Excluir">
-                                  <Trash2 className="h-3.5 w-3.5" />
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteId(m.id)} aria-label="Excluir movimentação">
+                                  <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
                               </div>
-                              
-                              {m.status !== "pago" && (
-                                <Button size="sm" onClick={() => marcarPago(m)} className="bg-success hover:bg-success/90 text-success-foreground h-8 font-bold text-[10px] px-4 uppercase tracking-widest">
-                                  Confirmar Pagamento
-                                </Button>
-                              )}
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>

@@ -186,7 +186,7 @@ export function AppSidebar() {
   const settingsActive = location.pathname.startsWith("/configuracoes");
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-sm ajuste-do-lado-esquerdo">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-sm">
       <SidebarHeader className={cn("border-b border-sidebar-border", collapsed ? "p-2" : "p-4")}>
         {!collapsed ? (
           <div className="flex items-center justify-center">

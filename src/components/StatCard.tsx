@@ -77,8 +77,8 @@ export function StatCard({ label, value, icon: Icon, badge, tone = "primary", hi
           </div>
         )}
         <p className="mb-1 text-xs font-medium text-muted-foreground truncate">{label}</p>
-        <h4 className={cn("text-xl sm:text-2xl font-bold tracking-tight break-words", t.value)}>{value}</h4>
-        {hint ? <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{hint}</p> : null}
+        <h4 className={cn("text-lg sm:text-xl lg:text-2xl font-bold tracking-tight whitespace-nowrap overflow-hidden text-ellipsis", t.value)}>{value}</h4>
+        {hint ? <p className="mt-1 text-xs text-muted-foreground truncate">{hint}</p> : null}
       </CardContent>
     </Card>
   );

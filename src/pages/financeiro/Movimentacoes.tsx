@@ -388,10 +388,10 @@ export default function Movimentacoes() {
   };
 
   return (
-    <div className="space-y-6 pt-6 px-4 sm:px-6">
+    <div className="space-y-4 md:space-y-6 pt-4 md:pt-6 px-3 sm:px-4 md:px-6">
       {/* Cabeçalho */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <PageHeader title="Movimentações" description="Entradas, saídas e transferências entre contas" className="px-0" />
         {isAdmin && (
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={() => setOfxOpen(true)} variant="outline" className="h-10 gap-2 border-primary/20 hover:bg-primary/5">

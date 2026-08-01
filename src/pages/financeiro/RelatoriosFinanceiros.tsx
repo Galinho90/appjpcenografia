@@ -156,7 +156,7 @@ export default function RelatoriosFinanceiros() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <FileBarChart className="h-7 w-7 text-primary" /> Desenhe um Relatórios Financeiros mais elegante e intuitivo
+            <FileBarChart className="h-7 w-7 text-primary" /> Desenhe um Relatórios Financeiros
           </h1>
           <p className="text-sm text-muted-foreground">Analise entradas, saídas e resultado por período</p>
         </div>

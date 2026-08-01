@@ -1078,7 +1078,7 @@ function SortableMovRow({
           {statusLabel[m.status]}
         </Badge>
       </TableCell>
-      <TableCell className={cn("text-right font-bold text-base", m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : "text-info")}>
+      <TableCell className={cn("text-right font-bold text-base tabular-nums", m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : "text-info")}>
         <span className="text-xs font-medium mr-0.5 opacity-70">R$</span>
         {Number(m.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </TableCell>

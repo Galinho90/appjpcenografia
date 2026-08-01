@@ -16,14 +16,10 @@ export interface FluxoPeriodoChartProps {
 
 export function FluxoPeriodoChart({ data }: FluxoPeriodoChartProps) {
   return (
-    <Card className="border-none shadow-lg">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg font-bold">Fluxo de Caixa</CardTitle>
-            <p className="text-xs text-muted-foreground uppercase tracking-widest font-medium mt-0.5">Entradas x Saídas Realizadas</p>
-          </div>
-        </div>
+    <Card className="shadow-sm lg:col-span-2">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">Entradas x Saídas</CardTitle>
+        <p className="text-xs text-muted-foreground">Valores realizados no período selecionado</p>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (

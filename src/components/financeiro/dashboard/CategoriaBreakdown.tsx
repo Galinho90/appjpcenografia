@@ -16,11 +16,11 @@ export function CategoriaBreakdown({ data }: CategoriaBreakdownProps) {
   const top = data.slice(0, 7);
 
   return (
-    <Card className="border-none shadow-lg h-full">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-bold text-foreground">Distribuição de Gastos</CardTitle>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          {total > 0 ? `${fmtBRL(total)} em despesas` : "Sem saídas no período"}
+    <Card className="shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">Para onde o dinheiro foi</CardTitle>
+        <p className="text-xs text-muted-foreground">
+          {total > 0 ? `${fmtBRL(total)} em saídas · ${data.length} categoria(s)` : "Sem saídas no período"}
         </p>
       </CardHeader>
       <CardContent>

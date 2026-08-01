@@ -139,30 +139,29 @@ export default function FinanceiroDashboard() {
   const periodoLabel = `${dataInicio.toLocaleDateString("pt-BR")} — ${dataFim.toLocaleDateString("pt-BR")} · ${pagos.length} lançamento(s) · ${fmtBRL(entradas)} entradas`;
 
   return (
-    <div className="space-y-6 pb-10">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Financeiro</h1>
-          <p className="mt-1 text-sm text-muted-foreground italic">Visão de caixa, resultado e agenda de vencimentos</p>
-        </div>
-        <PeriodoToolbar
-          preset={preset}
-          onPresetChange={handlePreset}
-          dataInicio={dataInicio}
-          dataFim={dataFim}
-          onDataInicio={setDataInicio}
-          onDataFim={setDataFim}
-          contas={contas}
-          contaId={contaId}
-          onContaChange={setContaId}
-        />
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Financeiro</h1>
+        <p className="text-sm text-muted-foreground">Visão de caixa, resultado e agenda de vencimentos</p>
       </div>
 
+      <PeriodoToolbar
+        preset={preset}
+        onPresetChange={handlePreset}
+        dataInicio={dataInicio}
+        dataFim={dataFim}
+        onDataInicio={setDataInicio}
+        onDataFim={setDataFim}
+        contas={contas}
+        contaId={contaId}
+        onContaChange={setContaId}
+      />
+
       {isLoading || loadingContas ? (
-        <div className="grid gap-6 lg:grid-cols-3">
-          <Skeleton className="h-[280px] rounded-2xl lg:col-span-2" />
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Skeleton className="h-56 rounded-xl lg:col-span-2" />
           <div className="grid gap-4">
-            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
+            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
           </div>
         </div>
       ) : (
@@ -176,20 +175,12 @@ export default function FinanceiroDashboard() {
         />
       )}
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-8">
-          <FluxoPeriodoChart data={fluxo} />
-        </div>
-        <div className="lg:col-span-4">
-          <CategoriaBreakdown data={gastosPorCategoria} />
-        </div>
+      <div className="grid gap-5 lg:grid-cols-3">
+        <FluxoPeriodoChart data={fluxo} />
+        <CategoriaBreakdown data={gastosPorCategoria} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-12">
-           <AgendaCard proximos={proximos} atrasadas={atrasadas} />
-        </div>
-      </div>
+      <AgendaCard proximos={proximos} atrasadas={atrasadas} />
     </div>
   );
 }

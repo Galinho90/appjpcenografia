@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Wallet, Percent } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Percent, Scale } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { fmtBRL, fmtDate } from "@/lib/financeiro";

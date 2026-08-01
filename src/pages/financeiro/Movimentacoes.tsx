@@ -666,8 +666,8 @@ export default function Movimentacoes() {
                               {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "-" : ""} {fmtBRL(m.valor)}
                             </div>
                           </div>
-                          <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                            <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[11px] text-muted-foreground pt-1">
+                            <div className="flex items-center gap-3 flex-wrap">
                               <span>{m.conta?.apelido ?? "—"}</span>
                               <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent`}>
                                 {statusLabel[m.status]}

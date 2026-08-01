@@ -1030,7 +1030,7 @@ function SortableMovRow({
         </TableCell>
       )}
       <TableCell className="text-center">{tipoIcon(m.tipo)}</TableCell>
-      <TableCell className="py-4">
+      <TableCell className="py-4 align-middle">
         <div className="flex flex-col gap-1">
           <span className="font-semibold text-sm text-foreground leading-snug">{m.descricao}</span>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

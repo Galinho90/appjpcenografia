@@ -1015,12 +1015,12 @@ function SortableMovRow({
     background: isDragging ? "hsl(var(--muted))" : undefined,
   };
   return (
-    <TableRow ref={setNodeRef} style={style} className="h-20">
+    <TableRow ref={setNodeRef} style={style} className="h-20 group">
       {isAdmin && (
-        <TableCell className="w-8 p-1">
+        <TableCell className="w-10 p-0 text-center">
           <button
             type="button"
-            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1"
+            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-2 inline-flex items-center justify-center transition-colors"
             aria-label="Arrastar para reordenar"
             {...attributes}
             {...listeners}
@@ -1029,7 +1029,7 @@ function SortableMovRow({
           </button>
         </TableCell>
       )}
-      <TableCell className="text-center">{tipoIcon(m.tipo)}</TableCell>
+      <TableCell className="text-center w-14">{tipoIcon(m.tipo)}</TableCell>
       <TableCell className="py-5 align-middle">
         <div className="flex flex-col gap-1.5 justify-center">
           <span className="font-semibold text-sm text-foreground leading-tight">{m.descricao}</span>

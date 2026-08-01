@@ -23,16 +23,16 @@ export function AgendaCard({ proximos, atrasadas }: AgendaCardProps) {
   const totalAtraso = atrasadas.reduce((s, m) => s + m.valor, 0);
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="flex-row items-center justify-between pb-2">
+    <Card className="border-none shadow-lg">
+      <CardHeader className="flex-row items-center justify-between pb-6">
         <div>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CalendarClock className="h-4 w-4 text-muted-foreground" /> Agenda financeira
+          <CardTitle className="flex items-center gap-2 text-lg font-bold">
+            <CalendarClock className="h-5 w-5 text-primary" /> Agenda Financeira
           </CardTitle>
-          <p className="text-xs text-muted-foreground">Vencimentos dos próximos 7 dias</p>
+          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-0.5">Próximos Vencimentos (7 dias)</p>
         </div>
-        <Button asChild size="sm" variant="ghost" className="text-xs">
-          <Link to="/financeiro/contas-pagar">Contas a pagar <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+        <Button asChild size="sm" variant="outline" className="h-8 text-xs font-bold uppercase tracking-tighter">
+          <Link to="/financeiro/contas-pagar">Ver tudo <ArrowRight className="ml-1.5 h-3 w-3" /></Link>
         </Button>
       </CardHeader>
       <CardContent className="space-y-3">

@@ -84,21 +84,21 @@ export function SaldoHero({ saldo, entradas, saidas, resultado, serie, periodoLa
 
       <div className="grid gap-4">
         <MiniStat
-          label="Entradas no período"
+          label="Entradas"
           value={fmtBRL(entradas)}
           icon={TrendingUp}
           tone="success"
         />
         <MiniStat
-          label="Saídas no período"
+          label="Saídas"
           value={fmtBRL(saidas)}
           icon={TrendingDown}
           tone="destructive"
         />
         <MiniStat
-          label="Margem do período"
+          label="Margem"
           value={entradas > 0 ? `${((resultado / entradas) * 100).toFixed(1)}%` : "—"}
-          icon={Scale}
+          icon={Percent}
           tone={positivo ? "secondary" : "destructive"}
         />
       </div>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Receipt, ChevronLeft, ChevronRight, Eye, Check, X, Trash2, RefreshCw } from "lucide-react";
+import { Receipt, Eye, Check, X, Trash2, RefreshCw, CheckCircle2, Clock } from "lucide-react";
 import { getStatusBadge } from "@/lib/statusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

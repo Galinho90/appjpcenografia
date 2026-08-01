@@ -127,7 +127,7 @@ a[href*="lovable.dev"][target="_blank"] {
   }
 
   body {
-    @apply bg-background text-foreground antialiased ml-0 md:ml-0;
+    @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv11", "ss01";
     text-rendering: optimizeLegibility;
   }

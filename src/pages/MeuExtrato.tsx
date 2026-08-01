@@ -12,6 +12,7 @@ import { useLancamentos } from "@/hooks/useSupabaseData";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/PageHeader";
 import { QuinzenaSelector } from "@/components/QuinzenaSelector";
+import { StatCard } from "@/components/StatCard";
 import { Badge } from "@/components/ui/badge";
 
 function getQuinzena(ref: Date) {

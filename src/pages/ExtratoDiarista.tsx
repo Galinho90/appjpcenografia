@@ -27,6 +27,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useCompanyLogo } from "@/hooks/useCompanyLogo";
 import { PageHeader } from "@/components/PageHeader";
 import { QuinzenaSelector } from "@/components/QuinzenaSelector";
+import { StatCard } from "@/components/StatCard";
 
 async function loadImageAsDataURL(url: string): Promise<{ dataUrl: string; w: number; h: number } | null> {
   try {

@@ -188,25 +188,15 @@ export default function Relatorios() {
         </TabsList>
 
         <TabsContent value="quinzenal" className="space-y-6">
-          <Card className="shadow-md print:hidden overflow-hidden">
-            <CardContent className="flex min-h-[76px] items-center justify-center gap-2 px-3 py-4 sm:min-h-[84px] sm:gap-3 sm:px-4">
-              <Button variant="ghost" size="icon" onClick={() => shift(-1)} aria-label="Quinzena anterior">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="px-2 text-center flex-1 min-w-0">
-                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Quinzena</p>
-                <p className="text-xs sm:text-sm font-semibold whitespace-normal sm:whitespace-nowrap leading-tight">
-                  {fmt(selecionada.inicio)} — {fmt(selecionada.fim)}
-                </p>
-              </div>
-              <Button variant="ghost" size="icon" onClick={() => shift(1)} aria-label="Próxima quinzena">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              {!isAtual && (
-                <Button variant="outline" size="sm" onClick={() => setRefDate(new Date())}>Hoje</Button>
-              )}
-            </CardContent>
-          </Card>
+          <QuinzenaSelector
+            className="print:hidden"
+            inicio={selecionada.inicio}
+            fim={selecionada.fim}
+            isCurrent={isAtual}
+            onShift={(dir) => shift(dir)}
+            onToday={() => setRefDate(new Date())}
+          />
+
 
 
           <Card className="shadow-md print:hidden">

@@ -239,80 +239,22 @@ export default function MeuExtrato() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-premium-sm border-none overflow-hidden mb-4 sm:mb-6 surface-glass">
-            <CardContent className="p-0">
-              <div className="flex min-h-[84px] items-center justify-between gap-2 px-4 py-4">
-                <Button variant="ghost" size="icon" className="shrink-0 rounded-full hover:bg-primary/10" onClick={() => shiftRef(-1)} aria-label="Quinzena anterior">
-                  <ChevronLeft className="h-5 w-5 text-primary" />
-                </Button>
-                <div className="text-center flex-1">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mb-0.5">Quinzena Selecionada</p>
-                  <p className="text-sm font-bold text-foreground">
-                    {fmtDate(selecionada.inicio)} — {fmtDate(selecionada.fim)}
-                  </p>
-                </div>
-                <Button variant="ghost" size="icon" className="shrink-0 rounded-full hover:bg-primary/10" onClick={() => shiftRef(1)} aria-label="Próxima quinzena">
-                  <ChevronRight className="h-5 w-5 text-primary" />
-                </Button>
-              </div>
-              {!isQuinzenaAtual && (
-                <div className="px-4 pb-4">
-                  <Button variant="outline" size="sm" className="w-full text-xs font-bold uppercase tracking-wider h-8" onClick={() => setRefDate(new Date())}>
-                    Voltar para Hoje
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <QuinzenaSelector
+            className="mb-4 sm:mb-6"
+            inicio={selecionada.inicio}
+            fim={selecionada.fim}
+            isCurrent={isQuinzenaAtual}
+            onShift={shiftRef}
+            onToday={() => setRefDate(new Date())}
+          />
         </div>
 
         {/* Lado Direito: Resumo e Lista */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-            <Card className="border-none overflow-hidden shadow-premium-sm surface-glass bg-gradient-to-br from-primary/5 to-transparent">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 rounded-xl bg-primary/10">
-                    <CalendarDays className="h-5 w-5 text-primary" />
-                  </div>
-                  <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[10px] uppercase font-bold">Créditos</Badge>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium mb-1">Total Lançado</p>
-                  <h4 className="text-2xl font-bold tracking-tight">{fmtBRL(totalCreditos)}</h4>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none overflow-hidden shadow-premium-sm surface-glass bg-gradient-to-br from-[#10B981]/10 to-transparent">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 rounded-xl bg-[#10B981]/20">
-                    <DollarSign className="h-5 w-5 text-[#059669]" />
-                  </div>
-                  <Badge variant="secondary" className="bg-[#10B981]/20 text-[#059669] border-none text-[10px] uppercase font-bold">Saldo</Badge>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium mb-1">A Receber</p>
-                  <h4 className="text-2xl font-bold tracking-tight text-[#059669]">{fmtBRL(aPagar)}</h4>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none overflow-hidden shadow-premium-sm surface-glass bg-gradient-to-br from-[#EF4444]/10 to-transparent">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 rounded-xl bg-[#EF4444]/20">
-                    <CheckCircle2 className="h-5 w-5 text-[#DC2626]" />
-                  </div>
-                  <Badge variant="secondary" className="bg-[#EF4444]/20 text-[#DC2626] border-none text-[10px] uppercase font-bold">Débitos</Badge>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium mb-1">Total Pago/Vales</p>
-                  <h4 className="text-2xl font-bold tracking-tight text-[#DC2626]">{fmtBRL(totalDebitos)}</h4>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <StatCard label="Total Lançado" badge="Créditos" value={fmtBRL(totalCreditos)} icon={CalendarDays} tone="primary" />
+            <StatCard label="A Receber" badge="Saldo" value={fmtBRL(aPagar)} icon={DollarSign} tone="success" />
+            <StatCard label="Total Pago/Vales" badge="Débitos" value={fmtBRL(totalDebitos)} icon={CheckCircle2} tone="destructive" />
           </div>
 
           <Card className="shadow-premium-sm border-none overflow-hidden surface-glass">

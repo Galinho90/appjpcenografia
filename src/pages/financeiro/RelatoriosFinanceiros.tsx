@@ -459,7 +459,7 @@ export default function RelatoriosFinanceiros() {
 
         {/* DRE */}
         <TabsContent value="dre">
-          <Card className="shadow-md">
+          <Card className={cn("shadow-md")}>
             <CardHeader>
               <CardTitle className="text-base">DRE simplificado</CardTitle>
               <p className="text-xs text-muted-foreground">{fmtDate(dataInicio)} — {fmtDate(dataFim)}</p>

@@ -404,7 +404,7 @@ export default function Movimentacoes() {
             <Button onClick={() => openCreate("saida")} variant="destructive" className="h-10 gap-2 flex-1 sm:flex-initial">
               <ArrowUpCircle className="h-4 w-4" /> Saída
             </Button>
-            <Button onClick={() => openCreate("transferencia")} variant="outline" className="h-10 gap-2">
+            <Button onClick={() => openCreate("transferencia")} variant="outline" className="h-10 gap-2 flex-1 sm:flex-initial">
               <ArrowLeftRight className="h-4 w-4" /> Transferir
             </Button>
           </div>

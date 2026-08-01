@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useColaboradores, useDiarias, useFechamentos, useLancamentos } from "@/hooks/useSupabaseData";
 import { PageHeader } from "@/components/PageHeader";
 import { QuinzenaSelector } from "@/components/QuinzenaSelector";
+import { StatCard } from "@/components/StatCard";
 
 // Compute the quinzena (1-15 or 16-end) for a given reference date
 function getQuinzena(ref: Date) {
@@ -76,25 +77,29 @@ export default function Dashboard() {
       title: "Colaboradores Ativos",
       value: colaboradores.filter(c => c.ativo).length,
       icon: Users,
-      gradient: "from-primary to-primary/70",
+      tone: "primary" as const,
+      badge: "Equipe",
     },
     {
       title: "Lançamentos na Quinzena",
       value: lancamentosQ.length,
       icon: CalendarDays,
-      gradient: "from-secondary to-secondary/70",
+      tone: "primary" as const,
+      badge: "Quinzena",
     },
     {
       title: "Total Pendente",
       value: `R$ ${fmtBRL(totalPendente)}`,
       icon: DollarSign,
-      gradient: "from-accent to-accent/70",
+      tone: "warning" as const,
+      badge: "Pendente",
     },
     {
       title: "Pagamentos Realizados",
       value: `R$ ${fmtBRL(totalPagoQ)}`,
       icon: CheckCircle2,
-      gradient: "from-info to-info/70",
+      tone: "success" as const,
+      badge: "Pago",
     },
   ];
 
@@ -131,22 +136,19 @@ export default function Dashboard() {
 
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
-            <Card key={stat.title} className="overflow-hidden border-none shadow-premium-sm">
-              <div className={`bg-gradient-to-br ${stat.gradient} p-4`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-primary-foreground/80">{stat.title}</p>
-                    <p className="text-2xl font-bold text-primary-foreground">{stat.value}</p>
-                  </div>
-                  <stat.icon className="h-10 w-10 text-primary-foreground/30" />
-                </div>
-              </div>
-            </Card>
+            <StatCard
+              key={stat.title}
+              label={stat.title}
+              value={stat.value}
+              icon={stat.icon}
+              badge={stat.badge}
+              tone={stat.tone}
+            />
           ))}
         </div>
       )}

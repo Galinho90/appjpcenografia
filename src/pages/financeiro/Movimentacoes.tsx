@@ -677,63 +677,70 @@ export default function Movimentacoes() {
               </div>
 
               {/* Desktop: tabela agrupada por data */}
-              <div className="hidden md:block overflow-x-auto">
+              <div className="hidden md:block">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        {isAdmin && <TableHead className="w-8"></TableHead>}
-                        <TableHead className="w-10">Tipo</TableHead>
-                        <TableHead>Descrição</TableHead>
-                        <TableHead>Categoria</TableHead>
-                        <TableHead>Conta</TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Valor</TableHead>
-                        {isAdmin && <TableHead className="text-right">Ações</TableHead>}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {grupos.map((g) => (
-                        <Fragment key={g.data || "sem-data"}>
-                          <TableRow className="bg-muted/60 hover:bg-muted/60">
-                            <TableCell colSpan={isAdmin ? 7 : 6} className="py-2 text-xs font-semibold">
-                              {g.data ? fmtDate(g.data) : "Sem data"}
-                              <span className="ml-2 font-normal text-muted-foreground">
-                                {g.itens.length} lançamento(s) · movimento do dia{" "}
-                                <span className={g.total >= 0 ? "text-success" : "text-destructive"}>
-                                  {fmtBRL(g.total)}
-                                </span>
-                              </span>
-                            </TableCell>
-                            <TableCell className="py-2 text-right text-xs">
-                              <div className="text-[10px] font-normal text-muted-foreground leading-none">
-                                Saldo do dia
-                              </div>
-                              <div className={`font-semibold ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
-                                {saldoDoDia(g.data) == null ? "—" : fmtBRL(saldoDoDia(g.data) as number)}
-                              </div>
-                            </TableCell>
-                            {isAdmin && <TableCell />}
-                          </TableRow>
-                          <SortableContext items={g.itens.map((m) => m.id)} strategy={verticalListSortingStrategy}>
-                            {g.itens.map((m) => (
-                              <SortableMovRow
-                                key={m.id}
-                                m={m}
-                                isAdmin={isAdmin}
-                                tipoIcon={tipoIcon}
-                                origemBadge={origemBadge}
-                                onEdit={openEdit}
-                                onDelete={setDeleteId}
-                                onPagar={marcarPago}
-                              />
-                            ))}
-                          </SortableContext>
-                        </Fragment>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent border-b">
+                          {isAdmin && <TableHead className="w-10"></TableHead>}
+                          <TableHead className="w-12 text-center">Tipo</TableHead>
+                          <TableHead className="min-w-[200px]">Descrição / Origem</TableHead>
+                          <TableHead>Categoria</TableHead>
+                          <TableHead>Conta</TableHead>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Valor</TableHead>
+                          {isAdmin && <TableHead className="text-right w-32">Ações</TableHead>}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {grupos.map((g) => (
+                          <Fragment key={g.data || "sem-data"}>
+                            <TableRow className="bg-muted/30 hover:bg-muted/40 border-y transition-colors">
+                              <TableCell colSpan={isAdmin ? 8 : 7} className="py-3 px-4">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-sm font-bold text-foreground">
+                                    {g.data ? fmtDate(g.data) : "Sem data"}
+                                  </span>
+                                  <div className="h-4 w-px bg-border/60" />
+                                  <span className="text-xs text-muted-foreground font-medium">
+                                    {g.itens.length} lançamento(s)
+                                  </span>
+                                  <div className="h-4 w-px bg-border/60" />
+                                  <span className="text-xs font-medium">
+                                    Movimento: <span className={g.total >= 0 ? "text-success" : "text-destructive"}>{fmtBRL(g.total)}</span>
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="py-3 px-4 text-right">
+                                <div className="flex flex-col items-end">
+                                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider leading-none mb-1">Saldo do Dia</span>
+                                  <span className={`text-sm font-bold ${saldoDoDia(g.data) == null ? "text-muted-foreground" : (saldoDoDia(g.data) as number) >= 0 ? "text-success" : "text-destructive"}`}>
+                                    {saldoDoDia(g.data) == null ? "—" : fmtBRL(saldoDoDia(g.data) as number)}
+                                  </span>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                            <SortableContext items={g.itens.map((m) => m.id)} strategy={verticalListSortingStrategy}>
+                              {g.itens.map((m) => (
+                                <SortableMovRow
+                                  key={m.id}
+                                  m={m}
+                                  isAdmin={isAdmin}
+                                  tipoIcon={tipoIcon}
+                                  origemBadge={origemBadge}
+                                  onEdit={openEdit}
+                                  onDelete={setDeleteId}
+                                  onPagar={marcarPago}
+                                />
+                              ))}
+                            </SortableContext>
+                          </Fragment>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </DndContext>
               </div>
 

@@ -282,32 +282,32 @@ export default function MeuExtrato() {
               </CardContent>
             </Card>
 
-            <Card className="border-none overflow-hidden shadow-premium-sm surface-glass bg-gradient-to-br from-success/5 to-transparent">
+            <Card className="border-none overflow-hidden shadow-premium-sm surface-glass bg-gradient-to-br from-[#10B981]/10 to-transparent">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 rounded-xl bg-success/10">
-                    <DollarSign className="h-5 w-5 text-success" />
+                  <div className="p-2 rounded-xl bg-[#10B981]/20">
+                    <DollarSign className="h-5 w-5 text-[#059669]" />
                   </div>
-                  <Badge variant="secondary" className="bg-success/10 text-success border-none text-[10px] uppercase font-bold">Saldo</Badge>
+                  <Badge variant="secondary" className="bg-[#10B981]/20 text-[#059669] border-none text-[10px] uppercase font-bold">Saldo</Badge>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground font-medium mb-1">A Receber</p>
-                  <h4 className="text-2xl font-bold tracking-tight text-success">{fmtBRL(aPagar)}</h4>
+                  <h4 className="text-2xl font-bold tracking-tight text-[#059669]">{fmtBRL(aPagar)}</h4>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-none overflow-hidden shadow-premium-sm surface-glass bg-gradient-to-br from-destructive/5 to-transparent">
+            <Card className="border-none overflow-hidden shadow-premium-sm surface-glass bg-gradient-to-br from-[#EF4444]/10 to-transparent">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 rounded-xl bg-destructive/10">
-                    <CheckCircle2 className="h-5 w-5 text-destructive" />
+                  <div className="p-2 rounded-xl bg-[#EF4444]/20">
+                    <CheckCircle2 className="h-5 w-5 text-[#DC2626]" />
                   </div>
-                  <Badge variant="secondary" className="bg-destructive/10 text-destructive border-none text-[10px] uppercase font-bold">Débitos</Badge>
+                  <Badge variant="secondary" className="bg-[#EF4444]/20 text-[#DC2626] border-none text-[10px] uppercase font-bold">Débitos</Badge>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground font-medium mb-1">Total Pago/Vales</p>
-                  <h4 className="text-2xl font-bold tracking-tight text-destructive">{fmtBRL(totalDebitos)}</h4>
+                  <h4 className="text-2xl font-bold tracking-tight text-[#DC2626]">{fmtBRL(totalDebitos)}</h4>
                 </div>
               </CardContent>
             </Card>
@@ -340,51 +340,50 @@ export default function MeuExtrato() {
                     const isDeb = l.categoria?.tipo === "D";
                     const hasHorarios = !!(l.hora_entrada || l.hora_saida);
                     return (
-                      <div key={l.id} className="group flex items-center justify-between p-4 sm:p-6 hover:bg-muted/30 transition-colors animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
-                        <div className="flex items-center gap-4 min-w-0">
-                          <div className={cn(
-                            "h-10 w-10 shrink-0 rounded-full flex items-center justify-center transition-transform group-hover:scale-110",
-                            isDeb ? "bg-destructive/10" : "bg-success/10"
-                          )}>
-                            {isDeb ? (
-                              <ArrowDownLeft className={cn("h-5 w-5", "text-destructive")} />
-                            ) : (
-                              <ArrowUpRight className={cn("h-5 w-5", "text-success")} />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-sm font-bold text-foreground">
-                                {l.categoria?.descricao ?? "Lançamento"}
-                              </span>
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded">
-                                {formatDateBR(l.data)}
-                              </span>
+                        <div className="group flex items-center justify-between p-4 sm:p-6 hover:bg-muted/40 transition-colors animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className={cn(
+                              "h-10 w-10 shrink-0 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 border",
+                              isDeb ? "bg-destructive/5 border-destructive/20 text-destructive" : "bg-success/5 border-success/20 text-success"
+                            )}>
+                              {isDeb ? (
+                                <ArrowDownLeft className="h-5 w-5" />
+                              ) : (
+                                <ArrowUpRight className="h-5 w-5" />
+                              )}
                             </div>
-                            {l.descricao && (
-                              <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-[400px]">
-                                {l.descricao}
-                              </p>
-                            )}
-                            {hasHorarios && (
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
-                                  <CalendarDays className="h-3 w-3" />
-                                  {l.hora_entrada ?? "—"} às {l.hora_saida ?? "—"}
+                            <div className="min-w-0 pr-4">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-sm font-semibold text-foreground">
+                                  {l.categoria?.descricao ?? "Lançamento"}
+                                </span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 bg-muted/50 px-2 py-0.5 rounded-full">
+                                  {formatDateBR(l.data)}
                                 </span>
                               </div>
-                            )}
+                              {l.descricao && (
+                                <p className="text-xs text-muted-foreground/80 font-medium truncate">
+                                  {l.descricao}
+                                </p>
+                              )}
+                              {hasHorarios && (
+                                <div className="flex items-center gap-2 mt-1.5 text-[10px] font-medium text-muted-foreground/70">
+                                  <span className="flex items-center gap-1">
+                                    {l.hora_entrada ?? "—"} às {l.hora_saida ?? "—"}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className={cn(
+                              "text-sm sm:text-base font-bold tabular-nums tracking-tight",
+                              isDeb ? "text-destructive" : "text-success"
+                            )}>
+                              {isDeb ? "-" : "+"} {fmtBRL(l.valor)}
+                            </p>
                           </div>
                         </div>
-                        <div className="text-right ml-4">
-                          <p className={cn(
-                            "text-base font-bold tabular-nums",
-                            isDeb ? "text-destructive" : "text-success"
-                          )}>
-                            {isDeb ? "-" : "+"} {fmtBRL(l.valor)}
-                          </p>
-                        </div>
-                      </div>
                     );
                   })}
                 </div>

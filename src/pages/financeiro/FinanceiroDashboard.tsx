@@ -140,7 +140,7 @@ export default function FinanceiroDashboard() {
   const periodoLabel = `${dataInicio.toLocaleDateString("pt-BR")} — ${dataFim.toLocaleDateString("pt-BR")} · ${pagos.length} lançamento(s) · ${fmtBRL(entradas)} entradas`;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pt-6 px-4 sm:px-6">
       <PageHeader title="Financeiro" description="Visão de caixa, resultado e agenda de vencimentos" />
 
       <PeriodoToolbar

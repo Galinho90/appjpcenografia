@@ -154,7 +154,7 @@ export default function RelatoriosFinanceiros() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-6 px-4 sm:px-6">
       <PageHeader
         icon={FileBarChart}
         title="Relatórios Financeiros"

@@ -149,21 +149,18 @@ export default function Clientes() {
 
   return (
     <div className="space-y-6">
-      <Card className="shadow-sm">
-        <CardContent className="p-4 sm:p-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary shrink-0" /> Lista de Clientes
-            </h1>
-            <p className="text-sm text-muted-foreground">Home › Lista de Clientes</p>
-          </div>
-          {canEdit && (
-            <Button onClick={openCreate} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
+      <PageHeader
+        icon={Building2}
+        title="Clientes"
+        description="Cadastro dos clientes atendidos nos eventos"
+        actions={
+          canEdit && (
+            <Button onClick={openCreate} className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" /> Novo Cliente
             </Button>
-          )}
-        </CardContent>
-      </Card>
+          )
+        }
+      />
 
       <Card className="shadow-md overflow-hidden">
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

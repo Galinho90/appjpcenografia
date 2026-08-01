@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-export interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface PageHeaderProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   /** Título principal da página (renderizado como o único h1 da rota). */
   title: React.ReactNode;
   /** Linha de apoio opcional, logo abaixo do título. */

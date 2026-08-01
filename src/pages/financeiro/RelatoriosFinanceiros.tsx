@@ -409,7 +409,7 @@ export default function RelatoriosFinanceiros() {
 
         {/* Contas */}
         <TabsContent value="contas" className="space-y-4">
-          <Card className="shadow-md">
+          <Card className={cn("shadow-md")}>
             <CardHeader><CardTitle className="text-base">Movimentação por conta</CardTitle></CardHeader>
             <CardContent>
               {porConta.length === 0 ? (

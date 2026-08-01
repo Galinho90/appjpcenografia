@@ -803,7 +803,7 @@ export default function ExtratoDiarista() {
             )}
           </div>
 
-          <div className="rounded-lg border border-border/70 bg-card shadow-card overflow-hidden">
+          <div className="rounded-lg border border-border/70 bg-card shadow-card overflow-hidden mb-4 sm:mb-6">
             <div className="flex min-h-[76px] items-center justify-center gap-2 px-3 py-4 sm:min-h-[84px] sm:gap-3 sm:px-4">
               <Button variant="ghost" size="icon" className="shrink-0" onClick={() => shiftRef(-1)} aria-label="Quinzena anterior">
                 <ChevronLeft className="h-4 w-4" />

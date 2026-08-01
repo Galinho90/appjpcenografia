@@ -180,7 +180,7 @@ export default function Relatorios() {
         <PageHeader title="Relatórios" description="Relatório quinzenal por colaborador ou por cliente" />
       </div>
 
-      <Tabs defaultValue="quinzenal" className="space-y-6">
+      <Tabs defaultValue="quinzenal" className="space-y-4 sm:space-y-6">
         <TabsList className="print:hidden">
           <TabsTrigger value="quinzenal">Quinzenal</TabsTrigger>
           <TabsTrigger value="cliente">Por Cliente</TabsTrigger>

@@ -112,7 +112,7 @@ export default function Dashboard() {
   }, [inicioISO]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader title="Dashboard" description="Visão geral da operação" />
 

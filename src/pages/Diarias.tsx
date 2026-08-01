@@ -716,7 +716,7 @@ export default function Diarias() {
 
       <Card className="shadow-md overflow-hidden">
         <CardHeader className="space-y-4">
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 items-end">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 items-end justify-start">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Diarista</Label>
               <Select value={filtroColaborador} onValueChange={setFiltroColaborador}>

@@ -176,7 +176,7 @@ export default function Relatorios() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-start print:hidden">
         <PageHeader title="Relatórios" description="Relatório quinzenal por colaborador ou por cliente" />
       </div>
 
@@ -188,7 +188,7 @@ export default function Relatorios() {
 
         <TabsContent value="quinzenal" className="space-y-6">
           <Card className="shadow-md print:hidden">
-            <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
+            <CardContent className="flex flex-wrap items-center justify-start gap-4 p-4 sm:p-5">
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Quinzena</p>
                 <p className="truncate text-sm font-semibold sm:text-base">
@@ -254,7 +254,7 @@ export default function Relatorios() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex items-end justify-end gap-2 flex-wrap">
+                <div className="flex items-end justify-start gap-2 flex-wrap">
                   <Button variant="outline" className="gap-2" onClick={exportCSV} disabled={!linhas.length}>
                     <Download className="h-4 w-4" /> CSV
                   </Button>

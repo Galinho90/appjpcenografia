@@ -577,7 +577,7 @@ export default function Movimentacoes() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-premium-sm">
+      <Card className="shadow-premium-sm overflow-hidden">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-4 space-y-6">

@@ -126,6 +126,11 @@ a[href*="lovable.dev"][target="_blank"] {
     -webkit-tap-highlight-color: transparent;
   }
 
+  body::after {
+    content: "oi";
+    display: none;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv11", "ss01";

@@ -43,7 +43,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-dvh w-full">
+      <div className="flex min-h-dvh w-full" data-oi="oi">
         <AppSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="surface-glass sticky top-0 z-30 flex h-14 items-center gap-2 border-b px-3 sm:gap-4 sm:px-5">

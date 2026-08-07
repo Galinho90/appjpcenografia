@@ -551,7 +551,7 @@ function RelatorioPorCliente() {
   };
 
   const exportCSVDetalhado = () => {
-    const header = ["Data", "Colaborador", "Categoria", "Cliente", "Descrição", "Valor"];
+    const header = ["Data", "Colaborador", "Categoria", "Cliente", "Descrição", "Entrada", "Saída", "Valor"];
     const rows = (linhas as any[]).map((l) => {
       const valor = Number(l.valor) || 0;
       const sinal = l.categoria?.tipo === "D" ? -1 : 1;
@@ -561,6 +561,8 @@ function RelatorioPorCliente() {
         l.categoria?.descricao ?? "",
         l.cliente?.nome_fantasia || l.cliente?.razao_social || "",
         l.descricao || "",
+        l.hora_entrada || "",
+        l.hora_saida || "",
         (sinal * valor).toFixed(2).replace(".", ","),
       ];
     });
@@ -726,6 +728,8 @@ function RelatorioPorCliente() {
                       <TableHead>Categoria</TableHead>
                       <TableHead>Cliente</TableHead>
                       <TableHead>Descrição</TableHead>
+                      <TableHead>Entrada</TableHead>
+                      <TableHead>Saída</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -737,6 +741,8 @@ function RelatorioPorCliente() {
                         <TableCell>{l.categoria?.descricao ?? "—"}</TableCell>
                         <TableCell>{l.cliente?.nome_fantasia || l.cliente?.razao_social || "—"}</TableCell>
                         <TableCell className="text-muted-foreground">{l.descricao || "—"}</TableCell>
+                        <TableCell>{l.hora_entrada || "—"}</TableCell>
+                        <TableCell>{l.hora_saida || "—"}</TableCell>
                         <TableCell className={`text-right font-medium ${l.categoria?.tipo === "D" ? "text-destructive" : ""}`}>
                           {l.categoria?.tipo === "D" ? "- " : ""}{fmtBRL(Number(l.valor) || 0)}
                         </TableCell>

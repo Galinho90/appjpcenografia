@@ -1,6 +1,16 @@
 import { useState, useMemo } from "react";
-import { Plus, Pencil, Trash2, Calendar, DollarSign, TrendingUp, Clock } from "lucide-react";
-import { useEventos, useCreateEvento, useUpdateEvento, useDeleteEvento, type Evento, type StatusEvento } from "@/hooks/useEventos";
+import { Plus, Pencil, Trash2, Calendar, DollarSign, TrendingUp, Clock, Receipt, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { 
+  useEventos, 
+  useCreateEvento, 
+  useUpdateEvento, 
+  useDeleteEvento, 
+  useCreateEventoCusto,
+  useDeleteEventoCusto,
+  type Evento, 
+  type StatusEvento,
+  type EventoCusto
+} from "@/hooks/useEventos";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PageHeader } from "@/components/PageHeader";

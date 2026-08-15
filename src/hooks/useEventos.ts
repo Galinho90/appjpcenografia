@@ -46,12 +46,12 @@ export function useEvento(id: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("eventos")
-        .select("*, evento_custos(*)")
+        .select("*, evento_custos(*), movimentacoes_financeiras(*)")
         .eq("id", id)
         .single();
 
       if (error) throw error;
-      return data as (Evento & { evento_custos: EventoCusto[] });
+      return data as (Evento & { evento_custos: EventoCusto[], movimentacoes_financeiras: any[] });
     },
     enabled: !!id,
   });

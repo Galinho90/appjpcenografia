@@ -56,16 +56,21 @@ export default function Eventos() {
   const [newCusto, setNewCusto] = useState({ descricao: "", valor: "" });
 
   const stats = useMemo(() => {
-    const totalVerba = eventos.reduce((acc, e) => acc + (Number(e.verba) || 0), 0);
-    const ativos = eventos.filter(e => e.status === 'em_andamento').length;
-    const totalUtilizado = eventos.reduce((acc, e) => {
-      const movs = (e as any).movimentacoes_financeiras || [];
-      const utilizado = movs.reduce((sum: number, m: any) => {
+    const totalVerba = eventos.reduce((acc: number, e: any) => acc + (Number(e.verba) || 0), 0);
+    const ativos = eventos.filter((e: any) => e.status === 'em_andamento').length;
+    const totalUtilizado = eventos.reduce((acc: number, e: any) => {
+      const movs = e.movimentacoes_financeiras || [];
+      const manualCosts = e.evento_custos || [];
+      
+      const utilizadoMovs = movs.reduce((sum: number, m: any) => {
         if (m.tipo === 'saida') return sum + (Number(m.valor) || 0);
         if (m.tipo === 'entrada') return sum - (Number(m.valor) || 0);
         return sum;
       }, 0);
-      return acc + utilizado;
+      
+      const utilizadoManual = manualCosts.reduce((sum: number, c: any) => sum + (Number(c.valor) || 0), 0);
+      
+      return acc + utilizadoMovs + utilizadoManual;
     }, 0);
     return { totalVerba, ativos, total: eventos.length, totalUtilizado };
   }, [eventos]);

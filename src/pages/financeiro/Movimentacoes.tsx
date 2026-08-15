@@ -24,6 +24,7 @@ import {
   useContasBancarias, useCategoriasFinanceiras, useFornecedores, useSaldosPorDia,
   type MovimentacaoFinanceira, type TipoMovimentacao, type StatusMovimentacao,
 } from "@/hooks/useFinanceiro";
+import { useEventos } from "@/hooks/useEventos";
 import { fmtBRL, fmtDate, statusColor, statusLabel, todayISO } from "@/lib/financeiro";
 import { useClientes } from "@/hooks/useSupabaseData";
 import { useRegistrarMotivoAjuste } from "@/hooks/useAuditoria";
@@ -44,6 +45,7 @@ const emptyForm = {
   status: "pendente" as StatusMovimentacao,
   descricao: "",
   observacoes: "",
+  evento_id: "",
 };
 
 export default function Movimentacoes() {
@@ -64,6 +66,7 @@ export default function Movimentacoes() {
   const { data: categorias = [] } = useCategoriasFinanceiras();
   const { data: fornecedores = [] } = useFornecedores(true);
   const { data: clientes = [] } = useClientes();
+  const { data: eventos = [] } = useEventos();
 
   const createMutation = useCreateMovimentacao();
   const updateMutation = useUpdateMovimentacao();
@@ -227,6 +230,7 @@ export default function Movimentacoes() {
       status: m.status,
       descricao: m.descricao,
       observacoes: m.observacoes ?? "",
+      evento_id: m.evento_id ?? "",
     });
     setDialogOpen(true);
   };
@@ -258,6 +262,7 @@ export default function Movimentacoes() {
       status: form.status,
       descricao: form.descricao,
       observacoes: form.observacoes || null,
+      evento_id: form.evento_id || null,
     };
     try {
       if (editingId) {
@@ -945,6 +950,19 @@ export default function Movimentacoes() {
             <div className="space-y-1.5">
               <Label>Observações</Label>
               <Textarea rows={2} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Evento (Vincular a verba de evento)</Label>
+              <Select value={form.evento_id || "none"} onValueChange={(v) => setForm({ ...form, evento_id: v === "none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione um evento" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum</SelectItem>
+                  {eventos.map((e) => (
+                    <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {valorAlterado && (

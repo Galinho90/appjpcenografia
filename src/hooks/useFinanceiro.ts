@@ -62,6 +62,7 @@ export type MovimentacaoFinanceira = {
   colaborador_id: string | null;
   fornecedor_id: string | null;
   fechamento_id: string | null;
+  evento_id: string | null;
   origem: OrigemMovimentacao;
   comprovante_url: string | null;
   recorrente: boolean;

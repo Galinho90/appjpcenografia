@@ -158,6 +158,7 @@ export default function Eventos() {
           value={fmtBRL(stats.total > 0 ? stats.totalVerba / stats.total : 0)} 
           icon={Clock}
           tone="primary"
+          hint={`Utilizado: ${fmtBRL(stats.totalUtilizado)}`}
         />
       </div>
 

@@ -30,6 +30,7 @@ import CategoriasFinanceiras from "./pages/financeiro/CategoriasFinanceiras";
 import ContasBancarias from "./pages/financeiro/ContasBancarias";
 import RelatoriosFinanceiros from "./pages/financeiro/RelatoriosFinanceiros";
 import Fornecedores from "./pages/financeiro/Fornecedores";
+import Eventos from "./pages/financeiro/Eventos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,7 +69,7 @@ const App = () => (
             <Route path="/financeiro/categorias" element={<Protected><Staff><CategoriasFinanceiras /></Staff></Protected>} />
             <Route path="/financeiro/contas-bancarias" element={<Protected><Staff><ContasBancarias /></Staff></Protected>} />
             <Route path="/financeiro/relatorios" element={<Protected><Staff><RelatoriosFinanceiros /></Staff></Protected>} />
-
+            <Route path="/financeiro/eventos" element={<Protected><Staff><Eventos /></Staff></Protected>} />
             <Route path="/financeiro/fornecedores" element={<Protected><Staff><Fornecedores /></Staff></Protected>} />
             <Route path="/configuracoes" element={<Protected><RequireAdmin><Configuracoes /></RequireAdmin></Protected>} />
             <Route path="/meu-extrato" element={<Protected><MeuExtrato /></Protected>} />

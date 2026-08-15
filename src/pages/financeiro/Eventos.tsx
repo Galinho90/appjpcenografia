@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Pencil, Trash2, Calendar, DollarSign, TrendingUp, Clock, Receipt, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar, DollarSign, TrendingUp, Clock, Receipt, ArrowUpCircle, ArrowDownCircle, ArrowLeft, Maximize2 } from "lucide-react";
 import { 
   useEventos, 
   useCreateEvento, 
@@ -28,6 +28,7 @@ import { StatCard } from "@/components/StatCard";
 import { fmtBRL, fmtDate } from "@/lib/financeiro";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 const emptyForm = {
   nome: "",

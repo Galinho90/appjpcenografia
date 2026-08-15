@@ -136,19 +136,19 @@ export default function Eventos() {
           label="Total em Verbas" 
           value={fmtBRL(stats.totalVerba)} 
           icon={DollarSign}
-          trend={{ value: stats.total, label: "eventos cadastrados", type: "up" }}
+          hint={`${stats.total} eventos cadastrados`}
         />
         <StatCard 
           label="Eventos Ativos" 
           value={stats.ativos} 
           icon={TrendingUp}
-          variant="secondary"
+          tone="success"
         />
         <StatCard 
           label="Média por Evento" 
           value={fmtBRL(stats.total > 0 ? stats.totalVerba / stats.total : 0)} 
           icon={Clock}
-          variant="accent"
+          tone="primary"
         />
       </div>
 

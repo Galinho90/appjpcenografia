@@ -60,10 +60,10 @@ export function useEvento(id: string) {
 export function useCreateEvento() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (evento: Partial<Evento>) => {
+    mutationFn: async (evento: Omit<Evento, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from("eventos")
-        .insert([evento])
+        .insert([evento as any])
         .select()
         .single();
 

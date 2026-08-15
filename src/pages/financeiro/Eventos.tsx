@@ -200,9 +200,9 @@ export default function Eventos() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {eventos.map((evento) => {
-          const movs = (evento as any).movimentacoes_financeiras || [];
-          const custosManuais = (evento as any).evento_custos || [];
+        {eventos.map((evento: any) => {
+          const movs = evento.movimentacoes_financeiras || [];
+          const custosManuais = evento.evento_custos || [];
           
           const totalSaidas = movs.reduce((sum: number, m: any) => 
             m.tipo === 'saida' ? sum + (Number(m.valor) || 0) : sum, 0
@@ -216,13 +216,14 @@ export default function Eventos() {
 
           const utilizado = totalSaidas - totalEntradas + totalCustosManuais;
           const percent = Math.min(100, Math.max(0, (utilizado / (Number(evento.verba) || 1)) * 100));
+          const statusConfig = statusMap[evento.status as keyof typeof statusMap] || statusMap.planejado;
 
           return (
             <Card key={evento.id} className="group overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-md hover:bg-card/80 transition-all duration-300 flex flex-col">
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start mb-2">
-                  <Badge className={cn("text-[10px] font-bold px-2 py-0.5", statusMap[evento.status].color)}>
-                    {statusMap[evento.status].label}
+                  <Badge className={cn("text-[10px] font-bold px-2 py-0.5", statusConfig.color)}>
+                    {statusConfig.label}
                   </Badge>
                   {isAdmin && (
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

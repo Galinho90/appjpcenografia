@@ -444,6 +444,94 @@ export type Database = {
         }
         Relationships: []
       }
+      evento_custos: {
+        Row: {
+          categoria_id: string | null
+          created_at: string | null
+          descricao: string
+          evento_id: string
+          id: string
+          movimentacao_id: string | null
+          valor: number
+        }
+        Insert: {
+          categoria_id?: string | null
+          created_at?: string | null
+          descricao: string
+          evento_id: string
+          id?: string
+          movimentacao_id?: string | null
+          valor: number
+        }
+        Update: {
+          categoria_id?: string | null
+          created_at?: string | null
+          descricao?: string
+          evento_id?: string
+          id?: string
+          movimentacao_id?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evento_custos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_financeiras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_custos_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evento_custos_movimentacao_id_fkey"
+            columns: ["movimentacao_id"]
+            isOneToOne: false
+            referencedRelation: "movimentacoes_financeiras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eventos: {
+        Row: {
+          created_at: string | null
+          data_fim: string | null
+          data_inicio: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          status: string
+          updated_at: string | null
+          verba: number
+        }
+        Insert: {
+          created_at?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          status?: string
+          updated_at?: string | null
+          verba?: number
+        }
+        Update: {
+          created_at?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          status?: string
+          updated_at?: string | null
+          verba?: number
+        }
+        Relationships: []
+      }
       extrato_inter: {
         Row: {
           conciliado: boolean
@@ -737,6 +825,7 @@ export type Database = {
           data_pagamento: string | null
           data_vencimento: string | null
           descricao: string
+          evento_id: string | null
           fechamento_id: string | null
           fitid: string | null
           fornecedor_id: string | null
@@ -765,6 +854,7 @@ export type Database = {
           data_pagamento?: string | null
           data_vencimento?: string | null
           descricao: string
+          evento_id?: string | null
           fechamento_id?: string | null
           fitid?: string | null
           fornecedor_id?: string | null
@@ -793,6 +883,7 @@ export type Database = {
           data_pagamento?: string | null
           data_vencimento?: string | null
           descricao?: string
+          evento_id?: string | null
           fechamento_id?: string | null
           fitid?: string | null
           fornecedor_id?: string | null
@@ -843,6 +934,13 @@ export type Database = {
             columns: ["conta_id"]
             isOneToOne: false
             referencedRelation: "contas_bancarias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_financeiras_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
             referencedColumns: ["id"]
           },
           {

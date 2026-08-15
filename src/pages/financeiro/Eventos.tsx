@@ -162,57 +162,69 @@ export default function Eventos() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {eventos.map((evento) => (
-          <Card key={evento.id} className="group overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-md hover:bg-card/80 transition-all duration-300">
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start mb-2">
-                <Badge className={cn("text-[10px] font-bold px-2 py-0.5", statusMap[evento.status].color)}>
-                  {statusMap[evento.status].label}
-                </Badge>
-                {isAdmin && (
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => openEdit(evento)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteId(evento.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-              <CardTitle className="text-xl font-bold truncate">{evento.nome}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground line-clamp-2 h-10">
-                {evento.descricao || "Sem descrição disponível."}
-              </p>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Verba</span>
-                  <span className="font-bold text-primary">{fmtBRL(evento.verba)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Utilizado (Exemplo)</span>
-                  <span className="font-medium">R$ 0,00</span>
-                </div>
-                <Progress value={0} className="h-1.5" />
-              </div>
+        {eventos.map((evento) => {
+          const movs = (evento as any).movimentacoes_financeiras || [];
+          const utilizado = movs.reduce((sum: number, m: any) => {
+            if (m.tipo === 'saida') return sum + (Number(m.valor) || 0);
+            if (m.tipo === 'entrada') return sum - (Number(m.valor) || 0);
+            return sum;
+          }, 0);
+          const percent = Math.min(100, Math.max(0, (utilizado / (Number(evento.verba) || 1)) * 100));
 
-              <div className="flex items-center gap-4 pt-2 border-t border-border/50 text-[11px] text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {evento.data_inicio ? fmtDate(evento.data_inicio) : 'N/A'}
+          return (
+            <Card key={evento.id} className="group overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-md hover:bg-card/80 transition-all duration-300">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start mb-2">
+                  <Badge className={cn("text-[10px] font-bold px-2 py-0.5", statusMap[evento.status].color)}>
+                    {statusMap[evento.status].label}
+                  </Badge>
+                  {isAdmin && (
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => openEdit(evento)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteId(evento.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <span>a</span>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {evento.data_fim ? fmtDate(evento.data_fim) : 'N/A'}
+                <CardTitle className="text-xl font-bold truncate">{evento.nome}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground line-clamp-2 h-10">
+                  {evento.descricao || "Sem descrição disponível."}
+                </p>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Verba</span>
+                    <span className="font-bold text-primary">{fmtBRL(evento.verba)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Utilizado</span>
+                    <span className={cn("font-medium", utilizado > evento.verba ? "text-destructive" : "text-foreground")}>
+                      {fmtBRL(utilizado)}
+                    </span>
+                  </div>
+                  <Progress value={percent} className="h-1.5" />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+
+                <div className="flex items-center gap-4 pt-2 border-t border-border/50 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {evento.data_inicio ? fmtDate(evento.data_inicio) : 'N/A'}
+                  </div>
+                  <span>a</span>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {evento.data_fim ? fmtDate(evento.data_fim) : 'N/A'}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

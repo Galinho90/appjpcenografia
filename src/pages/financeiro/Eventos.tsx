@@ -43,7 +43,16 @@ export default function Eventos() {
   const stats = useMemo(() => {
     const totalVerba = eventos.reduce((acc, e) => acc + (Number(e.verba) || 0), 0);
     const ativos = eventos.filter(e => e.status === 'em_andamento').length;
-    return { totalVerba, ativos, total: eventos.length };
+    const totalUtilizado = eventos.reduce((acc, e) => {
+      const movs = (e as any).movimentacoes_financeiras || [];
+      const utilizado = movs.reduce((sum: number, m: any) => {
+        if (m.tipo === 'saida') return sum + (Number(m.valor) || 0);
+        if (m.tipo === 'entrada') return sum - (Number(m.valor) || 0);
+        return sum;
+      }, 0);
+      return acc + utilizado;
+    }, 0);
+    return { totalVerba, ativos, total: eventos.length, totalUtilizado };
   }, [eventos]);
 
   const openCreate = () => {

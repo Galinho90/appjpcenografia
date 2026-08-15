@@ -31,11 +31,11 @@ export function useEventos() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("eventos")
-        .select("*")
+        .select("*, movimentacoes_financeiras(valor, tipo)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as Evento[];
+      return data as (Evento & { movimentacoes_financeiras: { valor: number; tipo: string }[] })[];
     },
   });
 }

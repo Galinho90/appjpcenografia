@@ -1,6 +1,16 @@
 import { useState, useMemo } from "react";
-import { Plus, Pencil, Trash2, Calendar, DollarSign, TrendingUp, Clock } from "lucide-react";
-import { useEventos, useCreateEvento, useUpdateEvento, useDeleteEvento, type Evento, type StatusEvento } from "@/hooks/useEventos";
+import { Plus, Pencil, Trash2, Calendar, DollarSign, TrendingUp, Clock, Receipt, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { 
+  useEventos, 
+  useCreateEvento, 
+  useUpdateEvento, 
+  useDeleteEvento, 
+  useCreateEventoCusto,
+  useDeleteEventoCusto,
+  type Evento, 
+  type StatusEvento,
+  type EventoCusto
+} from "@/hooks/useEventos";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PageHeader } from "@/components/PageHeader";
@@ -34,23 +45,32 @@ export default function Eventos() {
   const createMutation = useCreateEvento();
   const updateMutation = useUpdateEvento();
   const deleteMutation = useDeleteEvento();
+  const createCustoMutation = useCreateEventoCusto();
+  const deleteCustoMutation = useDeleteEventoCusto();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
+  const [newCusto, setNewCusto] = useState({ descricao: "", valor: "" });
+
   const stats = useMemo(() => {
-    const totalVerba = eventos.reduce((acc, e) => acc + (Number(e.verba) || 0), 0);
-    const ativos = eventos.filter(e => e.status === 'em_andamento').length;
-    const totalUtilizado = eventos.reduce((acc, e) => {
-      const movs = (e as any).movimentacoes_financeiras || [];
-      const utilizado = movs.reduce((sum: number, m: any) => {
+    const totalVerba = eventos.reduce((acc: number, e: any) => acc + (Number(e.verba) || 0), 0);
+    const ativos = eventos.filter((e: any) => e.status === 'em_andamento').length;
+    const totalUtilizado = eventos.reduce((acc: number, e: any) => {
+      const movs = e.movimentacoes_financeiras || [];
+      const manualCosts = e.evento_custos || [];
+      
+      const utilizadoMovs = movs.reduce((sum: number, m: any) => {
         if (m.tipo === 'saida') return sum + (Number(m.valor) || 0);
         if (m.tipo === 'entrada') return sum - (Number(m.valor) || 0);
         return sum;
       }, 0);
-      return acc + utilizado;
+      
+      const utilizadoManual = manualCosts.reduce((sum: number, c: any) => sum + (Number(c.valor) || 0), 0);
+      
+      return acc + utilizadoMovs + utilizadoManual;
     }, 0);
     return { totalVerba, ativos, total: eventos.length, totalUtilizado };
   }, [eventos]);
@@ -114,6 +134,23 @@ export default function Eventos() {
     setDeleteId(null);
   };
 
+  const handleAddCusto = async (eventoId: string) => {
+    if (!newCusto.descricao || !newCusto.valor) return;
+    try {
+      await createCustoMutation.mutateAsync({
+        evento_id: eventoId,
+        descricao: newCusto.descricao,
+        valor: Number(newCusto.valor),
+        categoria_id: null,
+        movimentacao_id: null
+      });
+      setNewCusto({ descricao: "", valor: "" });
+      toast({ title: "Custo adicionado" });
+    } catch (e: any) {
+      toast({ title: "Erro ao adicionar custo", description: e.message, variant: "destructive" });
+    }
+  };
+
   const statusMap = {
     planejado: { label: "Planejado", color: "bg-blue-500/10 text-blue-600 border-blue-200" },
     em_andamento: { label: "Em Andamento", color: "bg-green-500/10 text-green-600 border-green-200" },
@@ -163,21 +200,30 @@ export default function Eventos() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {eventos.map((evento) => {
-          const movs = (evento as any).movimentacoes_financeiras || [];
-          const utilizado = movs.reduce((sum: number, m: any) => {
-            if (m.tipo === 'saida') return sum + (Number(m.valor) || 0);
-            if (m.tipo === 'entrada') return sum - (Number(m.valor) || 0);
-            return sum;
-          }, 0);
+        {eventos.map((evento: any) => {
+          const movs = evento.movimentacoes_financeiras || [];
+          const custosManuais = evento.evento_custos || [];
+          
+          const totalSaidas = movs.reduce((sum: number, m: any) => 
+            m.tipo === 'saida' ? sum + (Number(m.valor) || 0) : sum, 0
+          );
+          const totalEntradas = movs.reduce((sum: number, m: any) => 
+            m.tipo === 'entrada' ? sum + (Number(m.valor) || 0) : sum, 0
+          );
+          const totalCustosManuais = custosManuais.reduce((sum: number, c: any) => 
+            sum + (Number(c.valor) || 0), 0
+          );
+
+          const utilizado = totalSaidas - totalEntradas + totalCustosManuais;
           const percent = Math.min(100, Math.max(0, (utilizado / (Number(evento.verba) || 1)) * 100));
+          const statusConfig = statusMap[evento.status as keyof typeof statusMap] || statusMap.planejado;
 
           return (
-            <Card key={evento.id} className="group overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-md hover:bg-card/80 transition-all duration-300">
+            <Card key={evento.id} className="group overflow-hidden border-none shadow-premium bg-card/50 backdrop-blur-md hover:bg-card/80 transition-all duration-300 flex flex-col">
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start mb-2">
-                  <Badge className={cn("text-[10px] font-bold px-2 py-0.5", statusMap[evento.status].color)}>
-                    {statusMap[evento.status].label}
+                  <Badge className={cn("text-[10px] font-bold px-2 py-0.5", statusConfig.color)}>
+                    {statusConfig.label}
                   </Badge>
                   {isAdmin && (
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -192,36 +238,127 @@ export default function Eventos() {
                 </div>
                 <CardTitle className="text-xl font-bold truncate">{evento.nome}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-2 h-10">
-                  {evento.descricao || "Sem descrição disponível."}
-                </p>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Verba</span>
-                    <span className="font-bold text-primary">{fmtBRL(evento.verba)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Utilizado</span>
-                    <span className={cn("font-medium", utilizado > evento.verba ? "text-destructive" : "text-foreground")}>
-                      {fmtBRL(utilizado)}
-                    </span>
-                  </div>
-                  <Progress value={percent} className="h-1.5" />
-                </div>
+              <CardContent className="space-y-4 flex-grow">
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-muted/50">
+                    <TabsTrigger value="overview" className="text-xs">Visão Geral</TabsTrigger>
+                    <TabsTrigger value="costs" className="text-xs">Custos Detalhados</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="overview" className="space-y-4 mt-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2 h-10">
+                      {evento.descricao || "Sem descrição disponível."}
+                    </p>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Verba</span>
+                        <span className="font-bold text-primary">{fmtBRL(evento.verba)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Utilizado</span>
+                        <span className={cn("font-medium", utilizado > evento.verba ? "text-destructive" : "text-foreground")}>
+                          {fmtBRL(utilizado)}
+                        </span>
+                      </div>
+                      <Progress value={percent} className="h-1.5" />
+                    </div>
 
-                <div className="flex items-center gap-4 pt-2 border-t border-border/50 text-[11px] text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {evento.data_inicio ? fmtDate(evento.data_inicio) : 'N/A'}
-                  </div>
-                  <span>a</span>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {evento.data_fim ? fmtDate(evento.data_fim) : 'N/A'}
-                  </div>
-                </div>
+                    <div className="flex items-center gap-4 pt-2 border-t border-border/50 text-[11px] text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {evento.data_inicio ? fmtDate(evento.data_inicio) : 'N/A'}
+                      </div>
+                      <span>a</span>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {evento.data_fim ? fmtDate(evento.data_fim) : 'N/A'}
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="costs" className="mt-4 space-y-4">
+                    <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                      {/* Movimentações Bancárias */}
+                      {movs.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Movimentações</p>
+                          {movs.map((m: any, idx: number) => (
+                            <div key={`mov-${idx}`} className="flex justify-between items-center text-xs p-2 rounded bg-muted/30 border border-border/50">
+                              <div className="flex items-center gap-2 overflow-hidden">
+                                {m.tipo === 'saida' ? <ArrowDownCircle className="h-3 w-3 text-destructive shrink-0" /> : <ArrowUpCircle className="h-3 w-3 text-green-500 shrink-0" />}
+                                <div className="truncate">
+                                  <p className="font-medium truncate">{m.descricao}</p>
+                                  <p className="text-[10px] text-muted-foreground">{fmtDate(m.data_pagamento)}</p>
+                                </div>
+                              </div>
+                              <span className={cn("font-mono font-medium shrink-0", m.tipo === 'saida' ? "text-destructive" : "text-green-500")}>
+                                {m.tipo === 'saida' ? '-' : '+'}{fmtBRL(m.valor)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Custos Manuais */}
+                      <div className="space-y-1 pt-2 border-t border-border/50">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Custos Extras</p>
+                        {custosManuais.map((c: any) => (
+                          <div key={c.id} className="flex justify-between items-center text-xs p-2 rounded bg-muted/30 border border-border/50 group/item">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              <Receipt className="h-3 w-3 text-orange-500 shrink-0" />
+                              <div className="truncate">
+                                <p className="font-medium truncate">{c.descricao}</p>
+                                <p className="text-[10px] text-muted-foreground">{fmtDate(c.created_at)}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="font-mono font-medium text-destructive">-{fmtBRL(c.valor)}</span>
+                              {isAdmin && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-5 w-5 text-muted-foreground hover:text-destructive opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                  onClick={() => deleteCustoMutation.mutate({ id: c.id, evento_id: evento.id })}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {isAdmin && (
+                      <div className="space-y-2 pt-2 border-t border-border/50">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input 
+                            placeholder="Descrição" 
+                            className="h-8 text-xs bg-background/50" 
+                            value={newCusto.descricao}
+                            onChange={e => setNewCusto({...newCusto, descricao: e.target.value})}
+                          />
+                          <Input 
+                            placeholder="Valor" 
+                            type="number" 
+                            className="h-8 text-xs bg-background/50"
+                            value={newCusto.valor}
+                            onChange={e => setNewCusto({...newCusto, valor: e.target.value})}
+                          />
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full h-8 text-xs gap-1 border-dashed hover:border-primary hover:text-primary transition-colors"
+                          onClick={() => handleAddCusto(evento.id)}
+                        >
+                          <Plus className="h-3 w-3" /> Adicionar Custo
+                        </Button>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           );

@@ -31,11 +31,14 @@ export function useEventos() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("eventos")
-        .select("*, movimentacoes_financeiras(valor, tipo)")
+        .select("*, movimentacoes_financeiras(valor, tipo, descricao, data_pagamento), evento_custos(*)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as (Evento & { movimentacoes_financeiras: { valor: number; tipo: string }[] })[];
+      return data as (Evento & { 
+        movimentacoes_financeiras: { valor: number; tipo: string; descricao: string; data_pagamento: string }[];
+        evento_custos: EventoCusto[];
+      })[];
     },
   });
 }
@@ -110,6 +113,44 @@ export function useDeleteEvento() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["eventos"] });
+    },
+  });
+}
+
+export function useCreateEventoCusto() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (custo: Omit<EventoCusto, 'id' | 'created_at'>) => {
+      const { data, error } = await supabase
+        .from("evento_custos")
+        .insert([custo])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["eventos"] });
+      queryClient.invalidateQueries({ queryKey: ["eventos", variables.evento_id] });
+    },
+  });
+}
+
+export function useDeleteEventoCusto() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, evento_id }: { id: string; evento_id: string }) => {
+      const { error } = await supabase
+        .from("evento_custos")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["eventos"] });
+      queryClient.invalidateQueries({ queryKey: ["eventos", variables.evento_id] });
     },
   });
 }

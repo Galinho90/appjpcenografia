@@ -1,23 +1,71 @@
-## Cálculo automático do valor para Hora Extra
+# Plan: Implementação do Módulo de Eventos Financeiros
 
-Quando a categoria selecionada for "Hora Extra" (ou "Horas Extra"), calcular o campo **Valor (R$)** automaticamente como:
+Implementar um sistema de gestão de eventos para controle de orçamento (verba), custos e lucratividade, integrado ao módulo financeiro existente.
 
-```
-valor = (valor_diaria_padrao do colaborador / 9) * quantidade de horas
-```
+## 1. Banco de Dados (Supabase)
 
-### Como vai funcionar
+Criar as tabelas necessárias no Supabase para armazenar os eventos e seus custos associados.
 
-1. Em `src/pages/Diarias.tsx`, criar um helper `isHoraExtra` baseado em `descCat.includes("HORA EXTRA") || descCat.includes("HORAS EXTRA")`.
-2. Calcular a quantidade de horas a partir de `form.hora_entrada` e `form.hora_saida` (diferença em minutos / 60, suportando virada de meia-noite — se saída ≤ entrada, somar 24h).
-3. Buscar `valor_diaria_padrao` do colaborador selecionado (`colaboradores.find(c => c.id === form.colaborador_id)`).
-4. Adicionar um `useEffect` que, sempre que mudar `colaborador_id`, `categoria_id`, `hora_entrada` ou `hora_saida`, e `isHoraExtra === true` com ambos horários preenchidos e `valor_diaria_padrao > 0`, atualiza `form.valor` para `(valor_diaria / 9) * horas` (arredondado a 2 casas).
-5. O campo Valor continua editável — o usuário pode sobrescrever manualmente depois do cálculo. O cálculo só dispara quando entrada/saída/colaborador/categoria mudam.
-6. Para Diária e Dobra: nada muda (valor segue vindo do `valor_diaria_padrao` ao escolher o colaborador, como já funciona hoje).
-7. Exibir uma dica pequena abaixo do campo Valor quando for Hora Extra: "Calculado: diária ÷ 9 × N horas" (apenas informativo).
+- **public.eventos**:
+  - `id`: UUID (PK)
+  - `nome`: TEXT (NOT NULL)
+  - `descricao`: TEXT
+  - `verba`: NUMERIC(15,2) (NOT NULL, DEFAULT 0) - Orçamento inicial
+  - `status`: TEXT (CHECK status IN ('planejado', 'em_andamento', 'concluido', 'cancelado'))
+  - `data_inicio`: DATE
+  - `data_fim`: DATE
+  - `created_at` / `updated_at`: TIMESTAMPTZ
 
-### Arquivo alterado
+- **public.evento_custos**:
+  - `id`: UUID (PK)
+  - `evento_id`: UUID (FK references public.eventos, ON DELETE CASCADE)
+  - `descricao`: TEXT (NOT NULL)
+  - `valor`: NUMERIC(15,2) (NOT NULL)
+  - `categoria_id`: UUID (FK references public.categorias_financeiras, opcional)
+  - `movimentacao_id`: UUID (FK references public.movimentacoes_financeiras, opcional) - Para vincular a uma saída real no caixa
+  - `created_at`: TIMESTAMPTZ
 
-- `src/pages/Diarias.tsx` — helper `isHoraExtra`, função `calcHoras`, `useEffect` de cálculo, hint visual no campo Valor.
+## 2. Backend & Hooks (Frontend)
 
-Sem mudança de schema, hooks ou outras telas.
+- Criar `src/hooks/useEventos.ts`:
+  - `useEventos()`: Listar todos os eventos.
+  - `useEvento(id)`: Obter detalhes de um evento específico com seus custos.
+  - `useCreateEvento()`, `useUpdateEvento()`, `useDeleteEvento()`.
+  - `useAddCustoEvento()`, `useRemoveCustoEvento()`.
+- Atualizar `src/hooks/useFinanceiro.ts` para incluir referências cruzadas se necessário.
+
+## 3. Interface do Usuário (UI/UX)
+
+- **Nova Página: `src/pages/financeiro/Eventos.tsx`**
+  - Grid de cards ou tabela exibindo eventos.
+  - Indicadores rápidos por evento: Verba, Custo Total, Lucro/Saldo Restante, % de Utilização.
+  - Modal de cadastro/edição de Evento.
+- **Detalhes do Evento (Modal ou Página Lateral):**
+  - Lista de custos associados.
+  - Formulário para adicionar novos custos.
+  - Visualização gráfica simples (Barra de progresso da verba).
+- **Integração com Movimentações:**
+  - Adicionar campo "Evento" no formulário de Movimentação Financeira (`src/pages/financeiro/Movimentacoes.tsx`) para permitir vincular uma despesa/receita a um evento.
+
+## 4. Navegação
+
+- Adicionar o item "Eventos" no `src/components/AppSidebar.tsx` dentro da seção "Financeiro".
+- Registrar a rota `/financeiro/eventos` no `src/App.tsx`.
+
+## Requisitos Técnicos
+- Utilizar Shadcn/UI para componentes.
+- Manter o padrão visual "Glassmorphism" e sombras premium já estabelecidos.
+- Cálculos de lucro realizados via `useMemo` no frontend para feedback imediato, mas validados por triggers ou queries eficientes.
+
+### 📊 Relatório de Execução
+
+**Padrão utilizado:** Feature Implementation (Full Stack)
+
+**Sub-agentes ativados:**
+- 🎨 **UI Architect** — ✅ Planejado
+- 🗄️ **Supabase Engineer** — ✅ Planejado
+- 🔍 **Code Auditor** — ✅ Planejado
+- 🚀 **Deploy Ops** — ➖ Não necessário
+
+**Resumo:** Plano detalhado para criação do módulo de Eventos com gestão de custos e verba.
+**Arquivos a serem modificados:** Aprox. 5-7 arquivos.

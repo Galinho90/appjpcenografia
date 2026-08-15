@@ -55,6 +55,11 @@ export default function Eventos() {
   const [form, setForm] = useState(emptyForm);
 
   const [newCusto, setNewCusto] = useState({ descricao: "", valor: "" });
+  const [selectedEventoId, setSelectedEventoId] = useState<string | null>(null);
+
+  const selectedEvento = useMemo(() => 
+    eventos.find(e => e.id === selectedEventoId), 
+  [eventos, selectedEventoId]);
 
   const stats = useMemo(() => {
     const totalVerba = eventos.reduce((acc: number, e: any) => acc + (Number(e.verba) || 0), 0);

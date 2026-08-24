@@ -86,6 +86,7 @@ export default function Movimentacoes() {
   const [pageSize, setPageSize] = useState(25);
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [conciliacaoFiltro, setConciliacaoFiltro] = useState<FiltroConciliacao>("all");
 
   const registrarMotivo = useRegistrarMotivoAjuste();
 
@@ -95,10 +96,10 @@ export default function Movimentacoes() {
     valorOriginal !== null &&
     Math.abs(Number(form.valor || 0) - valorOriginal) > 0.004;
 
-  useEffect(() => { setPage(1); }, [filters, pageSize, search]);
+  useEffect(() => { setPage(1); }, [filters, pageSize, search, conciliacaoFiltro]);
 
-  /** Busca textual local (descrição, fornecedor, cliente, categoria, conta). */
-  const filteredMovs = useMemo(() => {
+  /** Recorte por período/conta antes do filtro de conciliação (base do painel). */
+  const movsBase = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return movs;
     return movs.filter((m) =>
@@ -113,6 +114,13 @@ export default function Movimentacoes() {
         .some((v) => String(v).toLowerCase().includes(q))
     );
   }, [movs, search]);
+
+  /** Busca textual local + filtro de conciliação bancária. */
+  const filteredMovs = useMemo(
+    () => (conciliacaoFiltro === "all" ? movsBase : movsBase.filter((m) => matchFiltroConciliacao(m, conciliacaoFiltro))),
+    [movsBase, conciliacaoFiltro],
+  );
+
 
   /** Totais do resultado filtrado — visão rápida do período. */
   const resumo = useMemo(() => {

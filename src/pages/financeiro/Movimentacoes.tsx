@@ -189,6 +189,7 @@ export default function Movimentacoes() {
     (filters.status !== "all" ? 1 : 0) +
     (filters.contaId !== "all" ? 1 : 0) +
     (filters.categoriaId !== "all" ? 1 : 0) +
+    (conciliacaoFiltro !== "all" ? 1 : 0) +
     (filters.dataInicio ? 1 : 0) +
     (filters.dataFim ? 1 : 0);
 

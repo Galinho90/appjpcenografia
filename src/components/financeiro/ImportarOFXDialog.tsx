@@ -565,6 +565,30 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
           </div>
         )}
 
+        {dedupTotais && (
+          <div className="rounded-md border bg-muted/40 p-3 text-xs">
+            <div className="font-medium mb-1">Resumo do arquivo</div>
+            <div className="grid gap-1 sm:grid-cols-5">
+              <div><span className="text-muted-foreground">Transações:</span> <b>{dedupTotais.total}</b></div>
+              <div><span className="text-muted-foreground">Novas:</span> <b>{dedupTotais.novas}</b></div>
+              <div><span className="text-muted-foreground">Já importadas:</span> <b>{dedupTotais.jaImportadas}</b></div>
+              <div><span className="text-muted-foreground">Duplicadas no arquivo:</span> <b>{dedupTotais.duplicadasNoArquivo}</b></div>
+              <div><span className="text-muted-foreground">Sem identificador:</span> <b>{dedupTotais.semFitid}</b></div>
+            </div>
+          </div>
+        )}
+
+        {erros.length > 0 && (
+          <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs">
+            <div className="flex items-center gap-2 font-medium mb-1">
+              <AlertTriangle className="h-4 w-4 text-destructive" /> Transações não processadas
+            </div>
+            <ul className="space-y-0.5 max-h-32 overflow-y-auto pl-3 list-disc">
+              {erros.map((e, i) => <li key={i}>{e}</li>)}
+            </ul>
+          </div>
+        )}
+
         {rows.length > 0 && (
           <>
             <div className="flex flex-wrap items-center gap-2 text-xs">

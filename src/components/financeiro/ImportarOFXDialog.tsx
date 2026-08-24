@@ -716,12 +716,24 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                   {rows.map((r, i) => {
                     const disponiveis = candidatosDisponiveis(r);
                     return (
-                    <TableRow key={r.tx.fitid + i}>
+                    <TableRow key={r.tx.fitid + i} className={r.alreadyImported ? "opacity-60" : undefined}>
                       <TableCell className="text-xs">{fmtDate(r.tx.data)}</TableCell>
                       <TableCell className="text-xs">
                         <div className="break-words">{r.tx.descricao || "—"}</div>
-                        {r.alreadyImported && (
-                          <Badge variant="outline" className="text-[10px] mt-1">Já importado</Badge>
+                        {r.dedup === "ja_importada" && (
+                          <Badge variant="outline" className="text-[10px] mt-1" title={`FITID: ${r.tx.fitid}`}>
+                            Já importada
+                          </Badge>
+                        )}
+                        {r.dedup === "duplicada_arquivo" && (
+                          <Badge variant="outline" className="text-[10px] mt-1" title={`FITID: ${r.tx.fitid}`}>
+                            Duplicada no arquivo
+                          </Badge>
+                        )}
+                        {r.dedup === "sem_fitid" && (
+                          <Badge variant="destructive" className="text-[10px] mt-1 gap-1">
+                            <AlertTriangle className="h-3 w-3" /> Sem identificador único
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell className={`text-xs font-medium whitespace-nowrap ${r.tx.tipo === "entrada" ? "text-success" : "text-destructive"}`}>
@@ -741,7 +753,23 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                         )}
                       </TableCell>
                       <TableCell>
+                        {r.alreadyImported ? (
+                          <span className="text-xs text-muted-foreground">
+                            Ignorada automaticamente (não será reprocessada)
+                          </span>
+                        ) : (
                         <div className="flex flex-col gap-1">
+                          {r.dedup === "sem_fitid" && (
+                            <label className="flex items-center gap-2 text-[11px] cursor-pointer">
+                              <Checkbox
+                                checked={r.confirmado}
+                                onCheckedChange={(v) => updateRow(i, { confirmado: v === true })}
+                              />
+                              <span className={r.confirmado ? "text-success" : "text-destructive font-medium"}>
+                                {r.confirmado ? "Importação confirmada" : "Confirmar importação"}
+                              </span>
+                            </label>
+                          )}
                           <Select
                             value={r.action}
                             onValueChange={(v: any) => updateRow(i, {

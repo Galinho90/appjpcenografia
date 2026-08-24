@@ -183,30 +183,57 @@ type MovFilters = {
   status?: StatusMovimentacao | "all";
 };
 
+/** Tamanho de página usado na paginação server-side (limite prático do PostgREST). */
+const MOV_PAGE_SIZE = 1000;
+
 export function useMovimentacoes(filters: MovFilters = {}) {
   return useQuery({
     queryKey: ["movimentacoes_financeiras", filters],
     queryFn: async () => {
-      let q = supabase
-        .from("movimentacoes_financeiras" as any)
-        .select(`
-          *,
-          categoria:categorias_financeiras(*),
-          conta:contas_bancarias!movimentacoes_financeiras_conta_id_fkey(*),
-          conta_destino:contas_bancarias!movimentacoes_financeiras_conta_destino_id_fkey(*),
-          colaborador:colaboradores(id, nome),
-          cliente:clientes(id, razao_social),
-          fornecedor:fornecedores(id, nome)
-        `);
+      /**
+       * Constrói a query base. Precisa ser uma fábrica: cada chamada a
+       * `.range()` consome o builder, então uma nova instância é necessária
+       * por página.
+       */
+      const buildQuery = () => {
+        let q = supabase
+          .from("movimentacoes_financeiras" as any)
+          .select(`
+            *,
+            categoria:categorias_financeiras(*),
+            conta:contas_bancarias!movimentacoes_financeiras_conta_id_fkey(*),
+            conta_destino:contas_bancarias!movimentacoes_financeiras_conta_destino_id_fkey(*),
+            colaborador:colaboradores(id, nome),
+            cliente:clientes(id, razao_social),
+            fornecedor:fornecedores(id, nome)
+          `);
 
-      if (filters.contaId && filters.contaId !== "all") q = q.eq("conta_id", filters.contaId);
-      if (filters.categoriaId && filters.categoriaId !== "all") q = q.eq("categoria_id", filters.categoriaId);
-      if (filters.tipo && filters.tipo !== "all") q = q.eq("tipo", filters.tipo);
-      if (filters.status && filters.status !== "all") q = q.eq("status", filters.status);
+        if (filters.contaId && filters.contaId !== "all") q = q.eq("conta_id", filters.contaId);
+        if (filters.categoriaId && filters.categoriaId !== "all") q = q.eq("categoria_id", filters.categoriaId);
+        if (filters.tipo && filters.tipo !== "all") q = q.eq("tipo", filters.tipo);
+        if (filters.status && filters.status !== "all") q = q.eq("status", filters.status);
+        return q;
+      };
 
-      const { data, error } = await q.limit(1000);
-      if (error) throw error;
-      let mapped = ((data ?? []) as any[]).map((m) => ({ ...m, valor: Number(m.valor) })) as MovimentacaoFinanceira[];
+      // Paginação completa: percorre TODAS as transações do banco (sem teto de 1000),
+      // garantindo que o saldo calculado reflita 100% dos lançamentos.
+      const rows: any[] = [];
+      for (let page = 0; ; page++) {
+        const from = page * MOV_PAGE_SIZE;
+        const to = from + MOV_PAGE_SIZE - 1;
+        const { data, error } = await buildQuery()
+          .order("created_at", { ascending: false })
+          .range(from, to);
+        if (error) throw error;
+        const batch = (data ?? []) as any[];
+        rows.push(...batch);
+        if (batch.length < MOV_PAGE_SIZE) break;
+        // Guarda-corpo defensivo contra loop infinito.
+        if (page > 200) break;
+      }
+
+      let mapped = rows.map((m) => ({ ...m, valor: Number(m.valor) })) as MovimentacaoFinanceira[];
+
 
       // Filtro de período pela data efetiva (data_pagamento se pago, senão data_vencimento)
       if (filters.dataInicio || filters.dataFim) {

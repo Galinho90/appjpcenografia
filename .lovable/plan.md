@@ -1,33 +1,31 @@
-# Conciliação em /financeiro/movimentacoes
+# Importação OFX à prova de duplicidade
 
-## Premissas
-- A tabela `extrato_inter` já existe com `conciliado`, `movimentacao_id`, `conta_id`, `data`, `valor`, `tipo`.
-- "Conciliado" = a movimentação possui pelo menos uma linha de extrato bancário vinculada (`extrato_inter.movimentacao_id = movimentacao.id`).
-- Nenhuma coluna nova é necessária; o estado é derivado (sem `useEffect`).
+## Estado atual (verificado)
 
-## 1. Dados (`src/hooks/useFinanceiro.ts`)
-- Novo hook `useConciliacaoStatus(contaId?, periodo?)`:
-  - Consulta `extrato_inter` (id, conta_id, data, valor, tipo, descricao, movimentacao_id, conciliado).
-  - Retorna: `Set<string>` de `movimentacao_id` conciliados + array de linhas de extrato **sem** vínculo.
-- Tipagem explícita (`ExtratoLinha`, `ConciliacaoResumo`), TanStack Query com `staleTime` e `queryKey` por conta/período.
+- `src/lib/ofx.ts` já extrai `FITID` de cada transação (OFX 1.x SGML e 2.x XML).
+- `movimentacoes_financeiras.fitid` guarda esse identificador e já existe o índice único parcial `movimentacoes_financeiras_conta_fitid_uniq (conta_id, fitid) WHERE fitid IS NOT NULL` — ou seja, o banco já impede duas movimentações com o mesmo FITID na mesma conta.
+- O ponto fraco está no importador (`src/components/financeiro/ImportarOFXDialog.tsx`): a checagem de "já importado" usa apenas as movimentações carregadas na tela, com `.limit(1000)` e janela de ±60 dias em torno das datas do arquivo. Transações fora dessa janela/limite não são reconhecidas como já importadas, e a gravação em `Promise.all` engole o erro de violação de unicidade em um contador genérico de falhas.
 
-## 2. Badge de conciliação (`src/pages/financeiro/Movimentacoes.tsx`)
-- Novo componente `ConciliacaoBadge` (arquivo próprio em `src/components/financeiro/ConciliacaoBadge.tsx`, < 60 linhas):
-  - `conciliado` → verde (`bg-[hsl(var(--success))]`, ícone `CheckCircle2`, texto "Conciliado").
-  - pendente → warning (`Clock`, "Não conciliado"), seguindo o padrão de `src/lib/statusBadge.ts`.
-  - Apenas para movimentações com `status = pago` (pendentes não são conciliáveis) — pendentes exibem badge neutra "—".
-- Renderizado na coluna Status da tabela desktop e no card mobile, sem quebrar linha (`whitespace-nowrap`).
-- Novo filtro rápido: "Todos / Conciliados / Não conciliados" na barra de filtros existente.
+## O que será feito
 
-## 3. Painel de pendências de conciliação
-- Novo componente `src/components/financeiro/PainelConciliacao.tsx`, card glass `rounded-2xl shadow-premium`, colapsável, exibido acima da tabela:
-  - **StatCards**: Saldo do sistema (conta/período), Saldo do extrato bancário, Diferença (destructive quando ≠ 0), Qtde. de itens não conciliados.
-  - **Lista A** — movimentações pagas sem vínculo de extrato (com data, descrição, valor).
-  - **Lista B** — linhas de extrato bancário sem movimentação correspondente.
-  - Estado vazio elegante ("Tudo conciliado ✅") e skeletons no carregamento.
-  - Botão "Importar OFX" reaproveitando o `ImportarOFXDialog` já existente para resolver as pendências.
-- Mobile-first: 1 coluna → `md:grid-cols-2` → `lg:grid-cols-4` nos KPIs; listas com `overflow-y-auto max-h-72`.
+### 1. Verificação de duplicidade confiável
+- Antes de montar a tabela, consultar o banco pelos FITIDs exatos do arquivo (`.in("fitid", fitids)` na conta selecionada, em blocos de até 500 IDs para não estourar a URL), sem depender de janela de datas nem de limite de linhas.
+- Esse conjunto passa a ser a única fonte de verdade para `alreadyImported`; as movimentações da janela de datas continuam servindo apenas para sugerir vínculos.
+- Duplicidade dentro do próprio arquivo (mesmo FITID repetido) também marcada como ignorada, mantendo só a primeira ocorrência.
 
-## 4. Garantias
-- Somente frontend + um hook de leitura; nenhuma migração, nenhum dado alterado.
-- Tokens semânticos, sem cores hard-coded; RLS existente respeitado (apenas SELECT).
+### 2. Feedback claro na tela
+- Resumo do arquivo passa a mostrar: total de transações, novas, já importadas (ignoradas) e duplicadas dentro do arquivo.
+- Linhas já importadas ficam desabilitadas com badge "Já importada" e tooltip com o FITID, sem permitir mudar a ação.
+- Transações sem FITID no arquivo (OFX malformado) ganham badge de alerta e exigem confirmação manual, pois não podem ser deduplicadas.
+
+### 3. Gravação segura e erros legíveis
+- Trocar o `insert` por `upsert` com `onConflict: "conta_id,fitid"` e `ignoreDuplicates: true`, de modo que uma corrida ou reimportação simultânea não crie duplicata nem quebre a importação.
+- Capturar o erro por linha (em vez de um contador anônimo): ao final, listar quais transações falharam e o motivo (categoria não selecionada, duplicidade, erro de rede), com toast de resumo.
+
+### 4. Testes
+- Testes unitários de `parseOFX` (OFX 1.x e 2.x, FITID ausente, valores negativos).
+- Teste da função pura de deduplicação: dado um conjunto de FITIDs existentes e uma lista de transações, retorna corretamente novas / já importadas / duplicadas no arquivo.
+
+## Nota técnica
+
+Nenhuma migração é necessária: a coluna `fitid` e o índice único já existem. O trabalho é todo em `src/components/financeiro/ImportarOFXDialog.tsx`, mais uma função pura nova em `src/lib/ofx.ts` (ou `src/lib/conciliacao.ts`) para a lógica de deduplicação, permitindo teste isolado.

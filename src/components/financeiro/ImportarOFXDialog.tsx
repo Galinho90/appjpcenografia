@@ -459,68 +459,87 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     let ok = 0;
     const falhas: string[] = [];
     const rotulo = (r: Row) => `${fmtDate(r.tx.data)} ${r.tx.descricao || r.tx.trntype} (${fmtBRL(r.tx.valor)})`;
+    const isDuplicidade = (msg: string) =>
+      msg.includes("duplicate key") || msg.includes("uniq") || msg.includes("23505");
+
+    const buildPayload = (r: Row) => ({
+      conta_id: contaId,
+      categoria_id: r.categoriaId ?? null,
+      tipo: r.tx.tipo,
+      valor: r.tx.valor,
+      data_vencimento: r.tx.data,
+      data_pagamento: r.tx.data,
+      status: "pago",
+      descricao: r.tx.descricao || `OFX ${r.tx.trntype}`,
+      origem: "ofx",
+      fitid: r.tx.fitid || null,
+    });
 
     try {
-      await Promise.all(
-        rows.map(async (r) => {
-          try {
-            // Nunca reprocessa: já importada, duplicada no arquivo ou ignorada manualmente.
-            if (r.action === "ignorar" || r.alreadyImported) return;
+      const ativos = rows.filter((r) => r.action !== "ignorar" && !r.alreadyImported);
+      const paraVincular = ativos.filter((r) => r.action === "vincular" && r.movId);
+      const paraCriar = ativos.filter((r) => r.action === "criar");
 
-            if (r.action === "vincular" && r.movId) {
-              const { error } = await supabase
-                .from("movimentacoes_financeiras" as any)
-                .update({
-                  status: "pago",
-                  valor: r.tx.valor,
-                  data_vencimento: r.tx.data,
-                  data_pagamento: r.tx.data,
-                  fitid: r.tx.fitid || null,
-                } as any)
-                .eq("id", r.movId);
-              if (error) throw error;
-            } else if (r.action === "criar") {
-              if (!podeSalvarLinha({ action: r.action, categoriaId: r.categoriaId, ignorarCategorias })) {
-                throw new Error("Categoria não selecionada");
-              }
-              const payload = {
-                conta_id: contaId,
-                categoria_id: r.categoriaId ?? null,
-                tipo: r.tx.tipo,
+      // Vínculos: updates em lotes pequenos para não saturar a conexão.
+      for (const lote of chunk(paraVincular, 20)) {
+        await Promise.all(
+          lote.map(async (r) => {
+            const { error } = await supabase
+              .from("movimentacoes_financeiras" as any)
+              .update({
+                status: "pago",
                 valor: r.tx.valor,
                 data_vencimento: r.tx.data,
                 data_pagamento: r.tx.data,
-                status: "pago",
-                descricao: r.tx.descricao || `OFX ${r.tx.trntype}`,
-                origem: "ofx",
                 fitid: r.tx.fitid || null,
-              };
-
-              // Com FITID: upsert idempotente sobre o índice único (conta_id, fitid).
-              // Uma corrida ou reimportação simultânea é silenciosamente ignorada
-              // em vez de criar duplicata ou quebrar a importação.
-              const query = payload.fitid
-                ? supabase
-                    .from("movimentacoes_financeiras" as any)
-                    .upsert(payload as any, { onConflict: "conta_id,fitid", ignoreDuplicates: true })
-                : supabase.from("movimentacoes_financeiras" as any).insert(payload as any);
-
-              const { error } = await query;
-              if (error) throw error;
+              } as any)
+              .eq("id", r.movId);
+            if (error) {
+              falhas.push(`${rotulo(r)} — ${isDuplicidade(error.message) ? "já existe uma movimentação com este identificador (duplicidade)" : error.message}`);
+            } else {
+              ok++;
             }
+          })
+        );
+      }
+
+      // Criações: valida categoria e insere em lotes.
+      // O índice único (conta_id, fitid) é PARCIAL, portanto não é elegível para
+      // upsert/ON CONFLICT no PostgREST — usamos insert e tratamos 23505 como "já importada".
+      const criaveis: Row[] = [];
+      for (const r of paraCriar) {
+        if (!podeSalvarLinha({ action: r.action, categoriaId: r.categoriaId, ignorarCategorias })) {
+          falhas.push(`${rotulo(r)} — Categoria não selecionada`);
+        } else {
+          criaveis.push(r);
+        }
+      }
+
+      for (const lote of chunk(criaveis, 100)) {
+        const { error } = await supabase
+          .from("movimentacoes_financeiras" as any)
+          .insert(lote.map(buildPayload) as any);
+
+        if (!error) {
+          ok += lote.length;
+          continue;
+        }
+
+        // Um lote pode falhar por uma única duplicata: reprocessa linha a linha.
+        for (const r of lote) {
+          const { error: e2 } = await supabase
+            .from("movimentacoes_financeiras" as any)
+            .insert(buildPayload(r) as any);
+          if (!e2) {
             ok++;
-          } catch (err: any) {
-            const msg: string = err?.message ?? "erro desconhecido";
-            falhas.push(
-              `${rotulo(r)} — ${
-                msg.includes("duplicate key") || msg.includes("uniq")
-                  ? "já existe uma movimentação com este identificador (duplicidade)"
-                  : msg
-              }`
-            );
+          } else if (isDuplicidade(e2.message)) {
+            // Idempotência: já existe no banco, nada a fazer.
+          } else {
+            falhas.push(`${rotulo(r)} — ${e2.message}`);
           }
-        })
-      );
+        }
+      }
+
       qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
       qc.invalidateQueries({ queryKey: ["saldo_conta"] });
       setErros(falhas);
@@ -537,6 +556,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       setSaving(false);
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>

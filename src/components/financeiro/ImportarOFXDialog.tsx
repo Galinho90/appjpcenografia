@@ -34,6 +34,8 @@ type Row = {
   categoriaId?: string;
   candidates: MovCandidate[];
   alreadyImported: boolean;
+  /** Situação de deduplicação apurada pelo FITID (fonte de verdade da importação). */
+  dedup: OFXDedupStatus;
   /** Vínculos sugeridos automaticamente precisam ser confirmados pelo usuário antes de conciliar. */
   confirmado: boolean;
   /** Motivo da sugestão automática, exibido para facilitar a conferência. */

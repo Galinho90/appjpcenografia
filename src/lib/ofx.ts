@@ -167,3 +167,21 @@ export function chunk<T>(list: readonly T[], size: number): T[][] {
   for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
   return out;
 }
+
+/**
+ * Regra de validação de categoria na importação OFX.
+ *
+ * Uma linha marcada para criar uma nova movimentação normalmente exige categoria.
+ * Quando o usuário ativa "Ignorar categorias", a transação pode ser gravada com
+ * `categoria_id` nulo e categorizada posteriormente em Movimentações.
+ */
+export function podeSalvarLinha(params: {
+  action: "criar" | "vincular" | "ignorar";
+  categoriaId?: string | null;
+  ignorarCategorias: boolean;
+}): boolean {
+  const { action, categoriaId, ignorarCategorias } = params;
+  if (action !== "criar") return true;
+  if (ignorarCategorias) return true;
+  return Boolean(categoriaId);
+}

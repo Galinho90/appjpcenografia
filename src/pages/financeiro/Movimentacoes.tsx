@@ -1130,9 +1130,12 @@ function SortableMovRow({
         </div>
       </TableCell>
       <TableCell>
-        <Badge className={cn("text-[10px] px-2 py-0.5 border-none font-bold uppercase tracking-wider shadow-sm", statusColor[m.status])}>
-          {statusLabel[m.status]}
-        </Badge>
+        <div className="flex flex-col items-start gap-1">
+          <Badge className={cn("text-[10px] px-2 py-0.5 border-none font-bold uppercase tracking-wider shadow-sm", statusColor[m.status])}>
+            {statusLabel[m.status]}
+          </Badge>
+          <ConciliacaoBadge mov={m} hideWhenNotApplicable />
+        </div>
       </TableCell>
       <TableCell className={cn("text-right font-bold text-base tabular-nums", m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : "text-info")}>
         <span className="text-xs font-medium mr-0.5 opacity-70">R$</span>

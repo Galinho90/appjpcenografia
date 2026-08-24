@@ -464,6 +464,17 @@ export default function Movimentacoes() {
         />
       </div>
 
+      {/* Painel de conciliação bancária */}
+      <PainelConciliacao
+        movs={movsBase}
+        saldoConta={saldoConta}
+        contaLabel={contaLabel}
+        isLoading={isLoading}
+        onImportarOFX={isAdmin ? () => setOfxOpen(true) : undefined}
+        onVerNaoConciliados={() => { setConciliacaoFiltro("nao_conciliada"); setFiltersOpen(true); }}
+      />
+
+
       {/* Barra de busca + período + filtros */}
       <Card className="shadow-premium-sm">
         <CardContent className="p-4 sm:p-6 space-y-4">

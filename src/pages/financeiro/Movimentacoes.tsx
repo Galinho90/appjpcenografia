@@ -653,6 +653,7 @@ export default function Movimentacoes() {
                   variant="outline" size="sm" className="mt-6 gap-2"
                   onClick={() => {
                     setSearch("");
+                    setConciliacaoFiltro("all");
                     setFilters({ tipo: "all", status: "all", categoriaId: "all", contaId: "all", dataInicio: "", dataFim: "" });
                   }}
                 >

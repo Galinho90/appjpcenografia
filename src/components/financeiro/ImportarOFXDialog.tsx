@@ -121,9 +121,30 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         .limit(1000);
       if (error) throw error;
 
-      const fitidExistentes = new Set(
-        ((movs ?? []) as any[]).filter((m) => m.fitid).map((m) => m.fitid as string)
+      /**
+       * Verificação de duplicidade confiável: consulta o banco pelos FITIDs exatos
+       * do arquivo (em blocos), sem depender da janela de datas nem do limite de linhas
+       * usados para sugerir vínculos.
+       */
+      const fitidsArquivo = Array.from(
+        new Set(transactions.map((t) => (t.fitid ?? "").trim()).filter(Boolean))
       );
+      const fitidExistentes = new Set<string>();
+      for (const bloco of chunk(fitidsArquivo, 500)) {
+        const { data: existentes, error: errFitid } = await supabase
+          .from("movimentacoes_financeiras" as any)
+          .select("fitid")
+          .eq("conta_id", contaId)
+          .in("fitid", bloco);
+        if (errFitid) throw errFitid;
+        for (const row of ((existentes ?? []) as any[])) {
+          if (row.fitid) fitidExistentes.add(String(row.fitid));
+        }
+      }
+
+      const classificacao = classifyOFXTransactions(transactions, fitidExistentes);
+      const dedupPorIndice = classificacao.items.map((i) => i.status);
+      setDedupTotais(classificacao.totais);
 
       // Tolerância de centavos/tarifa: diferenças de até R$ 1,00 ainda são
       // consideradas o mesmo pagamento (mesma data e mesmo tipo).
@@ -134,8 +155,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       // Um mesmo lançamento do sistema não pode ser sugerido para duas transações do OFX.
       const usados = new Set<string>();
 
-      const newRows: Row[] = transactions.map((tx) => {
-        const alreadyImported = fitidExistentes.has(tx.fitid);
+      const newRows: Row[] = transactions.map((tx, txIndex) => {
+        const dedup = dedupPorIndice[txIndex] ?? "nova";
+        // "Já importada" e "duplicada no arquivo" nunca podem ser reprocessadas.
+        const alreadyImported = dedup === "ja_importada" || dedup === "duplicada_arquivo";
         
         const candidates: MovCandidate[] = ((movs ?? []) as any[])
           .filter((m: any) => {

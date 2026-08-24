@@ -276,8 +276,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                 ]
               : candidates,
           alreadyImported,
+          dedup,
           // Nada sugerido automaticamente entra confirmado: o usuário confere sempre.
-          confirmado: action !== "vincular",
+          // Transações sem FITID também exigem confirmação (não são deduplicáveis).
+          confirmado: action !== "vincular" && dedup !== "sem_fitid",
           sugestao,
         };
       });

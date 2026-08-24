@@ -592,10 +592,24 @@ export default function Movimentacoes() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Conciliação bancária</Label>
+                <Select value={conciliacaoFiltro} onValueChange={(v: FiltroConciliacao) => setConciliacaoFiltro(v)}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    <SelectItem value="conciliada">Conciliadas</SelectItem>
+                    <SelectItem value="nao_conciliada">Não conciliadas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="sm:col-span-2 lg:col-span-3 flex justify-end">
                 <Button
                   variant="ghost" size="sm" className="h-8 text-xs gap-1.5"
-                  onClick={() => setFilters({ tipo: "all", status: "all", categoriaId: "all", contaId: "all", dataInicio: "", dataFim: "" })}
+                  onClick={() => {
+                    setConciliacaoFiltro("all");
+                    setFilters({ tipo: "all", status: "all", categoriaId: "all", contaId: "all", dataInicio: "", dataFim: "" });
+                  }}
                 >
                   <X className="h-3.5 w-3.5" /> Limpar filtros
                 </Button>

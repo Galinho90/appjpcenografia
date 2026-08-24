@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type TipoCategoriaFin = "receita" | "despesa";
 export type TipoMovimentacao = "entrada" | "saida" | "transferencia";
 export type StatusMovimentacao = "pendente" | "pago" | "atrasado" | "cancelado";
-export type OrigemMovimentacao = "manual" | "fechamento" | "inter_api";
+export type OrigemMovimentacao = "manual" | "fechamento" | "inter_api" | "ofx";
 
 export type ContaBancaria = {
   id: string;

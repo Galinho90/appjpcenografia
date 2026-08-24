@@ -89,3 +89,81 @@ export function parseOFX(text: string): OFXParseResult {
     dtEnd: dtEnd ? parseDate(dtEnd) : undefined,
   };
 }
+
+// ─────────────────────────────────────────────────────────────
+// Deduplicação de importação OFX
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Situação de uma transação do arquivo em relação ao que já existe no sistema.
+ * - `nova`: pode ser importada.
+ * - `ja_importada`: o FITID já existe na conta selecionada.
+ * - `duplicada_arquivo`: o mesmo FITID aparece mais de uma vez no arquivo.
+ * - `sem_fitid`: o arquivo não trouxe identificador único (não é deduplicável).
+ */
+export type OFXDedupStatus = "nova" | "ja_importada" | "duplicada_arquivo" | "sem_fitid";
+
+export type OFXDedupItem = {
+  tx: OFXTransaction;
+  status: OFXDedupStatus;
+};
+
+export type OFXDedupResult = {
+  items: OFXDedupItem[];
+  totais: {
+    total: number;
+    novas: number;
+    jaImportadas: number;
+    duplicadasNoArquivo: number;
+    semFitid: number;
+  };
+};
+
+/**
+ * Classifica as transações de um OFX usando o FITID como identificador único.
+ * Função pura (testável): não acessa banco nem estado de UI.
+ *
+ * @param transactions transações extraídas do arquivo (ordem preservada)
+ * @param fitidsExistentes FITIDs já presentes na conta de destino
+ */
+export function classifyOFXTransactions(
+  transactions: readonly OFXTransaction[],
+  fitidsExistentes: ReadonlySet<string>
+): OFXDedupResult {
+  const vistos = new Set<string>();
+  const items: OFXDedupItem[] = [];
+  const totais = { total: 0, novas: 0, jaImportadas: 0, duplicadasNoArquivo: 0, semFitid: 0 };
+
+  for (const tx of transactions) {
+    const fitid = (tx.fitid ?? "").trim();
+    let status: OFXDedupStatus;
+
+    if (!fitid) {
+      status = "sem_fitid";
+      totais.semFitid++;
+    } else if (fitidsExistentes.has(fitid)) {
+      status = "ja_importada";
+      totais.jaImportadas++;
+    } else if (vistos.has(fitid)) {
+      status = "duplicada_arquivo";
+      totais.duplicadasNoArquivo++;
+    } else {
+      status = "nova";
+      totais.novas++;
+      vistos.add(fitid);
+    }
+
+    totais.total++;
+    items.push({ tx, status });
+  }
+
+  return { items, totais };
+}
+
+/** Divide uma lista em blocos de tamanho fixo (usado para consultar FITIDs sem estourar a URL). */
+export function chunk<T>(list: readonly T[], size: number): T[][] {
+  if (size <= 0) throw new Error("size deve ser > 0");
+  const out: T[][] = [];
+  for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
+  return out;
+}

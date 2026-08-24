@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useContasBancarias, useCategoriasFinanceiras } from "@/hooks/useFinanceiro";
-import { parseOFX, type OFXTransaction } from "@/lib/ofx";
+import { parseOFX, classifyOFXTransactions, chunk, type OFXTransaction, type OFXDedupStatus } from "@/lib/ofx";
 import { fmtBRL, fmtDate, todayISO } from "@/lib/financeiro";
 
 type Props = { open: boolean; onOpenChange: (o: boolean) => void };
@@ -34,6 +34,8 @@ type Row = {
   categoriaId?: string;
   candidates: MovCandidate[];
   alreadyImported: boolean;
+  /** Situação de deduplicação apurada pelo FITID (fonte de verdade da importação). */
+  dedup: OFXDedupStatus;
   /** Vínculos sugeridos automaticamente precisam ser confirmados pelo usuário antes de conciliar. */
   confirmado: boolean;
   /** Motivo da sugestão automática, exibido para facilitar a conferência. */
@@ -45,6 +47,14 @@ type OFXMeta = {
   ledgerBalDate?: string;
   dtStart?: string;
   dtEnd?: string;
+};
+
+type DedupTotais = {
+  total: number;
+  novas: number;
+  jaImportadas: number;
+  duplicadasNoArquivo: number;
+  semFitid: number;
 };
 
 type SistemaExtra = {
@@ -69,6 +79,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const [ofxMeta, setOfxMeta] = useState<OFXMeta>({});
   const [saldoSistema, setSaldoSistema] = useState<number | null>(null);
   const [extrasSistema, setExtrasSistema] = useState<SistemaExtra[]>([]);
+  const [dedupTotais, setDedupTotais] = useState<DedupTotais | null>(null);
+  const [erros, setErros] = useState<string[]>([]);
 
   const reset = () => {
     setRows([]);
@@ -76,6 +88,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     setOfxMeta({});
     setSaldoSistema(null);
     setExtrasSistema([]);
+    setDedupTotais(null);
+    setErros([]);
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -119,9 +133,30 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         .limit(1000);
       if (error) throw error;
 
-      const fitidExistentes = new Set(
-        ((movs ?? []) as any[]).filter((m) => m.fitid).map((m) => m.fitid as string)
+      /**
+       * Verificação de duplicidade confiável: consulta o banco pelos FITIDs exatos
+       * do arquivo (em blocos), sem depender da janela de datas nem do limite de linhas
+       * usados para sugerir vínculos.
+       */
+      const fitidsArquivo = Array.from(
+        new Set(transactions.map((t) => (t.fitid ?? "").trim()).filter(Boolean))
       );
+      const fitidExistentes = new Set<string>();
+      for (const bloco of chunk(fitidsArquivo, 500)) {
+        const { data: existentes, error: errFitid } = await supabase
+          .from("movimentacoes_financeiras" as any)
+          .select("fitid")
+          .eq("conta_id", contaId)
+          .in("fitid", bloco);
+        if (errFitid) throw errFitid;
+        for (const row of ((existentes ?? []) as any[])) {
+          if (row.fitid) fitidExistentes.add(String(row.fitid));
+        }
+      }
+
+      const classificacao = classifyOFXTransactions(transactions, fitidExistentes);
+      const dedupPorIndice = classificacao.items.map((i) => i.status);
+      setDedupTotais(classificacao.totais);
 
       // Tolerância de centavos/tarifa: diferenças de até R$ 1,00 ainda são
       // consideradas o mesmo pagamento (mesma data e mesmo tipo).
@@ -132,8 +167,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
       // Um mesmo lançamento do sistema não pode ser sugerido para duas transações do OFX.
       const usados = new Set<string>();
 
-      const newRows: Row[] = transactions.map((tx) => {
-        const alreadyImported = fitidExistentes.has(tx.fitid);
+      const newRows: Row[] = transactions.map((tx, txIndex) => {
+        const dedup = dedupPorIndice[txIndex] ?? "nova";
+        // "Já importada" e "duplicada no arquivo" nunca podem ser reprocessadas.
+        const alreadyImported = dedup === "ja_importada" || dedup === "duplicada_arquivo";
         
         const candidates: MovCandidate[] = ((movs ?? []) as any[])
           .filter((m: any) => {
@@ -239,8 +276,10 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                 ]
               : candidates,
           alreadyImported,
+          dedup,
           // Nada sugerido automaticamente entra confirmado: o usuário confere sempre.
-          confirmado: action !== "vincular",
+          // Transações sem FITID também exigem confirmação (não são deduplicáveis).
+          confirmado: action !== "vincular" && dedup !== "sem_fitid",
           sugestao,
         };
       });
@@ -308,16 +347,24 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     let criar = 0, vincular = 0, ignorar = 0, pendentesConfirmacao = 0;
     for (const r of rows) {
       if (r.action === "criar") criar++;
-      else if (r.action === "vincular") {
-        vincular++;
-        if (!r.confirmado) pendentesConfirmacao++;
-      } else ignorar++;
+      else if (r.action === "vincular") vincular++;
+      else ignorar++;
+      // Vínculos sugeridos e transações sem identificador único exigem confirmação manual.
+      if ((r.action === "vincular" || r.dedup === "sem_fitid") && !r.confirmado && !r.alreadyImported) {
+        pendentesConfirmacao++;
+      }
     }
     return { criar, vincular, ignorar, pendentesConfirmacao };
   }, [rows]);
 
   const confirmarTodos = () => {
-    setRows((prev) => prev.map((r) => (r.action === "vincular" ? { ...r, confirmado: true } : r)));
+    setRows((prev) =>
+      prev.map((r) =>
+        !r.alreadyImported && (r.action === "vincular" || r.dedup === "sem_fitid")
+          ? { ...r, confirmado: true }
+          : r
+      )
+    );
   };
 
   /**
@@ -393,22 +440,30 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
 
   const handleConciliar = async () => {
     // Guarda: nenhum vínculo é gravado sem confirmação explícita do usuário.
-    const naoConfirmados = rows.filter((r) => r.action === "vincular" && !r.confirmado).length;
+    const naoConfirmados = rows.filter(
+      (r) => (r.action === "vincular" || r.dedup === "sem_fitid") && !r.confirmado
+    ).length;
     if (naoConfirmados > 0) {
       toast({
-        title: "Confirme os vínculos",
-        description: `${naoConfirmados} vínculo(s) sugerido(s) ainda não foram confirmados.`,
+        title: "Confirme os itens pendentes",
+        description: `${naoConfirmados} item(ns) ainda aguardam confirmação manual.`,
         variant: "destructive",
       });
       return;
     }
     setSaving(true);
-    let ok = 0, fail = 0;
+    setErros([]);
+    let ok = 0;
+    const falhas: string[] = [];
+    const rotulo = (r: Row) => `${fmtDate(r.tx.data)} ${r.tx.descricao || r.tx.trntype} (${fmtBRL(r.tx.valor)})`;
+
     try {
       await Promise.all(
         rows.map(async (r) => {
           try {
-            if (r.action === "ignorar") return;
+            // Nunca reprocessa: já importada, duplicada no arquivo ou ignorada manualmente.
+            if (r.action === "ignorar" || r.alreadyImported) return;
+
             if (r.action === "vincular" && r.movId) {
               const { error } = await supabase
                 .from("movimentacoes_financeiras" as any)
@@ -417,45 +472,60 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                   valor: r.tx.valor,
                   data_vencimento: r.tx.data,
                   data_pagamento: r.tx.data,
-                  fitid: r.tx.fitid,
+                  fitid: r.tx.fitid || null,
                 } as any)
-
                 .eq("id", r.movId);
               if (error) throw error;
             } else if (r.action === "criar") {
-              if (!r.categoriaId) {
-                throw new Error("Categoria não selecionada");
-              }
-              const { error } = await supabase
-                .from("movimentacoes_financeiras" as any)
-                .insert({
-                  conta_id: contaId,
-                  categoria_id: r.categoriaId,
-                  tipo: r.tx.tipo,
-                  valor: r.tx.valor,
-                  data_vencimento: r.tx.data,
-                  data_pagamento: r.tx.data,
-                  status: "pago",
-                  descricao: r.tx.descricao || `OFX ${r.tx.trntype}`,
-                  origem: "ofx",
-                  fitid: r.tx.fitid,
-                } as any);
+              if (!r.categoriaId) throw new Error("Categoria não selecionada");
+              const payload = {
+                conta_id: contaId,
+                categoria_id: r.categoriaId,
+                tipo: r.tx.tipo,
+                valor: r.tx.valor,
+                data_vencimento: r.tx.data,
+                data_pagamento: r.tx.data,
+                status: "pago",
+                descricao: r.tx.descricao || `OFX ${r.tx.trntype}`,
+                origem: "ofx",
+                fitid: r.tx.fitid || null,
+              };
+
+              // Com FITID: upsert idempotente sobre o índice único (conta_id, fitid).
+              // Uma corrida ou reimportação simultânea é silenciosamente ignorada
+              // em vez de criar duplicata ou quebrar a importação.
+              const query = payload.fitid
+                ? supabase
+                    .from("movimentacoes_financeiras" as any)
+                    .upsert(payload as any, { onConflict: "conta_id,fitid", ignoreDuplicates: true })
+                : supabase.from("movimentacoes_financeiras" as any).insert(payload as any);
+
+              const { error } = await query;
               if (error) throw error;
             }
             ok++;
-          } catch {
-            fail++;
+          } catch (err: any) {
+            const msg: string = err?.message ?? "erro desconhecido";
+            falhas.push(
+              `${rotulo(r)} — ${
+                msg.includes("duplicate key") || msg.includes("uniq")
+                  ? "já existe uma movimentação com este identificador (duplicidade)"
+                  : msg
+              }`
+            );
           }
         })
       );
       qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
       qc.invalidateQueries({ queryKey: ["saldo_conta"] });
+      setErros(falhas);
       toast({
         title: "Conciliação concluída",
-        description: `${ok} processadas${fail > 0 ? `, ${fail} com erro` : ""}.`,
-        variant: fail > 0 ? "destructive" : "default",
+        description: `${ok} processada(s)${falhas.length > 0 ? `, ${falhas.length} com erro` : ""}.`,
+        variant: falhas.length > 0 ? "destructive" : "default",
       });
-      handleClose(false);
+      // Mantém o diálogo aberto quando houver falhas, para o usuário conferir a lista.
+      if (falhas.length === 0) handleClose(false);
     } catch (e: any) {
       toast({ title: "Erro na conciliação", description: e.message, variant: "destructive" });
     } finally {
@@ -500,6 +570,30 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         {loading && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
             <Loader2 className="h-4 w-4 animate-spin" /> Processando arquivo...
+          </div>
+        )}
+
+        {dedupTotais && (
+          <div className="rounded-md border bg-muted/40 p-3 text-xs">
+            <div className="font-medium mb-1">Resumo do arquivo</div>
+            <div className="grid gap-1 sm:grid-cols-5">
+              <div><span className="text-muted-foreground">Transações:</span> <b>{dedupTotais.total}</b></div>
+              <div><span className="text-muted-foreground">Novas:</span> <b>{dedupTotais.novas}</b></div>
+              <div><span className="text-muted-foreground">Já importadas:</span> <b>{dedupTotais.jaImportadas}</b></div>
+              <div><span className="text-muted-foreground">Duplicadas no arquivo:</span> <b>{dedupTotais.duplicadasNoArquivo}</b></div>
+              <div><span className="text-muted-foreground">Sem identificador:</span> <b>{dedupTotais.semFitid}</b></div>
+            </div>
+          </div>
+        )}
+
+        {erros.length > 0 && (
+          <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs">
+            <div className="flex items-center gap-2 font-medium mb-1">
+              <AlertTriangle className="h-4 w-4 text-destructive" /> Transações não processadas
+            </div>
+            <ul className="space-y-0.5 max-h-32 overflow-y-auto pl-3 list-disc">
+              {erros.map((e, i) => <li key={i}>{e}</li>)}
+            </ul>
           </div>
         )}
 
@@ -630,12 +724,24 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                   {rows.map((r, i) => {
                     const disponiveis = candidatosDisponiveis(r);
                     return (
-                    <TableRow key={r.tx.fitid + i}>
+                    <TableRow key={r.tx.fitid + i} className={r.alreadyImported ? "opacity-60" : undefined}>
                       <TableCell className="text-xs">{fmtDate(r.tx.data)}</TableCell>
                       <TableCell className="text-xs">
                         <div className="break-words">{r.tx.descricao || "—"}</div>
-                        {r.alreadyImported && (
-                          <Badge variant="outline" className="text-[10px] mt-1">Já importado</Badge>
+                        {r.dedup === "ja_importada" && (
+                          <Badge variant="outline" className="text-[10px] mt-1" title={`FITID: ${r.tx.fitid}`}>
+                            Já importada
+                          </Badge>
+                        )}
+                        {r.dedup === "duplicada_arquivo" && (
+                          <Badge variant="outline" className="text-[10px] mt-1" title={`FITID: ${r.tx.fitid}`}>
+                            Duplicada no arquivo
+                          </Badge>
+                        )}
+                        {r.dedup === "sem_fitid" && (
+                          <Badge variant="destructive" className="text-[10px] mt-1 gap-1">
+                            <AlertTriangle className="h-3 w-3" /> Sem identificador único
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell className={`text-xs font-medium whitespace-nowrap ${r.tx.tipo === "entrada" ? "text-success" : "text-destructive"}`}>
@@ -655,7 +761,23 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                         )}
                       </TableCell>
                       <TableCell>
+                        {r.alreadyImported ? (
+                          <span className="text-xs text-muted-foreground">
+                            Ignorada automaticamente (não será reprocessada)
+                          </span>
+                        ) : (
                         <div className="flex flex-col gap-1">
+                          {r.dedup === "sem_fitid" && (
+                            <label className="flex items-center gap-2 text-[11px] cursor-pointer">
+                              <Checkbox
+                                checked={r.confirmado}
+                                onCheckedChange={(v) => updateRow(i, { confirmado: v === true })}
+                              />
+                              <span className={r.confirmado ? "text-success" : "text-destructive font-medium"}>
+                                {r.confirmado ? "Importação confirmada" : "Confirmar importação"}
+                              </span>
+                            </label>
+                          )}
                           <Select
                             value={r.action}
                             onValueChange={(v: any) => updateRow(i, {
@@ -725,6 +847,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                             </Select>
                           )}
                         </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   );})}

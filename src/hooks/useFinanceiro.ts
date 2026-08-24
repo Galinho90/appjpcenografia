@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type TipoCategoriaFin = "receita" | "despesa";
 export type TipoMovimentacao = "entrada" | "saida" | "transferencia";
 export type StatusMovimentacao = "pendente" | "pago" | "atrasado" | "cancelado";
-export type OrigemMovimentacao = "manual" | "fechamento" | "inter_api";
+export type OrigemMovimentacao = "manual" | "fechamento" | "inter_api" | "ofx";
 
 export type ContaBancaria = {
   id: string;
@@ -64,6 +64,8 @@ export type MovimentacaoFinanceira = {
   fechamento_id: string | null;
   evento_id: string | null;
   origem: OrigemMovimentacao;
+  /** Identificador da transação no extrato bancário (OFX/API). Presença = conciliado. */
+  fitid: string | null;
   comprovante_url: string | null;
   recorrente: boolean;
   created_at: string;

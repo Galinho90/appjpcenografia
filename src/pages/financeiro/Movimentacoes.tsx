@@ -1,6 +1,9 @@
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot, GripVertical, Upload, Search, X, ChevronDown, Wallet, Clock, TrendingUp, TrendingDown, FileText } from "lucide-react";
 import ImportarOFXDialog from "@/components/financeiro/ImportarOFXDialog";
+import { ConciliacaoBadge } from "@/components/financeiro/ConciliacaoBadge";
+import { PainelConciliacao } from "@/components/financeiro/PainelConciliacao";
+import { matchFiltroConciliacao, type FiltroConciliacao } from "@/lib/conciliacao";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -83,6 +86,7 @@ export default function Movimentacoes() {
   const [pageSize, setPageSize] = useState(25);
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [conciliacaoFiltro, setConciliacaoFiltro] = useState<FiltroConciliacao>("all");
 
   const registrarMotivo = useRegistrarMotivoAjuste();
 
@@ -92,10 +96,10 @@ export default function Movimentacoes() {
     valorOriginal !== null &&
     Math.abs(Number(form.valor || 0) - valorOriginal) > 0.004;
 
-  useEffect(() => { setPage(1); }, [filters, pageSize, search]);
+  useEffect(() => { setPage(1); }, [filters, pageSize, search, conciliacaoFiltro]);
 
-  /** Busca textual local (descrição, fornecedor, cliente, categoria, conta). */
-  const filteredMovs = useMemo(() => {
+  /** Recorte por período/conta antes do filtro de conciliação (base do painel). */
+  const movsBase = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return movs;
     return movs.filter((m) =>
@@ -110,6 +114,13 @@ export default function Movimentacoes() {
         .some((v) => String(v).toLowerCase().includes(q))
     );
   }, [movs, search]);
+
+  /** Busca textual local + filtro de conciliação bancária. */
+  const filteredMovs = useMemo(
+    () => (conciliacaoFiltro === "all" ? movsBase : movsBase.filter((m) => matchFiltroConciliacao(m, conciliacaoFiltro))),
+    [movsBase, conciliacaoFiltro],
+  );
+
 
   /** Totais do resultado filtrado — visão rápida do período. */
   const resumo = useMemo(() => {
@@ -178,6 +189,7 @@ export default function Movimentacoes() {
     (filters.status !== "all" ? 1 : 0) +
     (filters.contaId !== "all" ? 1 : 0) +
     (filters.categoriaId !== "all" ? 1 : 0) +
+    (conciliacaoFiltro !== "all" ? 1 : 0) +
     (filters.dataInicio ? 1 : 0) +
     (filters.dataFim ? 1 : 0);
 
@@ -452,6 +464,17 @@ export default function Movimentacoes() {
         />
       </div>
 
+      {/* Painel de conciliação bancária */}
+      <PainelConciliacao
+        movs={movsBase}
+        saldoConta={saldoConta}
+        contaLabel={contaLabel}
+        isLoading={isLoading}
+        onImportarOFX={isAdmin ? () => setOfxOpen(true) : undefined}
+        onVerNaoConciliados={() => { setConciliacaoFiltro("nao_conciliada"); setFiltersOpen(true); }}
+      />
+
+
       {/* Barra de busca + período + filtros */}
       <Card className="shadow-premium-sm">
         <CardContent className="p-4 sm:p-6 space-y-4">
@@ -569,10 +592,24 @@ export default function Movimentacoes() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Conciliação bancária</Label>
+                <Select value={conciliacaoFiltro} onValueChange={(v: FiltroConciliacao) => setConciliacaoFiltro(v)}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    <SelectItem value="conciliada">Conciliadas</SelectItem>
+                    <SelectItem value="nao_conciliada">Não conciliadas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="sm:col-span-2 lg:col-span-3 flex justify-end">
                 <Button
                   variant="ghost" size="sm" className="h-8 text-xs gap-1.5"
-                  onClick={() => setFilters({ tipo: "all", status: "all", categoriaId: "all", contaId: "all", dataInicio: "", dataFim: "" })}
+                  onClick={() => {
+                    setConciliacaoFiltro("all");
+                    setFilters({ tipo: "all", status: "all", categoriaId: "all", contaId: "all", dataInicio: "", dataFim: "" });
+                  }}
                 >
                   <X className="h-3.5 w-3.5" /> Limpar filtros
                 </Button>
@@ -616,6 +653,7 @@ export default function Movimentacoes() {
                   variant="outline" size="sm" className="mt-6 gap-2"
                   onClick={() => {
                     setSearch("");
+                    setConciliacaoFiltro("all");
                     setFilters({ tipo: "all", status: "all", categoriaId: "all", contaId: "all", dataInicio: "", dataFim: "" });
                   }}
                 >
@@ -677,6 +715,7 @@ export default function Movimentacoes() {
                               <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent`}>
                                 {statusLabel[m.status]}
                               </Badge>
+                              <ConciliacaoBadge mov={m} hideWhenNotApplicable />
                             </div>
                             {isAdmin && (
                               <div className="flex items-center gap-2 mt-2 sm:mt-0 justify-end w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0">
@@ -1092,9 +1131,12 @@ function SortableMovRow({
         </div>
       </TableCell>
       <TableCell>
-        <Badge className={cn("text-[10px] px-2 py-0.5 border-none font-bold uppercase tracking-wider shadow-sm", statusColor[m.status])}>
-          {statusLabel[m.status]}
-        </Badge>
+        <div className="flex flex-col items-start gap-1">
+          <Badge className={cn("text-[10px] px-2 py-0.5 border-none font-bold uppercase tracking-wider shadow-sm", statusColor[m.status])}>
+            {statusLabel[m.status]}
+          </Badge>
+          <ConciliacaoBadge mov={m} hideWhenNotApplicable />
+        </div>
       </TableCell>
       <TableCell className={cn("text-right font-bold text-base tabular-nums", m.tipo === "entrada" ? "text-success" : m.tipo === "saida" ? "text-destructive" : "text-info")}>
         <span className="text-xs font-medium mr-0.5 opacity-70">R$</span>

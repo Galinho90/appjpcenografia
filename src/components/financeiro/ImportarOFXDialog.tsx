@@ -839,6 +839,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                             </Select>
                           )}
                         </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   );})}

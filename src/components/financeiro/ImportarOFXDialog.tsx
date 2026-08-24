@@ -347,16 +347,24 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     let criar = 0, vincular = 0, ignorar = 0, pendentesConfirmacao = 0;
     for (const r of rows) {
       if (r.action === "criar") criar++;
-      else if (r.action === "vincular") {
-        vincular++;
-        if (!r.confirmado) pendentesConfirmacao++;
-      } else ignorar++;
+      else if (r.action === "vincular") vincular++;
+      else ignorar++;
+      // Vínculos sugeridos e transações sem identificador único exigem confirmação manual.
+      if ((r.action === "vincular" || r.dedup === "sem_fitid") && !r.confirmado && !r.alreadyImported) {
+        pendentesConfirmacao++;
+      }
     }
     return { criar, vincular, ignorar, pendentesConfirmacao };
   }, [rows]);
 
   const confirmarTodos = () => {
-    setRows((prev) => prev.map((r) => (r.action === "vincular" ? { ...r, confirmado: true } : r)));
+    setRows((prev) =>
+      prev.map((r) =>
+        !r.alreadyImported && (r.action === "vincular" || r.dedup === "sem_fitid")
+          ? { ...r, confirmado: true }
+          : r
+      )
+    );
   };
 
   /**

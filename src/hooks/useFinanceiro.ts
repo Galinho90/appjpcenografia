@@ -376,15 +376,27 @@ export function useSaldosPorDia(contaId?: string | null) {
         .filter((c) => ids.has(c.id))
         .reduce((s, c) => s + (Number(c.saldo_inicial) || 0), 0);
 
-      const { data, error } = await supabase
-        .from("movimentacoes_financeiras" as any)
-        .select("tipo, valor, status, data_pagamento, data_vencimento, conta_id, conta_destino_id")
-        .eq("status", "pago");
-      if (error) throw error;
+      // PostgREST devolve no máximo 1000 linhas por requisição. Sem paginação
+      // o saldo diário ficava truncado e divergia do RPC `get_saldo_conta`.
+      const PAGE = 1000;
+      const linhas: any[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await supabase
+          .from("movimentacoes_financeiras" as any)
+          .select("tipo, valor, status, data_pagamento, data_vencimento, conta_id, conta_destino_id")
+          .eq("status", "pago")
+          .order("id", { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (error) throw error;
+        const lote = (data ?? []) as any[];
+        linhas.push(...lote);
+        if (lote.length < PAGE) break;
+      }
 
       // Delta por dia (data efetiva = pagamento, com fallback para vencimento)
       const porDia = new Map<string, number>();
-      for (const m of ((data ?? []) as any[])) {
+      for (const m of linhas) {
+
         const dia: string = m.data_pagamento ?? m.data_vencimento ?? "";
         if (!dia) continue;
         const valor = Number(m.valor) || 0;

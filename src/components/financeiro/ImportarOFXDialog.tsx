@@ -432,22 +432,30 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
 
   const handleConciliar = async () => {
     // Guarda: nenhum vínculo é gravado sem confirmação explícita do usuário.
-    const naoConfirmados = rows.filter((r) => r.action === "vincular" && !r.confirmado).length;
+    const naoConfirmados = rows.filter(
+      (r) => (r.action === "vincular" || r.dedup === "sem_fitid") && !r.confirmado
+    ).length;
     if (naoConfirmados > 0) {
       toast({
-        title: "Confirme os vínculos",
-        description: `${naoConfirmados} vínculo(s) sugerido(s) ainda não foram confirmados.`,
+        title: "Confirme os itens pendentes",
+        description: `${naoConfirmados} item(ns) ainda aguardam confirmação manual.`,
         variant: "destructive",
       });
       return;
     }
     setSaving(true);
-    let ok = 0, fail = 0;
+    setErros([]);
+    let ok = 0;
+    const falhas: string[] = [];
+    const rotulo = (r: Row) => `${fmtDate(r.tx.data)} ${r.tx.descricao || r.tx.trntype} (${fmtBRL(r.tx.valor)})`;
+
     try {
       await Promise.all(
         rows.map(async (r) => {
           try {
-            if (r.action === "ignorar") return;
+            // Nunca reprocessa: já importada, duplicada no arquivo ou ignorada manualmente.
+            if (r.action === "ignorar" || r.alreadyImported) return;
+
             if (r.action === "vincular" && r.movId) {
               const { error } = await supabase
                 .from("movimentacoes_financeiras" as any)
@@ -456,45 +464,60 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                   valor: r.tx.valor,
                   data_vencimento: r.tx.data,
                   data_pagamento: r.tx.data,
-                  fitid: r.tx.fitid,
+                  fitid: r.tx.fitid || null,
                 } as any)
-
                 .eq("id", r.movId);
               if (error) throw error;
             } else if (r.action === "criar") {
-              if (!r.categoriaId) {
-                throw new Error("Categoria não selecionada");
-              }
-              const { error } = await supabase
-                .from("movimentacoes_financeiras" as any)
-                .insert({
-                  conta_id: contaId,
-                  categoria_id: r.categoriaId,
-                  tipo: r.tx.tipo,
-                  valor: r.tx.valor,
-                  data_vencimento: r.tx.data,
-                  data_pagamento: r.tx.data,
-                  status: "pago",
-                  descricao: r.tx.descricao || `OFX ${r.tx.trntype}`,
-                  origem: "ofx",
-                  fitid: r.tx.fitid,
-                } as any);
+              if (!r.categoriaId) throw new Error("Categoria não selecionada");
+              const payload = {
+                conta_id: contaId,
+                categoria_id: r.categoriaId,
+                tipo: r.tx.tipo,
+                valor: r.tx.valor,
+                data_vencimento: r.tx.data,
+                data_pagamento: r.tx.data,
+                status: "pago",
+                descricao: r.tx.descricao || `OFX ${r.tx.trntype}`,
+                origem: "ofx",
+                fitid: r.tx.fitid || null,
+              };
+
+              // Com FITID: upsert idempotente sobre o índice único (conta_id, fitid).
+              // Uma corrida ou reimportação simultânea é silenciosamente ignorada
+              // em vez de criar duplicata ou quebrar a importação.
+              const query = payload.fitid
+                ? supabase
+                    .from("movimentacoes_financeiras" as any)
+                    .upsert(payload as any, { onConflict: "conta_id,fitid", ignoreDuplicates: true })
+                : supabase.from("movimentacoes_financeiras" as any).insert(payload as any);
+
+              const { error } = await query;
               if (error) throw error;
             }
             ok++;
-          } catch {
-            fail++;
+          } catch (err: any) {
+            const msg: string = err?.message ?? "erro desconhecido";
+            falhas.push(
+              `${rotulo(r)} — ${
+                msg.includes("duplicate key") || msg.includes("uniq")
+                  ? "já existe uma movimentação com este identificador (duplicidade)"
+                  : msg
+              }`
+            );
           }
         })
       );
       qc.invalidateQueries({ queryKey: ["movimentacoes_financeiras"] });
       qc.invalidateQueries({ queryKey: ["saldo_conta"] });
+      setErros(falhas);
       toast({
         title: "Conciliação concluída",
-        description: `${ok} processadas${fail > 0 ? `, ${fail} com erro` : ""}.`,
-        variant: fail > 0 ? "destructive" : "default",
+        description: `${ok} processada(s)${falhas.length > 0 ? `, ${falhas.length} com erro` : ""}.`,
+        variant: falhas.length > 0 ? "destructive" : "default",
       });
-      handleClose(false);
+      // Mantém o diálogo aberto quando houver falhas, para o usuário conferir a lista.
+      if (falhas.length === 0) handleClose(false);
     } catch (e: any) {
       toast({ title: "Erro na conciliação", description: e.message, variant: "destructive" });
     } finally {

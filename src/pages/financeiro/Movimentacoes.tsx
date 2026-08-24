@@ -1,6 +1,9 @@
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { Plus, Pencil, Trash2, Filter, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, CircleDot, GripVertical, Upload, Search, X, ChevronDown, Wallet, Clock, TrendingUp, TrendingDown, FileText } from "lucide-react";
 import ImportarOFXDialog from "@/components/financeiro/ImportarOFXDialog";
+import { ConciliacaoBadge } from "@/components/financeiro/ConciliacaoBadge";
+import { PainelConciliacao } from "@/components/financeiro/PainelConciliacao";
+import { matchFiltroConciliacao, type FiltroConciliacao } from "@/lib/conciliacao";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseOFX, classifyOFXTransactions, chunk, type OFXTransaction } from "@/lib/ofx";
+import { parseOFX, classifyOFXTransactions, chunk, podeSalvarLinha, type OFXTransaction } from "@/lib/ofx";
 
 const OFX_SGML = `
 OFXHEADER:100

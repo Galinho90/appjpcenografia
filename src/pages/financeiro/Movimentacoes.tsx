@@ -715,6 +715,7 @@ export default function Movimentacoes() {
                               <Badge className={`${statusColor[m.status]} text-[10px] px-1.5 py-0 border-transparent`}>
                                 {statusLabel[m.status]}
                               </Badge>
+                              <ConciliacaoBadge mov={m} hideWhenNotApplicable />
                             </div>
                             {isAdmin && (
                               <div className="flex items-center gap-2 mt-2 sm:mt-0 justify-end w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0">

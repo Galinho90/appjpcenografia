@@ -71,6 +71,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const [ofxMeta, setOfxMeta] = useState<OFXMeta>({});
   const [saldoSistema, setSaldoSistema] = useState<number | null>(null);
   const [extrasSistema, setExtrasSistema] = useState<SistemaExtra[]>([]);
+  const [dedupTotais, setDedupTotais] = useState<DedupTotais | null>(null);
+  const [erros, setErros] = useState<string[]>([]);
 
   const reset = () => {
     setRows([]);
@@ -78,6 +80,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     setOfxMeta({});
     setSaldoSistema(null);
     setExtrasSistema([]);
+    setDedupTotais(null);
+    setErros([]);
     if (fileRef.current) fileRef.current.value = "";
   };
 

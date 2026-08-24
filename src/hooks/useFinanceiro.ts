@@ -64,6 +64,8 @@ export type MovimentacaoFinanceira = {
   fechamento_id: string | null;
   evento_id: string | null;
   origem: OrigemMovimentacao;
+  /** Identificador da transação no extrato bancário (OFX/API). Presença = conciliado. */
+  fitid: string | null;
   comprovante_url: string | null;
   recorrente: boolean;
   created_at: string;

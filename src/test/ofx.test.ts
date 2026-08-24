@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseOFX, classifyOFXTransactions, chunk, type OFXTransaction } from "@/lib/ofx";
+import { parseOFX, classifyOFXTransactions, chunk, podeSalvarLinha, type OFXTransaction } from "@/lib/ofx";
 
 const OFX_SGML = `
 OFXHEADER:100
@@ -124,5 +124,19 @@ describe("chunk", () => {
 
   it("rejeita tamanho inválido", () => {
     expect(() => chunk([1], 0)).toThrow();
+  });
+});
+
+describe("podeSalvarLinha", () => {
+  it("exige categoria ao criar quando a opção está desmarcada", () => {
+    expect(podeSalvarLinha({ action: "criar", ignorarCategorias: false })).toBe(false);
+    expect(podeSalvarLinha({ action: "criar", categoriaId: "c1", ignorarCategorias: false })).toBe(true);
+  });
+  it("permite criar sem categoria quando a opção está marcada", () => {
+    expect(podeSalvarLinha({ action: "criar", ignorarCategorias: true })).toBe(true);
+  });
+  it("não afeta vincular/ignorar", () => {
+    expect(podeSalvarLinha({ action: "vincular", ignorarCategorias: false })).toBe(true);
+    expect(podeSalvarLinha({ action: "ignorar", ignorarCategorias: false })).toBe(true);
   });
 });

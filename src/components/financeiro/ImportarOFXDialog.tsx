@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useContasBancarias, useCategoriasFinanceiras } from "@/hooks/useFinanceiro";
-import { parseOFX, classifyOFXTransactions, chunk, type OFXTransaction, type OFXDedupStatus } from "@/lib/ofx";
+import { parseOFX, classifyOFXTransactions, chunk, podeSalvarLinha, type OFXTransaction, type OFXDedupStatus } from "@/lib/ofx";
 import { fmtBRL, fmtDate, todayISO } from "@/lib/financeiro";
 
 type Props = { open: boolean; onOpenChange: (o: boolean) => void };
@@ -81,6 +81,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   const [extrasSistema, setExtrasSistema] = useState<SistemaExtra[]>([]);
   const [dedupTotais, setDedupTotais] = useState<DedupTotais | null>(null);
   const [erros, setErros] = useState<string[]>([]);
+  /** Permite gravar transações novas sem categoria (categorizáveis depois). */
+  const [ignorarCategorias, setIgnorarCategorias] = useState(false);
 
   const reset = () => {
     setRows([]);
@@ -90,6 +92,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
     setExtrasSistema([]);
     setDedupTotais(null);
     setErros([]);
+    setIgnorarCategorias(false);
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -344,9 +347,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   };
 
   const stats = useMemo(() => {
-    let criar = 0, vincular = 0, ignorar = 0, pendentesConfirmacao = 0;
+    let criar = 0, vincular = 0, ignorar = 0, pendentesConfirmacao = 0, semCategoria = 0;
     for (const r of rows) {
-      if (r.action === "criar") criar++;
+      if (r.action === "criar") { criar++; if (!r.categoriaId) semCategoria++; }
       else if (r.action === "vincular") vincular++;
       else ignorar++;
       // Vínculos sugeridos e transações sem identificador único exigem confirmação manual.
@@ -354,7 +357,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         pendentesConfirmacao++;
       }
     }
-    return { criar, vincular, ignorar, pendentesConfirmacao };
+    return { criar, vincular, ignorar, pendentesConfirmacao, semCategoria };
   }, [rows]);
 
   const confirmarTodos = () => {
@@ -477,10 +480,12 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                 .eq("id", r.movId);
               if (error) throw error;
             } else if (r.action === "criar") {
-              if (!r.categoriaId) throw new Error("Categoria não selecionada");
+              if (!podeSalvarLinha({ action: r.action, categoriaId: r.categoriaId, ignorarCategorias })) {
+                throw new Error("Categoria não selecionada");
+              }
               const payload = {
                 conta_id: contaId,
-                categoria_id: r.categoriaId,
+                categoria_id: r.categoriaId ?? null,
                 tipo: r.tx.tipo,
                 valor: r.tx.valor,
                 data_vencimento: r.tx.data,
@@ -603,6 +608,19 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
               <Badge className="bg-success text-success-foreground">Vincular: {stats.vincular}</Badge>
               <Badge className="bg-info text-info-foreground">Criar: {stats.criar}</Badge>
               <Badge variant="outline">Ignorar: {stats.ignorar}</Badge>
+              <label className="flex items-center gap-2 ml-auto cursor-pointer select-none">
+                <Checkbox
+                  checked={ignorarCategorias}
+                  onCheckedChange={(v) => setIgnorarCategorias(v === true)}
+                  aria-label="Ignorar categorias"
+                />
+                <span>Ignorar categorias</span>
+              </label>
+              {ignorarCategorias && stats.semCategoria > 0 && (
+                <Badge variant="secondary" className="w-full sm:w-auto">
+                  {stats.semCategoria} transação(ões) serão salvas sem categoria
+                </Badge>
+              )}
               {stats.pendentesConfirmacao > 0 && (
                 <>
                   <Badge variant="destructive" className="gap-1">
@@ -834,8 +852,8 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                               value={r.categoriaId ?? ""}
                               onValueChange={(v) => updateRow(i, { categoriaId: v })}
                             >
-                              <SelectTrigger className={`h-7 text-xs ${!r.categoriaId ? "border-destructive" : ""}`}>
-                                <SelectValue placeholder="Categoria *" />
+                              <SelectTrigger className={`h-7 text-xs ${!r.categoriaId && !ignorarCategorias ? "border-destructive" : ""}`}>
+                                <SelectValue placeholder={ignorarCategorias ? "Categoria (opcional)" : "Categoria *"} />
                               </SelectTrigger>
                               <SelectContent>
                                 {categorias
@@ -872,7 +890,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
               rows.length === 0 ||
               saving ||
               stats.pendentesConfirmacao > 0 ||
-              rows.some((r) => r.action === "criar" && !r.categoriaId)
+              rows.some((r) => !podeSalvarLinha({ action: r.action, categoriaId: r.categoriaId, ignorarCategorias }))
             }
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}

@@ -49,6 +49,14 @@ type OFXMeta = {
   dtEnd?: string;
 };
 
+type DedupTotais = {
+  total: number;
+  novas: number;
+  jaImportadas: number;
+  duplicadasNoArquivo: number;
+  semFitid: number;
+};
+
 type SistemaExtra = {
   id: string;
   descricao: string;

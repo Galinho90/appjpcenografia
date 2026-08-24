@@ -347,9 +347,9 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
   };
 
   const stats = useMemo(() => {
-    let criar = 0, vincular = 0, ignorar = 0, pendentesConfirmacao = 0;
+    let criar = 0, vincular = 0, ignorar = 0, pendentesConfirmacao = 0, semCategoria = 0;
     for (const r of rows) {
-      if (r.action === "criar") criar++;
+      if (r.action === "criar") { criar++; if (!r.categoriaId) semCategoria++; }
       else if (r.action === "vincular") vincular++;
       else ignorar++;
       // Vínculos sugeridos e transações sem identificador único exigem confirmação manual.
@@ -357,7 +357,7 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
         pendentesConfirmacao++;
       }
     }
-    return { criar, vincular, ignorar, pendentesConfirmacao };
+    return { criar, vincular, ignorar, pendentesConfirmacao, semCategoria };
   }, [rows]);
 
   const confirmarTodos = () => {
@@ -616,6 +616,11 @@ export default function ImportarOFXDialog({ open, onOpenChange }: Props) {
                 />
                 <span>Ignorar categorias</span>
               </label>
+              {ignorarCategorias && stats.semCategoria > 0 && (
+                <Badge variant="secondary" className="w-full sm:w-auto">
+                  {stats.semCategoria} transação(ões) serão salvas sem categoria
+                </Badge>
+              )}
               {stats.pendentesConfirmacao > 0 && (
                 <>
                   <Badge variant="destructive" className="gap-1">

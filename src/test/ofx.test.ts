@@ -126,3 +126,17 @@ describe("chunk", () => {
     expect(() => chunk([1], 0)).toThrow();
   });
 });
+
+describe("podeSalvarLinha", () => {
+  it("exige categoria ao criar quando a opção está desmarcada", () => {
+    expect(podeSalvarLinha({ action: "criar", ignorarCategorias: false })).toBe(false);
+    expect(podeSalvarLinha({ action: "criar", categoriaId: "c1", ignorarCategorias: false })).toBe(true);
+  });
+  it("permite criar sem categoria quando a opção está marcada", () => {
+    expect(podeSalvarLinha({ action: "criar", ignorarCategorias: true })).toBe(true);
+  });
+  it("não afeta vincular/ignorar", () => {
+    expect(podeSalvarLinha({ action: "vincular", ignorarCategorias: false })).toBe(true);
+    expect(podeSalvarLinha({ action: "ignorar", ignorarCategorias: false })).toBe(true);
+  });
+});

@@ -84,7 +84,7 @@ export default function MeuExtrato() {
 
   const totalCreditos = lancamentosFiltrados.filter(l => l.categoria?.tipo === "C").reduce((s, l) => s + l.valor, 0);
   const totalDebitos = lancamentosFiltrados.filter(l => l.categoria?.tipo === "D").reduce((s, l) => s + l.valor, 0);
-  const aPagar = Math.max(totalCreditos - totalDebitos, 0);
+  const aPagar = totalCreditos - totalDebitos;
 
   const shiftRef = (dir: -1 | 1) => {
     const next = shiftQuinzena(selecionada, dir);
@@ -253,7 +253,7 @@ export default function MeuExtrato() {
         <div className="lg:col-span-8 space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatCard label="Total Lançado" badge="Créditos" value={fmtBRL(totalCreditos)} icon={CalendarDays} tone="primary" />
-            <StatCard label="A Receber" badge="Saldo" value={fmtBRL(aPagar)} icon={DollarSign} tone="success" />
+            <StatCard label="A Receber" badge="Saldo" value={fmtBRL(aPagar)} icon={DollarSign} tone={aPagar < 0 ? "destructive" : "success"} />
             <StatCard label="Total Pago/Vales" badge="Débitos" value={fmtBRL(totalDebitos)} icon={CheckCircle2} tone="destructive" />
           </div>
 

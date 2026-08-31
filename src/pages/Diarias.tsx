@@ -240,6 +240,19 @@ export default function Diarias() {
     return matchesSearch && matchesColab && matchesCat && matchesInicio && matchesFim;
   });
 
+  /**
+   * Paginação client-side da lista de lançamentos.
+   * `page` é 1-indexado; o valor efetivo é clampado para nunca exceder o total
+   * de páginas quando os filtros reduzem o conjunto de resultados.
+   */
+  const [pageSize, setPageSize] = React.useState<number>(25);
+  const [page, setPage] = React.useState<number>(1);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginated = filtered.slice(startIndex, startIndex + pageSize);
+
   const limparFiltros = () => {
     setSearch("");
     setFiltroColaborador("all");
@@ -247,7 +260,9 @@ export default function Diarias() {
     setDataInicio("");
     setDataFim("");
     setQuinzenaRef(new Date());
+    setPage(1);
   };
+
 
   const totalCreditos = filtered.filter((l) => l.categoria?.tipo === "C").reduce((s, l) => s + l.valor, 0);
   const totalDebitos = filtered.filter((l) => l.categoria?.tipo === "D").reduce((s, l) => s + l.valor, 0);

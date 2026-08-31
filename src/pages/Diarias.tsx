@@ -245,8 +245,8 @@ export default function Diarias() {
    * `page` é 1-indexado; o valor efetivo é clampado para nunca exceder o total
    * de páginas quando os filtros reduzem o conjunto de resultados.
    */
-  const [pageSize, setPageSize] = React.useState<number>(25);
-  const [page, setPage] = React.useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
+  const [page, setPage] = useState<number>(1);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -715,7 +715,7 @@ export default function Diarias() {
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 items-end justify-start">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Diarista</Label>
-              <Select value={filtroColaborador} onValueChange={setFiltroColaborador}>
+              <Select value={filtroColaborador} onValueChange={(v) => { setFiltroColaborador(v); setPage(1); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
@@ -727,7 +727,7 @@ export default function Diarias() {
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Categoria</Label>
-              <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
+              <Select value={filtroCategoria} onValueChange={(v) => { setFiltroCategoria(v); setPage(1); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas</SelectItem>
@@ -739,11 +739,11 @@ export default function Diarias() {
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">De</Label>
-              <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+              <Input type="date" value={dataInicio} onChange={(e) => { setDataInicio(e.target.value); setPage(1); }} />
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Até</Label>
-              <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+              <Input type="date" value={dataFim} onChange={(e) => { setDataFim(e.target.value); setPage(1); }} />
             </div>
             <Button variant="outline" size="sm" onClick={limparFiltros} className="w-full">Limpar filtros</Button>
           </div>
@@ -757,7 +757,7 @@ export default function Diarias() {
           ) : (
             <>
               <div className="space-y-3 md:hidden">
-                {filtered.map((l) => (
+                {paginated.map((l) => (
                   <Card key={l.id} className="shadow-premium-sm">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-start justify-between gap-3">
@@ -815,7 +815,7 @@ export default function Diarias() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((l) => (
+                    {paginated.map((l) => (
                       <TableRow key={l.id}>
                         <TableCell className="font-medium whitespace-nowrap">{l.colaborador?.nome ?? "—"}</TableCell>
                         <TableCell>
@@ -846,6 +846,53 @@ export default function Diarias() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+              {/* Controles de paginação */}
+              <div className="mt-4 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2">
+                  <Label className="whitespace-nowrap text-xs text-muted-foreground">Itens por página</Label>
+                  <Select
+                    value={String(pageSize)}
+                    onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}
+                  >
+                    <SelectTrigger className="h-9 w-[90px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-3">
+                  <p className="whitespace-nowrap text-xs text-muted-foreground">
+                    {filtered.length === 0
+                      ? "Nenhum resultado"
+                      : `${startIndex + 1}–${Math.min(startIndex + pageSize, filtered.length)} de ${filtered.length}`}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage <= 1}
+                    >
+                      <ChevronLeft className="mr-1 h-4 w-4" />
+                      Anterior
+                    </Button>
+                    <span className="px-2 text-xs font-medium text-muted-foreground">
+                      {currentPage}/{totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage >= totalPages}
+                    >
+                      Próxima
+                      <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </>
           )}
